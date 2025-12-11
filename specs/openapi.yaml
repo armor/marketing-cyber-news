@@ -1,0 +1,1776 @@
+openapi: 3.0.3
+info:
+  title: Armor Cyber Intelligence (ACI) API
+  description: |
+    Backend API for the ACI cybersecurity news platform.
+
+    Provides REST endpoints for articles, categories, alerts, and user management.
+    Real-time updates available via WebSocket at /ws.
+
+    ## Key Features
+    - **Content Aggregation**: Automated ingestion from trusted security sources
+    - **AI Enrichment**: Claude-powered summaries, severity assessment, threat analysis
+    - **Real-time Alerts**: WebSocket notifications for critical security events
+    - **Competitor Filtering**: Content curated to drive customers toward armor.com
+
+    ## Authentication
+    All endpoints (except /health and /auth/*) require a Bearer token in the Authorization header.
+
+  version: 1.0.0
+  contact:
+    name: ACI Backend Team
+    email: backend@armor.com
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://api.aci.armor.com/v1
+    description: Production server
+  - url: https://api-staging.aci.armor.com/v1
+    description: Staging server
+  - url: http://localhost:8080/v1
+    description: Local development
+
+tags:
+  - name: Health
+    description: Service health checks
+  - name: Auth
+    description: Authentication endpoints
+  - name: Articles
+    description: Cybersecurity news article operations
+  - name: Categories
+    description: Content category management
+  - name: Alerts
+    description: User alert subscriptions
+  - name: Users
+    description: User profile management
+  - name: Sources
+    description: News source management
+  - name: Stats
+    description: Dashboard statistics
+  - name: Webhooks
+    description: n8n workflow integration
+
+security:
+  - bearerAuth: []
+
+paths:
+  # =============================================================================
+  # HEALTH ENDPOINTS
+  # =============================================================================
+  /health:
+    get:
+      tags: [Health]
+      summary: Service health check
+      operationId: healthCheck
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /health/ready:
+    get:
+      tags: [Health]
+      summary: Readiness probe (includes DB check)
+      operationId: readinessCheck
+      security: []
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+        '503':
+          description: Service not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # =============================================================================
+  # AUTH ENDPOINTS
+  # =============================================================================
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate user and get JWT tokens
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many login attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token using refresh token
+      operationId: refreshToken
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Invalidate refresh token
+      operationId: logout
+      responses:
+        '204':
+          description: Logged out successfully
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      operationId: register
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # =============================================================================
+  # ARTICLES ENDPOINTS
+  # =============================================================================
+  /articles:
+    get:
+      tags: [Articles]
+      summary: List articles with filtering and pagination
+      operationId: listArticles
+      parameters:
+        - name: page
+          in: query
+          description: Page number (1-indexed)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Items per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: category
+          in: query
+          description: Filter by category slug
+          schema:
+            type: string
+            enum: [data-breaches, vulnerabilities, threat-intelligence, ransomware, compliance, cloud-security, identity-access, incident-reports]
+        - name: severity
+          in: query
+          description: Filter by minimum severity level
+          schema:
+            type: string
+            enum: [critical, high, medium, low, informational]
+        - name: search
+          in: query
+          description: Full-text search query
+          schema:
+            type: string
+            maxLength: 200
+        - name: from_date
+          in: query
+          description: Filter articles published after this date
+          schema:
+            type: string
+            format: date-time
+        - name: to_date
+          in: query
+          description: Filter articles published before this date
+          schema:
+            type: string
+            format: date-time
+        - name: source_id
+          in: query
+          description: Filter by source UUID
+          schema:
+            type: string
+            format: uuid
+        - name: has_cve
+          in: query
+          description: Filter to articles with CVE references
+          schema:
+            type: boolean
+        - name: vendor
+          in: query
+          description: Filter by affected vendor
+          schema:
+            type: string
+        - name: sort
+          in: query
+          description: Sort field
+          schema:
+            type: string
+            enum: [published_at, severity, relevance, armor_relevance]
+            default: published_at
+        - name: order
+          in: query
+          description: Sort order
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: List of articles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticleListResponse'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /articles/{id}:
+    get:
+      tags: [Articles]
+      summary: Get article by ID
+      operationId: getArticle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Article UUID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Article details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticleResponse'
+        '404':
+          description: Article not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /articles/{id}/related:
+    get:
+      tags: [Articles]
+      summary: Get related articles
+      operationId: getRelatedArticles
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10
+            default: 5
+      responses:
+        '200':
+          description: Related articles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticleListResponse'
+
+  /articles/{id}/bookmark:
+    post:
+      tags: [Articles]
+      summary: Bookmark an article
+      operationId: bookmarkArticle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Article bookmarked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookmarkResponse'
+        '409':
+          description: Already bookmarked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags: [Articles]
+      summary: Remove bookmark from article
+      operationId: unbookmarkArticle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Bookmark removed
+        '404':
+          description: Bookmark not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /articles/search:
+    post:
+      tags: [Articles]
+      summary: Semantic search for articles
+      operationId: searchArticles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+
+  # =============================================================================
+  # CATEGORIES ENDPOINTS
+  # =============================================================================
+  /categories:
+    get:
+      tags: [Categories]
+      summary: List all categories with article counts
+      operationId: listCategories
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryListResponse'
+
+  /categories/{slug}:
+    get:
+      tags: [Categories]
+      summary: Get category details
+      operationId: getCategory
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Category details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /categories/{slug}/articles:
+    get:
+      tags: [Categories]
+      summary: List articles in category
+      operationId: listCategoryArticles
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [critical, high, medium, low, informational]
+      responses:
+        '200':
+          description: Articles in category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticleListResponse'
+
+  # =============================================================================
+  # SOURCES ENDPOINTS
+  # =============================================================================
+  /sources:
+    get:
+      tags: [Sources]
+      summary: List all content sources
+      operationId: listSources
+      responses:
+        '200':
+          description: List of sources
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceListResponse'
+
+  /sources/{id}:
+    get:
+      tags: [Sources]
+      summary: Get source details
+      operationId: getSource
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Source details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceResponse'
+        '404':
+          description: Source not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # =============================================================================
+  # USER ENDPOINTS
+  # =============================================================================
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Get current user profile
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      tags: [Users]
+      summary: Update current user profile
+      operationId: updateCurrentUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Updated user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/me/preferences:
+    get:
+      tags: [Users]
+      summary: Get user preferences
+      operationId: getUserPreferences
+      responses:
+        '200':
+          description: User preferences
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferencesResponse'
+
+    put:
+      tags: [Users]
+      summary: Update user preferences
+      operationId: updateUserPreferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePreferencesRequest'
+      responses:
+        '200':
+          description: Updated preferences
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferencesResponse'
+
+  /users/me/bookmarks:
+    get:
+      tags: [Users]
+      summary: Get user's bookmarked articles
+      operationId: getUserBookmarks
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Bookmarked articles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticleListResponse'
+
+  # =============================================================================
+  # ALERTS ENDPOINTS
+  # =============================================================================
+  /alerts:
+    get:
+      tags: [Alerts]
+      summary: List user's alert subscriptions
+      operationId: listAlerts
+      responses:
+        '200':
+          description: List of alert subscriptions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertListResponse'
+
+    post:
+      tags: [Alerts]
+      summary: Create new alert subscription
+      operationId: createAlert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAlertRequest'
+      responses:
+        '201':
+          description: Alert created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Alert already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /alerts/{id}:
+    get:
+      tags: [Alerts]
+      summary: Get alert subscription
+      operationId: getAlert
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Alert details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertResponse'
+        '404':
+          description: Alert not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      tags: [Alerts]
+      summary: Update alert subscription
+      operationId: updateAlert
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAlertRequest'
+      responses:
+        '200':
+          description: Updated alert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertResponse'
+
+    delete:
+      tags: [Alerts]
+      summary: Delete alert subscription
+      operationId: deleteAlert
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Alert deleted
+        '404':
+          description: Alert not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # =============================================================================
+  # STATS ENDPOINTS
+  # =============================================================================
+  /stats/dashboard:
+    get:
+      tags: [Stats]
+      summary: Get dashboard statistics
+      operationId: getDashboardStats
+      responses:
+        '200':
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStatsResponse'
+
+  /stats/trending:
+    get:
+      tags: [Stats]
+      summary: Get trending topics and threats
+      operationId: getTrendingStats
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month]
+            default: week
+      responses:
+        '200':
+          description: Trending statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrendingStatsResponse'
+
+  # =============================================================================
+  # WEBHOOK ENDPOINTS (n8n Integration)
+  # =============================================================================
+  /webhooks/n8n:
+    post:
+      tags: [Webhooks]
+      summary: Receive content from n8n workflows
+      operationId: n8nWebhook
+      security:
+        - hmacSignature: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/N8nWebhookPayload'
+      responses:
+        '202':
+          description: Webhook accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+        '400':
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid signature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /webhooks/n8n/trigger/{workflow}:
+    post:
+      tags: [Webhooks]
+      summary: Trigger an n8n workflow
+      operationId: triggerN8nWorkflow
+      parameters:
+        - name: workflow
+          in: path
+          required: true
+          description: Workflow identifier
+          schema:
+            type: string
+            enum: [scrape-all, scrape-cisa, scrape-nvd, enrich-pending, generate-digest]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '202':
+          description: Workflow triggered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowTriggerResponse'
+
+# =============================================================================
+# COMPONENTS
+# =============================================================================
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained from /auth/login.
+        Include in Authorization header: `Bearer <token>`
+
+    hmacSignature:
+      type: apiKey
+      in: header
+      name: X-N8N-Signature
+      description: |
+        HMAC-SHA256 signature of request body.
+        Computed as: HMAC-SHA256(requestBody, N8N_WEBHOOK_SECRET)
+
+  schemas:
+    # =========================================================================
+    # Health Schemas
+    # =========================================================================
+    HealthResponse:
+      type: object
+      required: [status, version, timestamp]
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        version:
+          type: string
+          example: "1.0.0"
+        timestamp:
+          type: string
+          format: date-time
+
+    ReadinessResponse:
+      type: object
+      required: [status, checks]
+      properties:
+        status:
+          type: string
+          enum: [ready, not_ready]
+        checks:
+          type: object
+          properties:
+            database:
+              type: string
+              enum: [ok, error]
+            redis:
+              type: string
+              enum: [ok, error]
+            n8n:
+              type: string
+              enum: [ok, error]
+
+    # =========================================================================
+    # Auth Schemas
+    # =========================================================================
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+
+    RegisterRequest:
+      type: object
+      required: [email, password, name]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        company:
+          type: string
+          maxLength: 200
+        armor_customer_id:
+          type: string
+          description: Armor.com customer ID for linking accounts
+
+    RefreshRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token:
+          type: string
+
+    AuthResponse:
+      type: object
+      required: [access_token, refresh_token, expires_in, token_type, user]
+      properties:
+        access_token:
+          type: string
+          description: JWT access token (15 min expiry)
+        refresh_token:
+          type: string
+          description: Refresh token (7 day expiry)
+        expires_in:
+          type: integer
+          description: Access token expiry in seconds
+          example: 900
+        token_type:
+          type: string
+          enum: [Bearer]
+        user:
+          $ref: '#/components/schemas/User'
+
+    # =========================================================================
+    # Article Schemas
+    # =========================================================================
+    Article:
+      type: object
+      required: [id, title, slug, summary, content, category, severity, published_at, source]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 500
+        slug:
+          type: string
+          maxLength: 200
+        summary:
+          type: string
+          maxLength: 1000
+          description: AI-generated summary
+        content:
+          type: string
+          description: Full article content (HTML)
+        category:
+          $ref: '#/components/schemas/CategorySummary'
+        severity:
+          type: string
+          enum: [critical, high, medium, low, informational]
+        tags:
+          type: array
+          items:
+            type: string
+          maxItems: 20
+        source:
+          $ref: '#/components/schemas/Source'
+        ai_analysis:
+          $ref: '#/components/schemas/AIAnalysis'
+        related_cves:
+          type: array
+          items:
+            type: string
+            pattern: '^CVE-\d{4}-\d{4,}$'
+        mitre_attack_ids:
+          type: array
+          items:
+            type: string
+            pattern: '^T\d{4}(\.\d{3})?$'
+        affected_vendors:
+          type: array
+          items:
+            type: string
+        armor_relevance:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Relevance score for armor.com (0-1)
+        armor_cta:
+          $ref: '#/components/schemas/ArmorCTA'
+        reading_time_minutes:
+          type: integer
+          minimum: 1
+        is_bookmarked:
+          type: boolean
+          description: Whether current user has bookmarked this article
+        published_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ArticleSummary:
+      type: object
+      required: [id, title, slug, summary, category, severity, published_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        slug:
+          type: string
+        summary:
+          type: string
+        category:
+          $ref: '#/components/schemas/CategorySummary'
+        severity:
+          type: string
+          enum: [critical, high, medium, low, informational]
+        tags:
+          type: array
+          items:
+            type: string
+        source_name:
+          type: string
+        reading_time_minutes:
+          type: integer
+        is_bookmarked:
+          type: boolean
+        published_at:
+          type: string
+          format: date-time
+
+    ArticleListResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArticleSummary'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    ArticleResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Article'
+
+    ArmorCTA:
+      type: object
+      description: Call-to-action linking to Armor.com services
+      properties:
+        type:
+          type: string
+          enum: [mdr, vulnerability-management, threat-intelligence, compliance, cloud-security, incident-response]
+        title:
+          type: string
+          example: "Protect Against This Threat"
+        description:
+          type: string
+          example: "Armor's MDR service provides 24/7 monitoring for threats like this."
+        url:
+          type: string
+          format: uri
+          example: "https://armor.com/mdr"
+
+    AIAnalysis:
+      type: object
+      properties:
+        threat_type:
+          type: string
+          enum: [malware, ransomware, phishing, vulnerability, data-breach, apt, ddos, insider-threat, supply-chain, other]
+        attack_vector:
+          type: string
+        impact_assessment:
+          type: string
+        recommended_actions:
+          type: array
+          items:
+            type: string
+        threat_actors:
+          type: array
+          items:
+            type: string
+        iocs:
+          type: array
+          items:
+            $ref: '#/components/schemas/IOC'
+        confidence_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+
+    IOC:
+      type: object
+      description: Indicator of Compromise
+      properties:
+        type:
+          type: string
+          enum: [ip, domain, hash-md5, hash-sha1, hash-sha256, url, email, file-name]
+        value:
+          type: string
+        context:
+          type: string
+
+    # =========================================================================
+    # Category Schemas
+    # =========================================================================
+    Category:
+      type: object
+      required: [id, name, slug, description, article_count]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+          enum: [data-breaches, vulnerabilities, threat-intelligence, ransomware, compliance, cloud-security, identity-access, incident-reports]
+        description:
+          type: string
+        icon:
+          type: string
+          description: Icon identifier for UI
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          description: Hex color code
+        article_count:
+          type: integer
+          minimum: 0
+        severity_breakdown:
+          type: object
+          additionalProperties:
+            type: integer
+
+    CategorySummary:
+      type: object
+      required: [id, name, slug]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        color:
+          type: string
+
+    CategoryListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+
+    CategoryResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Category'
+
+    # =========================================================================
+    # Source Schemas
+    # =========================================================================
+    Source:
+      type: object
+      required: [id, name, url]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        url:
+          type: string
+          format: uri
+        logo_url:
+          type: string
+          format: uri
+        reliability_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        source_type:
+          type: string
+          enum: [government, vendor, research, news, blog]
+        last_scraped_at:
+          type: string
+          format: date-time
+
+    SourceListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Source'
+
+    SourceResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Source'
+
+    # =========================================================================
+    # User Schemas
+    # =========================================================================
+    User:
+      type: object
+      required: [id, email, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        company:
+          type: string
+        avatar_url:
+          type: string
+          format: uri
+        armor_customer_id:
+          type: string
+        role:
+          type: string
+          enum: [user, admin]
+        email_verified:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    UserResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/User'
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        company:
+          type: string
+          maxLength: 200
+
+    UserPreferences:
+      type: object
+      properties:
+        email_notifications:
+          type: boolean
+          default: true
+        notification_frequency:
+          type: string
+          enum: [realtime, daily, weekly]
+          default: daily
+        preferred_categories:
+          type: array
+          items:
+            type: string
+        severity_threshold:
+          type: string
+          enum: [critical, high, medium, low, informational]
+          default: medium
+        timezone:
+          type: string
+          default: "UTC"
+        digest_time:
+          type: string
+          pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]$'
+          description: Time to send daily digest (HH:MM in user's timezone)
+          default: "09:00"
+
+    UserPreferencesResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/UserPreferences'
+
+    UpdatePreferencesRequest:
+      $ref: '#/components/schemas/UserPreferences'
+
+    # =========================================================================
+    # Alert Schemas
+    # =========================================================================
+    Alert:
+      type: object
+      required: [id, type, enabled, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: User-defined name for the alert
+        type:
+          type: string
+          enum: [category, keyword, vendor, cve, severity, threat-actor]
+        value:
+          type: string
+          description: The value to match (category slug, keyword, vendor name, etc.)
+        enabled:
+          type: boolean
+        delivery_method:
+          type: string
+          enum: [email, websocket, both]
+          default: both
+        match_count:
+          type: integer
+          description: Number of articles matched by this alert
+        last_triggered_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    AlertListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alert'
+
+    AlertResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Alert'
+
+    CreateAlertRequest:
+      type: object
+      required: [type, value]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        type:
+          type: string
+          enum: [category, keyword, vendor, cve, severity, threat-actor]
+        value:
+          type: string
+          maxLength: 200
+        delivery_method:
+          type: string
+          enum: [email, websocket, both]
+          default: both
+
+    UpdateAlertRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        enabled:
+          type: boolean
+        delivery_method:
+          type: string
+          enum: [email, websocket, both]
+
+    # =========================================================================
+    # Search Schemas
+    # =========================================================================
+    SearchRequest:
+      type: object
+      required: [query]
+      properties:
+        query:
+          type: string
+          minLength: 3
+          maxLength: 500
+        filters:
+          type: object
+          properties:
+            categories:
+              type: array
+              items:
+                type: string
+            severities:
+              type: array
+              items:
+                type: string
+            date_range:
+              type: object
+              properties:
+                from:
+                  type: string
+                  format: date-time
+                to:
+                  type: string
+                  format: date-time
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+        use_semantic:
+          type: boolean
+          default: true
+          description: Use semantic (vector) search in addition to keyword search
+
+    SearchResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/ArticleSummary'
+              - type: object
+                properties:
+                  relevance_score:
+                    type: number
+                    format: float
+        meta:
+          type: object
+          properties:
+            query:
+              type: string
+            total_results:
+              type: integer
+            search_time_ms:
+              type: integer
+
+    # =========================================================================
+    # Stats Schemas
+    # =========================================================================
+    DashboardStatsResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          properties:
+            total_articles:
+              type: integer
+            articles_today:
+              type: integer
+            articles_this_week:
+              type: integer
+            critical_alerts_today:
+              type: integer
+            severity_breakdown:
+              type: object
+              additionalProperties:
+                type: integer
+            category_breakdown:
+              type: object
+              additionalProperties:
+                type: integer
+            recent_critical:
+              type: array
+              items:
+                $ref: '#/components/schemas/ArticleSummary'
+              maxItems: 5
+
+    TrendingStatsResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          properties:
+            trending_topics:
+              type: array
+              items:
+                type: object
+                properties:
+                  topic:
+                    type: string
+                  count:
+                    type: integer
+                  trend:
+                    type: string
+                    enum: [up, down, stable]
+            trending_vendors:
+              type: array
+              items:
+                type: object
+                properties:
+                  vendor:
+                    type: string
+                  count:
+                    type: integer
+            trending_cves:
+              type: array
+              items:
+                type: object
+                properties:
+                  cve_id:
+                    type: string
+                  title:
+                    type: string
+                  severity:
+                    type: string
+
+    # =========================================================================
+    # Webhook Schemas
+    # =========================================================================
+    N8nWebhookPayload:
+      type: object
+      required: [event_type, data]
+      properties:
+        event_type:
+          type: string
+          enum: [article.created, article.updated, article.deleted, bulk.import, enrichment.complete]
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/ArticleWebhookData'
+            - $ref: '#/components/schemas/BulkImportData'
+            - $ref: '#/components/schemas/EnrichmentCompleteData'
+        metadata:
+          type: object
+          properties:
+            workflow_id:
+              type: string
+            execution_id:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+
+    ArticleWebhookData:
+      type: object
+      required: [title, content, category_slug, source_url]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Required for updates/deletes
+        title:
+          type: string
+        content:
+          type: string
+        summary:
+          type: string
+        category_slug:
+          type: string
+        severity:
+          type: string
+          enum: [critical, high, medium, low, informational]
+        tags:
+          type: array
+          items:
+            type: string
+        source_url:
+          type: string
+          format: uri
+        source_name:
+          type: string
+        published_at:
+          type: string
+          format: date-time
+        cves:
+          type: array
+          items:
+            type: string
+        vendors:
+          type: array
+          items:
+            type: string
+        skip_enrichment:
+          type: boolean
+          default: false
+          description: Skip AI enrichment for this article
+
+    BulkImportData:
+      type: object
+      required: [articles]
+      properties:
+        articles:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArticleWebhookData'
+          maxItems: 100
+
+    EnrichmentCompleteData:
+      type: object
+      required: [article_id, enrichment]
+      properties:
+        article_id:
+          type: string
+          format: uuid
+        enrichment:
+          $ref: '#/components/schemas/AIAnalysis'
+
+    WebhookResponse:
+      type: object
+      required: [accepted, job_id]
+      properties:
+        accepted:
+          type: boolean
+        job_id:
+          type: string
+          format: uuid
+        message:
+          type: string
+        articles_queued:
+          type: integer
+
+    WorkflowTriggerResponse:
+      type: object
+      required: [triggered, workflow]
+      properties:
+        triggered:
+          type: boolean
+        workflow:
+          type: string
+        execution_id:
+          type: string
+        message:
+          type: string
+
+    # =========================================================================
+    # Common Schemas
+    # =========================================================================
+    PaginationMeta:
+      type: object
+      required: [page, limit, total, total_pages]
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+        total_pages:
+          type: integer
+          minimum: 0
+        has_next:
+          type: boolean
+        has_prev:
+          type: boolean
+
+    BookmarkResponse:
+      type: object
+      required: [bookmarked, article_id]
+      properties:
+        bookmarked:
+          type: boolean
+        article_id:
+          type: string
+          format: uuid
+        bookmarked_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code
+              enum:
+                - INVALID_REQUEST
+                - VALIDATION_ERROR
+                - UNAUTHORIZED
+                - FORBIDDEN
+                - NOT_FOUND
+                - CONFLICT
+                - RATE_LIMITED
+                - INTERNAL_ERROR
+                - SERVICE_UNAVAILABLE
+            message:
+              type: string
+              description: Human-readable error message
+            details:
+              type: object
+              description: Additional error details
+              additionalProperties: true
+            field:
+              type: string
+              description: Field that caused validation error
+            request_id:
+              type: string
+              format: uuid
+              description: Request ID for support
