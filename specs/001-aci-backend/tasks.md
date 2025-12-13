@@ -641,6 +641,49 @@ Task: "Create internal/api/handlers/article_handler.go"
 
 ---
 
+## Phase 17: Frontend UI Library Setup
+
+**Purpose**: Install and configure UI component libraries for aci-frontend
+
+**Reference**: `aci-frontend/` directory
+
+### shadcn/ui Setup (Primary Component Library)
+
+- [ ] T230 [FE] Initialize shadcn/ui in aci-frontend (npx shadcn@latest init)
+- [ ] T231 [FE] Configure Tailwind CSS for shadcn/ui components
+- [ ] T232 [FE] Install core shadcn components (Button, Card, Input, Dialog, etc.)
+- [ ] T233 [FE] Create component aliases and path configuration
+- [ ] T234 [FE] Set up theme configuration (dark/light mode support)
+
+### Reviz Setup (Data Visualization)
+
+- [ ] T235 [FE] Install Reviz library for React charts
+- [ ] T236 [FE] Create chart component wrappers (LineChart, BarChart, PieChart)
+- [ ] T237 [FE] Build dashboard visualization components
+- [ ] T238 [FE] Add severity distribution chart component
+- [ ] T239 [FE] Add category breakdown chart component
+- [ ] T240 [FE] Add time-series trend chart component
+
+### Ant Design Setup (Fallback Components)
+
+- [ ] T241 [FE] Install Ant Design for complex components
+- [ ] T242 [FE] Configure Ant Design theme to match shadcn styling
+- [ ] T243 [FE] Add Table component for article lists (with sorting/filtering)
+- [ ] T244 [FE] Add DatePicker for date range filtering
+- [ ] T245 [FE] Add Select components for multi-select filters
+
+### Component Integration
+
+- [ ] T246 [FE] Refactor existing components to use shadcn/ui
+- [ ] T247 [FE] Replace custom buttons/inputs with shadcn components
+- [ ] T248 [FE] Add loading skeletons using shadcn Skeleton
+- [ ] T249 [FE] Implement toast notifications using shadcn Toast
+- [ ] T250 [FE] Create consistent form validation with shadcn Form
+
+**Checkpoint**: Frontend UI libraries installed and integrated
+
+---
+
 ## Progress Summary (Updated 2024-12-13)
 
 ### Completion Status
@@ -658,7 +701,9 @@ Task: "Create internal/api/handlers/article_handler.go"
 | Phase 10 (US7 Bookmarks) | 11 | 7 | 4 | 100% impl, tests pending |
 | Phase 11 (US8 Admin) | 11 | 5 | 6 | 80% impl |
 | Phase 14 (Critical Blockers) | 12 | 11 | 1 | **RESOLVED** |
-| **TOTAL** | **165** | **108** | **57** | **65% complete** |
+| Phase 16 (Frontend Integration) | 9 | 0 | 9 | Not started |
+| Phase 17 (FE UI Libraries) | 21 | 0 | 21 | Not started |
+| **TOTAL** | **186** | **108** | **78** | **58% complete** |
 
 ### Critical Blockers - RESOLVED 2024-12-13
 
