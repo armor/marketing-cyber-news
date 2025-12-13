@@ -217,6 +217,17 @@ aci-backend/
 
 **Structure Decision**: Web application (backend-only) following Go Clean Architecture. Frontend is separate concern (React, not in scope for this plan).
 
+### Frontend Stack (Reference - separate project)
+
+The `aci-frontend/` directory contains the frontend application with:
+- **Framework**: React 19.2 (NOT Next.js - pure React SPA)
+- **Build Tool**: Vite 7.2
+- **Language**: TypeScript 5.9
+- **Styling**: Tailwind CSS 4.1
+- **Testing**: Vitest + React Testing Library
+- **State**: React Context (no external state library)
+- **Routing**: react-router-dom 7.x
+
 ## Complexity Tracking
 
 > **No constitution violations identified. Standard Clean Architecture pattern justified.**
