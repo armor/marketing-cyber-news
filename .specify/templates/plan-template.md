@@ -43,6 +43,27 @@
 | **PM-2** | Mid-Implementation | [ ] Pending | | |
 | **PM-3** | Pre-Release | [ ] Pending | | |
 
+## Post-Wave Review (MANDATORY)
+
+*Per Constitution Principle XVII - Post-Wave Review & Quality Assurance (NON-NEGOTIABLE)*
+
+**After EVERY wave completion, ALL of the following agents MUST review:**
+
+| Reviewer | Agent | Focus Area | Required |
+|----------|-------|------------|----------|
+| Product Manager | `product-manager-agent` | Business alignment, user value, scope compliance | YES |
+| UI Designer | `ui-ux-designer` | Visual design, layout, component consistency | YES |
+| UX Designer | `ux-designer` | Usability, user flows, accessibility | YES |
+| Visualization | `reviz-visualization` | Charts, graphs, data visualization quality | YES (if applicable) |
+| Code Reviewer | `code-reviewer` | Code quality, patterns, maintainability | YES |
+| Security Reviewer | `security-reviewer` | Security vulnerabilities, OWASP compliance | YES |
+
+**Requirements:**
+- All 6 reviewers must complete review before wave is marked complete
+- All task ratings must be ≥ 5 for wave to pass
+- Checklist sign-offs required per spec requirements
+- Wave summary report created in `specs/[feature]/wave-reports/wave-N-report.md`
+
 **PM-1 Deliverables** (Required before Phase 2):
 - [ ] Approved spec with prioritized backlog
 - [ ] Success metrics defined
