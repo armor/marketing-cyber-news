@@ -228,6 +228,11 @@ The `aci-frontend/` directory contains the frontend application with:
 - **State**: React Context (no external state library)
 - **Routing**: react-router-dom 7.x
 
+**UI Component Libraries** (to be integrated):
+- **shadcn/ui**: Primary component library (built on Radix UI + Tailwind)
+- **Reviz**: Data visualization library for charts/dashboards
+- **Ant Design**: Fallback for complex components not covered by shadcn
+
 ## Complexity Tracking
 
 > **No constitution violations identified. Standard Clean Architecture pattern justified.**
