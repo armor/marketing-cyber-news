@@ -1,26 +1,27 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 2.2.0 → 2.3.0 (MINOR: Added Product Manager Ownership principle)
+Version Change: 2.3.0 → 2.4.0 (MINOR: Added Post-Wave Review & Quality Assurance principle)
 
 Modified Principles:
-- Principle VI (Mandatory Review Process) - Added PM review requirement
+- Principle XI (Parallel-First Orchestration) - Added reference to post-wave reviews
 
 Added Sections:
-- Principle XVI: Product Manager Ownership (NON-NEGOTIABLE)
-- Gate 9: Product Manager Review
+- Principle XVII: Post-Wave Review & Quality Assurance (NON-NEGOTIABLE)
+- Gate 10: Post-Wave Validation
 
 Removed Sections: None
 
 Templates Requiring Updates:
-- .specify/templates/plan-template.md - ✅ Added PM Review Gates section with PM-1, PM-2, PM-3 tracking
-- .specify/templates/spec-template.md - ✅ Added PM Acceptance Criteria section with gate checklists
-- .specify/templates/tasks-template.md - ✅ Added PM-1 gate in Phase 2, PM-2 gate phase, PM-3 gate phase
+- .specify/templates/plan-template.md - ⚠ Add Post-Wave Review section
+- .specify/templates/spec-template.md - ✅ No changes needed
+- .specify/templates/tasks-template.md - ⚠ Add task completion tracking with ratings
 
 Follow-up TODOs:
 - [ ] Update tasks.md paths from signoz/frontend/ to platform/ (per Principle XV)
 - [ ] Create libs/monitoring/ui-charts/ structure in platform submodule
 - [ ] Create libs/monitoring/ui-flows/ structure in platform submodule
+- [ ] Add post-wave review tracking template to tasks-template.md
 ==================
 -->
 
@@ -298,6 +299,8 @@ Independent tasks MUST be executed in parallel when possible:
   dependency-aware execution.
 - **Team Distribution**: Plans MUST include guidance for distributing waves
   across multiple developers for maximum parallelization.
+- **Post-Wave Reviews (MANDATORY)**: After each wave completes, mandatory
+  reviews MUST occur per Principle XVII before proceeding to the next wave.
 
 **Rationale**: Parallel execution maximizes throughput and minimizes wall-clock
 time for complex multi-domain tasks. Phases and waves provide clear structure
@@ -514,6 +517,119 @@ objectives, and quality standards. PM gates catch scope creep, missing requireme
 and integration gaps before they become costly post-release issues. No feature ships
 without explicit PM approval at each gate.
 
+### XVII. Post-Wave Review & Quality Assurance (NON-NEGOTIABLE)
+
+After each wave completes, mandatory multi-agent review MUST occur before proceeding:
+
+- **Mandatory Post-Wave Reviewers (CRITICAL)**: After EVERY wave completion, ALL of
+  the following agents MUST review the implementation:
+
+  | Reviewer | Agent | Focus Area | Required |
+  |----------|-------|------------|----------|
+  | Product Manager | `product-manager-agent` | Business alignment, user value, scope compliance | YES |
+  | UI Designer | `ui-ux-designer` | Visual design, layout, component consistency | YES |
+  | UX Designer | `ux-designer` | Usability, user flows, accessibility | YES |
+  | Visualization | `reviz-visualization` | Charts, graphs, data visualization quality | YES (if applicable) |
+  | Code Reviewer | `code-reviewer` | Code quality, patterns, maintainability | YES |
+  | Security Reviewer | `security-reviewer` | Security vulnerabilities, OWASP compliance | YES |
+
+- **Task Completion Tracking (CRITICAL)**: Each task MUST be marked with:
+
+  | Field | Description | Example |
+  |-------|-------------|---------|
+  | **Status** | DONE or FAILED_REVIEW | DONE |
+  | **Reviewer** | Agent that reviewed | `code-reviewer` |
+  | **Rating** | 1-10 quality score | 8 |
+  | **Notes** | Review findings | "Clean implementation, minor refactor suggested" |
+
+  ```markdown
+  ## Task Completion Format
+  - [x] T001: Implement login form
+    - Status: DONE
+    - Reviewed By: code-reviewer (8/10), security-reviewer (9/10), ux-designer (7/10)
+    - Notes: Minor accessibility improvements needed for screen readers
+
+  - [ ] T002: Add password reset
+    - Status: FAILED_REVIEW
+    - Reviewed By: security-reviewer (4/10)
+    - Notes: Missing rate limiting, CSRF protection incomplete
+  ```
+
+- **Review Rating Scale**:
+
+  | Rating | Quality Level | Action Required |
+  |--------|---------------|-----------------|
+  | 9-10 | Excellent | Approve, no changes needed |
+  | 7-8 | Good | Approve with minor suggestions |
+  | 5-6 | Acceptable | Approve with required improvements tracked |
+  | 3-4 | Below Standard | Requires revision before approval |
+  | 1-2 | Unacceptable | Reject, major rework needed |
+
+- **Checklist Sign-off (CRITICAL)**: All reviews MUST include checklist completion:
+  - Feature verification checklist MUST be completed
+  - Security checklist MUST be completed
+  - Accessibility checklist MUST be completed
+  - Performance checklist MUST be completed (if applicable)
+  - Checklists stored in `specs/[feature]/checklists/` directory
+
+- **Post-Wave Documentation (MANDATORY)**: After each wave, documentation MUST be:
+  - **Created**: New documentation for new features/components
+  - **Updated**: Existing documentation modified to reflect changes
+  - **Completed**: Any draft documentation finalized
+
+  Required documentation updates per wave:
+  - API documentation (if endpoints added/changed)
+  - Component documentation (if UI components added/changed)
+  - Architecture documentation (if structural changes made)
+  - User guides (if user-facing behavior changed)
+  - Test documentation (test coverage reports, test plans)
+
+- **Wave Sign-off Criteria**: A wave is NOT complete until:
+  1. All tasks marked DONE with ratings ≥ 5 from ALL mandatory reviewers
+  2. All FAILED_REVIEW tasks either fixed or moved to next wave with justification
+  3. All checklists completed and signed off
+  4. All documentation created/updated/completed
+  5. Wave summary report generated in `specs/[feature]/wave-reports/`
+
+- **Wave Summary Report Format**:
+  ```markdown
+  # Wave X.Y Summary Report
+  **Date**: YYYY-MM-DD
+  **Feature**: [feature-name]
+
+  ## Tasks Completed
+  | Task | Status | PM | UI | UX | Viz | Code | Security | Avg |
+  |------|--------|----|----|----|----|------|----------|-----|
+  | T001 | DONE   | 8  | 9  | 7  | -  | 8    | 9        | 8.2 |
+
+  ## Documentation Updates
+  - [x] API docs updated
+  - [x] Component docs created
+  - [ ] User guide pending (deferred to Wave X.Z)
+
+  ## Checklist Completion
+  - [x] Feature checklist: 45/45 items
+  - [x] Security checklist: 30/30 items
+  - [x] Accessibility checklist: 25/25 items
+
+  ## Issues Identified
+  - Issue #1: [description] → Tracked as T0XX
+  - Issue #2: [description] → Fixed in this wave
+
+  ## Sign-offs
+  - PM: @reviewer-name ✓
+  - UI: @reviewer-name ✓
+  - UX: @reviewer-name ✓
+  - Code: @reviewer-name ✓
+  - Security: @reviewer-name ✓
+  ```
+
+**Rationale**: Post-wave reviews ensure quality gates are enforced continuously throughout
+development, not just at major milestones. Multi-agent review catches issues from multiple
+perspectives (code quality, security, UX, business alignment). Numeric ratings provide
+objective quality tracking. Documentation requirements prevent knowledge gaps from
+accumulating. This approach shifts quality left and reduces costly late-stage discoveries.
+
 ## Security Requirements
 
 This section codifies security standards that apply across all components:
@@ -604,6 +720,15 @@ All changes to this repository MUST pass the following gates:
 - [ ] Product verification checklist completed (60+ items)
 - [ ] PM sign-off obtained for production deployment
 
+### Gate 10: Post-Wave Validation
+
+- [ ] All mandatory reviewers have reviewed (PM, UI, UX, Code, Security)
+- [ ] All tasks have ratings ≥ 5 from all reviewers
+- [ ] All checklists completed and signed off
+- [ ] Documentation created/updated/completed for wave
+- [ ] Wave summary report generated
+- [ ] No FAILED_REVIEW tasks remaining (or justified deferral)
+
 ## Governance
 
 ### Authority
@@ -666,4 +791,4 @@ may be referenced but are not universally applicable:
 - **OpenTelemetry Native**: OTEL-only instrumentation, no vendor lock-in
 - **Observability Native (Self-Monitoring)**: Dogfooding own instrumentation
 
-**Version**: 2.3.0 | **Ratified**: 2025-12-10 | **Last Amended**: 2025-12-11
+**Version**: 2.4.0 | **Ratified**: 2025-12-10 | **Last Amended**: 2025-12-13
