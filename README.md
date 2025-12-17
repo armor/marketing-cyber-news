@@ -419,7 +419,7 @@ Found a bug? Please open an issue with:
 
 ## License
 
-This project is licensed under the MIT License - see LICENSE file for details.
+This software is proprietary and confidential. Copyright (c) 2025 Armor, Inc. All rights reserved. See [LICENSE](./LICENSE) for details.
 
 ## Support
 
