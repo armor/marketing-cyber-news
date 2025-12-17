@@ -18,6 +18,34 @@ description: "Task list template for feature implementation"
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
 - Include exact file paths in descriptions
 
+## Task Completion Tracking (MANDATORY)
+
+*Per Constitution Principle XVII - Post-Wave Review & Quality Assurance (NON-NEGOTIABLE)*
+
+**Each completed task MUST include:**
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| **Status** | DONE or FAILED_REVIEW | DONE |
+| **Reviewer** | Agent that reviewed | `code-reviewer` |
+| **Rating** | 1-10 quality score | 8 |
+| **Notes** | Review findings | "Clean implementation, minor refactor suggested" |
+
+**Rating Scale:**
+- 9-10: Excellent - Exemplary implementation
+- 7-8: Good - Meets all requirements with minor suggestions
+- 5-6: Acceptable - Meets minimum requirements, improvements needed
+- 3-4: Below Standard - Significant issues requiring rework
+- 1-2: Unacceptable - Major defects, must be redone
+
+**Task Example with Completion:**
+```
+- [x] T001 Create project structure per implementation plan
+  - Status: DONE | Reviewer: code-reviewer | Rating: 8 | Notes: "Well organized, follows conventions"
+```
+
+**CRITICAL**: Wave is NOT complete until ALL tasks have ratings ≥ 5
+
 ## Path Conventions
 
 - **Single project**: `src/`, `tests/` at repository root

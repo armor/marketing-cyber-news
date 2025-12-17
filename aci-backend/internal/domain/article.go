@@ -109,6 +109,13 @@ type Article struct {
 	CompetitorScore       float64 `json:"-"`
 	IsCompetitorFavorable bool    `json:"-"`
 
+	// Enhanced Threat Intelligence (loaded from separate tables)
+	ExternalReferences []ExternalReference `json:"external_references,omitempty"`
+	Industries         []Industry          `json:"industries,omitempty"`
+	Recommendations    []Recommendation    `json:"recommendations,omitempty"`
+	HasDeepDive        bool                `json:"has_deep_dive"`
+	DeepDive           *DeepDive           `json:"deep_dive,omitempty"` // Only populated if user has access
+
 	// Metadata
 	ReadingTimeMinutes int        `json:"reading_time_minutes"`
 	ViewCount          int        `json:"view_count"`
@@ -231,17 +238,19 @@ func (a *Article) HasVendor(vendor string) bool {
 
 // ArticleFilter represents query parameters for filtering articles
 type ArticleFilter struct {
-	CategoryID  *uuid.UUID
-	SourceID    *uuid.UUID
-	Severity    *Severity
-	Tags        []string
-	CVE         *string
-	Vendor      *string
-	DateFrom    *time.Time
-	DateTo      *time.Time
-	SearchQuery *string
-	Page        int
-	PageSize    int
+	CategoryID   *uuid.UUID
+	SourceID     *uuid.UUID
+	Severity     *Severity
+	Tags         []string
+	CVE          *string
+	Vendor       *string
+	Industry     *string
+	HasDeepDive  *bool
+	DateFrom     *time.Time
+	DateTo       *time.Time
+	SearchQuery  *string
+	Page         int
+	PageSize     int
 }
 
 // NewArticleFilter returns a filter with default values

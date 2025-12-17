@@ -6,21 +6,73 @@ interface ArticleDetailProps {
 }
 
 export function ArticleDetail({ article, onClose }: ArticleDetailProps) {
-  // Placeholder - will be implemented by another agent
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-start mb-4">
-            <h2 className="text-2xl font-bold text-white">{article.title}</h2>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 50,
+        padding: 'var(--spacing-4)',
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: 'var(--color-bg-elevated)',
+          borderRadius: 'var(--border-radius-lg)',
+          maxWidth: '64rem',
+          width: '100%',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          boxShadow: 'var(--shadow-card)',
+        }}
+      >
+        <div style={{ padding: 'var(--spacing-6)' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              marginBottom: 'var(--spacing-4)',
+            }}
+          >
+            <h2
+              style={{
+                fontSize: 'var(--typography-font-size-2xl)',
+                fontWeight: 'var(--typography-font-weight-bold)',
+                color: 'var(--color-text-primary)',
+              }}
+            >
+              {article.title}
+            </h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-white"
+              style={{
+                color: 'var(--color-text-muted)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 'var(--typography-font-size-xl)',
+                padding: 'var(--spacing-2)',
+                transition: `color var(--motion-duration-fast) var(--motion-easing-default)`,
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-muted)'}
             >
               ✕
             </button>
           </div>
-          <p className="text-gray-300">{article.content}</p>
+          <p
+            style={{
+              color: 'var(--color-text-primary)',
+              lineHeight: 'var(--typography-line-height-relaxed)',
+            }}
+          >
+            {article.content}
+          </p>
         </div>
       </div>
     </div>

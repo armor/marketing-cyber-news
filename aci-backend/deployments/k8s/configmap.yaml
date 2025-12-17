@@ -20,12 +20,18 @@ data:
   JWT_ACCESS_TOKEN_EXPIRY: "15m"
   # Refresh token: Long-lived for token renewal (7 days)
   JWT_REFRESH_TOKEN_EXPIRY: "168h"
+  # JWT key file paths (mounted from secret)
+  JWT_PRIVATE_KEY_PATH: "/app/jwt/private.pem"
+  JWT_PUBLIC_KEY_PATH: "/app/jwt/public.pem"
 
   # Database connection settings
   # PostgreSQL service within the cluster
   DATABASE_HOST: "postgres.aci-backend.svc.cluster.local"
   DATABASE_PORT: "5432"
   DATABASE_NAME: "aci"
+  DATABASE_USER: "aci_user"
+  # Full DATABASE_URL for backend
+  DATABASE_URL: "postgresql://aci_user:aci_password_dev_only@postgres.aci-backend.svc.cluster.local:5432/aci?sslmode=disable"
   # Maximum number of open connections to the database
   DATABASE_MAX_CONNECTIONS: "25"
   # Maximum number of idle connections in the pool

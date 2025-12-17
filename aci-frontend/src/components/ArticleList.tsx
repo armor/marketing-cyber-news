@@ -7,17 +7,31 @@ interface ArticleListProps {
 }
 
 export function ArticleList({ articles, onArticleClick }: ArticleListProps) {
-  // Placeholder - will be enhanced by another agent
   if (articles.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-400">
+      <div
+        style={{
+          textAlign: 'center',
+          paddingTop: 'var(--spacing-12)',
+          paddingBottom: 'var(--spacing-12)',
+          color: 'var(--color-text-muted)',
+          fontSize: 'var(--typography-font-size-base)',
+        }}
+      >
         No articles found
       </div>
     );
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div
+      style={{
+        display: 'grid',
+        gap: 'var(--spacing-gap-md)',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+      }}
+      className="md:grid-cols-2 lg:grid-cols-3"
+    >
       {articles.map((article) => (
         <ArticleCard
           key={article.id}

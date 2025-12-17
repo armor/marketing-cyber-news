@@ -1,4 +1,4 @@
-import { apiClient } from './api';
+import { apiClient } from '@/services/api/client';
 import type { Category, ApiResponse } from '../types';
 
 export interface CategoryListResponse {

@@ -1,0 +1,236 @@
+{
+  "timestamp": "2025-12-14T20:56:32.839782",
+  "base_url": "http://localhost:5173",
+  "pages": [
+    {
+      "description": "Landing Page",
+      "url": "http://localhost:5173/dashboard",
+      "title": "Nexus by Armor | Proactive Cyber Defense",
+      "findings": [
+        "Found 2 header element(s)",
+        "Found 1 sidebar element(s)",
+        "Found 1 main content element(s)",
+        "Found 1 footer element(s)",
+        "Found 1 error message element(s)",
+        "Found 5 buttons element(s)",
+        "Found 5 links element(s)"
+      ],
+      "issues": [
+        "Empty state / No data detected"
+      ],
+      "elements": {
+        "header": 2,
+        "sidebar": 1,
+        "main_content": 1,
+        "footer": 1,
+        "loading_spinner": 0,
+        "error_message": 1,
+        "empty_state": 0,
+        "article_cards": 0,
+        "data_table": 0,
+        "charts": 0,
+        "filters": 0,
+        "pagination": 0,
+        "buttons": 5,
+        "links": 5
+      },
+      "text_length": 153
+    },
+    {
+      "description": "Login Page",
+      "url": "http://localhost:5173/login",
+      "title": "Nexus by Armor | Proactive Cyber Defense",
+      "findings": [
+        "Found 1 buttons element(s)",
+        "Found 1 links element(s)",
+        "Login/Sign in form detected"
+      ],
+      "issues": [],
+      "elements": {
+        "header": 0,
+        "sidebar": 0,
+        "main_content": 0,
+        "footer": 0,
+        "loading_spinner": 0,
+        "error_message": 0,
+        "empty_state": 0,
+        "article_cards": 0,
+        "data_table": 0,
+        "charts": 0,
+        "filters": 0,
+        "pagination": 0,
+        "buttons": 1,
+        "links": 1
+      },
+      "text_length": 104
+    },
+    {
+      "description": "After Login Attempt",
+      "url": "http://localhost:5173/login",
+      "title": "Nexus by Armor | Proactive Cyber Defense",
+      "findings": [
+        "Found 1 buttons element(s)",
+        "Found 1 links element(s)",
+        "Login/Sign in form detected"
+      ],
+      "issues": [],
+      "elements": {
+        "header": 0,
+        "sidebar": 0,
+        "main_content": 0,
+        "footer": 0,
+        "loading_spinner": 0,
+        "error_message": 0,
+        "empty_state": 0,
+        "article_cards": 0,
+        "data_table": 0,
+        "charts": 0,
+        "filters": 0,
+        "pagination": 0,
+        "buttons": 1,
+        "links": 1
+      },
+      "text_length": 120
+    },
+    {
+      "description": "Dashboard Page",
+      "url": "http://localhost:5173/dashboard",
+      "title": "Nexus by Armor | Proactive Cyber Defense",
+      "findings": [
+        "Found 2 header element(s)",
+        "Found 1 sidebar element(s)",
+        "Found 1 main content element(s)",
+        "Found 1 footer element(s)",
+        "Found 1 error message element(s)",
+        "Found 5 buttons element(s)",
+        "Found 5 links element(s)"
+      ],
+      "issues": [
+        "Empty state / No data detected"
+      ],
+      "elements": {
+        "header": 2,
+        "sidebar": 1,
+        "main_content": 1,
+        "footer": 1,
+        "loading_spinner": 0,
+        "error_message": 1,
+        "empty_state": 0,
+        "article_cards": 0,
+        "data_table": 0,
+        "charts": 0,
+        "filters": 0,
+        "pagination": 0,
+        "buttons": 5,
+        "links": 5
+      },
+      "text_length": 153
+    },
+    {
+      "description": "Threats Page (/threats)",
+      "url": "http://localhost:5173/threats",
+      "title": "Nexus by Armor | Proactive Cyber Defense",
+      "findings": [
+        "Found 3 header element(s)",
+        "Found 2 sidebar element(s)",
+        "Found 1 main content element(s)",
+        "Found 1 footer element(s)",
+        "Found 6 filters element(s)",
+        "Found 11 buttons element(s)",
+        "Found 5 links element(s)"
+      ],
+      "issues": [],
+      "elements": {
+        "header": 3,
+        "sidebar": 2,
+        "main_content": 1,
+        "footer": 1,
+        "loading_spinner": 0,
+        "error_message": 0,
+        "empty_state": 0,
+        "article_cards": 0,
+        "data_table": 0,
+        "charts": 0,
+        "filters": 6,
+        "pagination": 0,
+        "buttons": 11,
+        "links": 5
+      },
+      "text_length": 273
+    },
+    {
+      "description": "Threats Page (/articles)",
+      "url": "http://localhost:5173/articles",
+      "title": "Nexus by Armor | Proactive Cyber Defense",
+      "findings": [
+        "Found 1 links element(s)"
+      ],
+      "issues": [],
+      "elements": {
+        "header": 0,
+        "sidebar": 0,
+        "main_content": 0,
+        "footer": 0,
+        "loading_spinner": 0,
+        "error_message": 0,
+        "empty_state": 0,
+        "article_cards": 0,
+        "data_table": 0,
+        "charts": 0,
+        "filters": 0,
+        "pagination": 0,
+        "buttons": 0,
+        "links": 1
+      },
+      "text_length": 36
+    },
+    {
+      "description": "Threats Page (/)",
+      "url": "http://localhost:5173/dashboard",
+      "title": "Nexus by Armor | Proactive Cyber Defense",
+      "findings": [
+        "Found 2 header element(s)",
+        "Found 1 sidebar element(s)",
+        "Found 1 main content element(s)",
+        "Found 1 footer element(s)",
+        "Found 1 error message element(s)",
+        "Found 5 buttons element(s)",
+        "Found 5 links element(s)"
+      ],
+      "issues": [
+        "Empty state / No data detected"
+      ],
+      "elements": {
+        "header": 2,
+        "sidebar": 1,
+        "main_content": 1,
+        "footer": 1,
+        "loading_spinner": 0,
+        "error_message": 1,
+        "empty_state": 0,
+        "article_cards": 0,
+        "data_table": 0,
+        "charts": 0,
+        "filters": 0,
+        "pagination": 0,
+        "buttons": 5,
+        "links": 5
+      },
+      "text_length": 153
+    }
+  ],
+  "summary": {
+    "working": [
+      "Login form present with email and password fields",
+      "API calls detected: 2",
+      "Navigation has 5 links"
+    ],
+    "issues": [
+      "Login may have failed - still on login page"
+    ],
+    "missing": [
+      "Dashboard charts not found",
+      "No data cards found on dashboard"
+    ]
+  }
+}

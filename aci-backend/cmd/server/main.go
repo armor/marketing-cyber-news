@@ -165,7 +165,8 @@ func main() {
 	alertHandler := handlers.NewAlertHandler(alertService)
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo, articleRepo)
 	userHandler := handlers.NewUserHandler(engagementService, userRepo)
-	webhookHandler := handlers.NewWebhookHandler(articleService, webhookLogRepo, cfg.N8N.WebhookSecret)
+	webhookHandler := handlers.NewWebhookHandler(articleService, enrichmentService, webhookLogRepo, cfg.N8N.WebhookSecret)
+	dashboardHandler := handlers.NewDashboardHandler(articleRepo)
 
 	// NOTE: AdminHandler blocked until AdminService interface issue is resolved
 	// adminHandler := handlers.NewAdminHandler(adminService)
@@ -177,13 +178,14 @@ func main() {
 	// Services available: notificationService, enrichmentService
 	// NOTE: adminHandler not available until UserRepository interface mismatch resolved
 	handlers := &api.Handlers{
-		Auth:     authHandler,
-		Article:  articleHandler,
-		Alert:    alertHandler,
-		Webhook:  webhookHandler,
-		User:     userHandler,
-		Admin:    nil, // TODO: Wire AdminHandler once UserRepository type mismatch is resolved
-		Category: categoryHandler,
+		Auth:      authHandler,
+		Article:   articleHandler,
+		Alert:     alertHandler,
+		Webhook:   webhookHandler,
+		User:      userHandler,
+		Admin:     nil, // TODO: Wire AdminHandler once UserRepository type mismatch is resolved
+		Category:  categoryHandler,
+		Dashboard: dashboardHandler,
 	}
 
 	serverConfig := api.Config{
@@ -198,7 +200,6 @@ func main() {
 
 	// Prevent unused variable warnings until services are wired
 	_ = notificationService
-	_ = enrichmentService
 
 	log.Info().Msg("ACI Backend server starting...")
 

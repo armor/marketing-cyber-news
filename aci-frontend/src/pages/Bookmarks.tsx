@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import type { JSX } from 'react';
+import React from 'react';
 import type { Article } from '../types';
 import { userService } from '../services/userService';
 import { ArticleCard } from '../components/ArticleCard';
 
 interface BookmarksProps {
-  onArticleClick: (article: Article) => void;
+  readonly onArticleClick?: (article: Article) => void;
 }
 
-export function Bookmarks({ onArticleClick }: BookmarksProps): JSX.Element {
+export function Bookmarks({ onArticleClick }: BookmarksProps): React.ReactElement {
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +68,7 @@ export function Bookmarks({ onArticleClick }: BookmarksProps): JSX.Element {
               <ArticleCard
                 key={article.id}
                 article={article}
-                onClick={() => onArticleClick(article)}
+                onClick={() => onArticleClick?.(article)}
               />
             ))}
           </div>
