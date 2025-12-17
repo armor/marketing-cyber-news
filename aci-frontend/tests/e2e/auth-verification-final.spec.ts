@@ -1,8 +1,8 @@
 import { test, expect, Page } from '@playwright/test';
 
 const FRONTEND_URL = 'http://localhost:5173';
-const TEST_EMAIL = 'testuser@example.com';
-const TEST_PASSWORD = 'TestPass123!';
+const TEST_EMAIL = 'test@example.com';
+const TEST_PASSWORD = 'TestPass123';
 
 // Helper to capture console messages
 const consoleErrors: string[] = [];

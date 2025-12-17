@@ -10,7 +10,9 @@
     "grep": {},
     "grepInvert": null,
     "maxFailures": 0,
-    "metadata": {},
+    "metadata": {
+      "actualWorkers": 1
+    },
     "preserveOutput": "always",
     "reporter": [
       [
@@ -40,7 +42,9 @@
         "outputDir": "/Users/phillipboles/Development/n8n-cyber-news/aci-frontend/tests/artifacts",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "chromium",
         "name": "chromium",
         "testDir": "/Users/phillipboles/Development/n8n-cyber-news/aci-frontend/tests/e2e",
@@ -59,19 +63,349 @@
     "workers": 1,
     "webServer": null
   },
-  "suites": [],
-  "errors": [
+  "suites": [
     {
-      "message": "Error: No tests found.\nMake sure that arguments are regular expressions matching test files.\nYou may need to escape symbols like \"$\" or \"*\" and quote the arguments.",
-      "stack": "Error: No tests found.\nMake sure that arguments are regular expressions matching test files.\nYou may need to escape symbols like \"$\" or \"*\" and quote the arguments."
+      "title": "auth-verification-final.spec.ts",
+      "file": "auth-verification-final.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Authentication & API Integration Verification",
+          "file": "auth-verification-final.spec.ts",
+          "line": 21,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Complete authentication flow and API integration",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 11431,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n=== STARTING FINAL VERIFICATION ===\n\n"
+                        },
+                        {
+                          "text": "Step 1: Navigating to login page...\n"
+                        },
+                        {
+                          "text": "Step 2: Verifying login page loaded...\n"
+                        },
+                        {
+                          "text": "Step 3: Filling in credentials...\n"
+                        },
+                        {
+                          "text": "Step 4: Submitting login form...\n"
+                        },
+                        {
+                          "text": "Step 5: Checking localStorage for token...\n"
+                        },
+                        {
+                          "text": "Token check results:\n"
+                        },
+                        {
+                          "text": "  Access token exists: true\n"
+                        },
+                        {
+                          "text": "  Access token length: 656\n"
+                        },
+                        {
+                          "text": "  Refresh token exists: true\n"
+                        },
+                        {
+                          "text": "Step 6: Current URL after login: http://localhost:5173/dashboard\n"
+                        },
+                        {
+                          "text": "Step 8: Verifying dashboard content...\n"
+                        },
+                        {
+                          "text": "  Dashboard has threat metric: true\n"
+                        },
+                        {
+                          "text": "  Metric cards found: 5\n"
+                        },
+                        {
+                          "text": "Step 9: Navigating to /threats page...\n"
+                        },
+                        {
+                          "text": "Step 10: Verifying threats page content...\n"
+                        },
+                        {
+                          "text": "  Threat/Article cards found: 0\n"
+                        },
+                        {
+                          "text": "  Page has article/threat content: true\n"
+                        },
+                        {
+                          "text": "Step 11: Checking for API errors...\n"
+                        },
+                        {
+                          "text": "\n=== FINAL VERIFICATION RESULTS ===\n"
+                        },
+                        {
+                          "text": "===========================\n\n"
+                        },
+                        {
+                          "text": "TOKEN STORAGE:\n"
+                        },
+                        {
+                          "text": "  localStorage has token: YES\n"
+                        },
+                        {
+                          "text": "  Token key: aci_access_token\n"
+                        },
+                        {
+                          "text": "  Token value preview: eyJhbGciOiJSUzI1NiIs...\n"
+                        },
+                        {
+                          "text": "\n"
+                        },
+                        {
+                          "text": "LOGIN:\n"
+                        },
+                        {
+                          "text": "  Status: SUCCESS\n"
+                        },
+                        {
+                          "text": "  Redirect: /dashboard\n"
+                        },
+                        {
+                          "text": "\n"
+                        },
+                        {
+                          "text": "DASHBOARD:\n"
+                        },
+                        {
+                          "text": "  Status: LOADED\n"
+                        },
+                        {
+                          "text": "  Total threats displayed: VISIBLE\n"
+                        },
+                        {
+                          "text": "  Metric cards: 5\n"
+                        },
+                        {
+                          "text": "  API calls successful: YES\n"
+                        },
+                        {
+                          "text": "\n"
+                        },
+                        {
+                          "text": "THREATS PAGE:\n"
+                        },
+                        {
+                          "text": "  Status: LOADED\n"
+                        },
+                        {
+                          "text": "  Articles displayed: 0\n"
+                        },
+                        {
+                          "text": "  Content verification: PASS\n"
+                        },
+                        {
+                          "text": "  API calls successful: YES\n"
+                        },
+                        {
+                          "text": "\n"
+                        },
+                        {
+                          "text": "CONSOLE ERRORS: 0\n"
+                        },
+                        {
+                          "text": "\n"
+                        },
+                        {
+                          "text": "CONSOLE WARNINGS: 0\n"
+                        },
+                        {
+                          "text": "\n"
+                        },
+                        {
+                          "text": "OVERALL: PASS\n"
+                        },
+                        {
+                          "text": "\n"
+                        },
+                        {
+                          "text": "=== END VERIFICATION ===\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-17T04:57:05.327Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2b3f4364dee6dd1e3be6-bfb84b1d6ff5a8578533",
+              "file": "auth-verification-final.spec.ts",
+              "line": 22,
+              "column": 3
+            },
+            {
+              "title": "Verify Authorization header in API requests",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 8707,
+                      "error": {
+                        "message": "Error: All protected API requests should have Authorization header\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m6\u001b[39m",
+                        "stack": "Error: All protected API requests should have Authorization header\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m6\u001b[39m\n    at /Users/phillipboles/Development/n8n-cyber-news/aci-frontend/tests/e2e/auth-verification-final.spec.ts:271:95",
+                        "location": {
+                          "file": "/Users/phillipboles/Development/n8n-cyber-news/aci-frontend/tests/e2e/auth-verification-final.spec.ts",
+                          "column": 95,
+                          "line": 271
+                        },
+                        "snippet": "  269 |     const missingAuth = protectedRequests.filter(r => !r.hasAuth);\n  270 |\n> 271 |     expect(missingAuth.length, 'All protected API requests should have Authorization header').toBe(0);\n      |                                                                                               ^\n  272 |   });\n  273 | });\n  274 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/phillipboles/Development/n8n-cyber-news/aci-frontend/tests/e2e/auth-verification-final.spec.ts",
+                            "column": 95,
+                            "line": 271
+                          },
+                          "message": "Error: All protected API requests should have Authorization header\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m6\u001b[39m\n\n  269 |     const missingAuth = protectedRequests.filter(r => !r.hasAuth);\n  270 |\n> 271 |     expect(missingAuth.length, 'All protected API requests should have Authorization header').toBe(0);\n      |                                                                                               ^\n  272 |   });\n  273 | });\n  274 |\n    at /Users/phillipboles/Development/n8n-cyber-news/aci-frontend/tests/e2e/auth-verification-final.spec.ts:271:95"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n=== VERIFYING AUTHORIZATION HEADERS ===\n\n"
+                        },
+                        {
+                          "text": "✗ Request to http://localhost:5173/src/services/api/queryClient.ts MISSING Authorization header\n"
+                        },
+                        {
+                          "text": "✗ Request to http://localhost:5173/src/services/api/client.ts MISSING Authorization header\n"
+                        },
+                        {
+                          "text": "✗ Request to http://localhost:5173/src/services/api/queryClient.ts MISSING Authorization header\n"
+                        },
+                        {
+                          "text": "✗ Request to http://localhost:5173/src/services/api/client.ts MISSING Authorization header\n"
+                        },
+                        {
+                          "text": "✗ Request to http://localhost:5173/src/services/api/queryClient.ts MISSING Authorization header\n"
+                        },
+                        {
+                          "text": "✗ Request to http://localhost:5173/src/services/api/client.ts MISSING Authorization header\n"
+                        },
+                        {
+                          "text": "\n=== AUTHORIZATION HEADER SUMMARY ===\n"
+                        },
+                        {
+                          "text": "Total API requests: 6\n"
+                        },
+                        {
+                          "text": "Requests with auth: 0\n"
+                        },
+                        {
+                          "text": "Requests without auth: 6\n"
+                        },
+                        {
+                          "text": "Failed requests (4xx/5xx): 0\n"
+                        },
+                        {
+                          "text": "\nRequests missing Authorization (excluding login):\n"
+                        },
+                        {
+                          "text": "  - http://localhost:5173/src/services/api/queryClient.ts\n"
+                        },
+                        {
+                          "text": "  - http://localhost:5173/src/services/api/client.ts\n"
+                        },
+                        {
+                          "text": "  - http://localhost:5173/src/services/api/queryClient.ts\n"
+                        },
+                        {
+                          "text": "  - http://localhost:5173/src/services/api/client.ts\n"
+                        },
+                        {
+                          "text": "  - http://localhost:5173/src/services/api/queryClient.ts\n"
+                        },
+                        {
+                          "text": "  - http://localhost:5173/src/services/api/client.ts\n"
+                        },
+                        {
+                          "text": "\n=== END AUTHORIZATION CHECK ===\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-17T04:57:17.174Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/phillipboles/Development/n8n-cyber-news/aci-frontend/tests/artifacts/auth-verification-final-Au-36995-tion-header-in-API-requests-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/phillipboles/Development/n8n-cyber-news/aci-frontend/tests/artifacts/auth-verification-final-Au-36995-tion-header-in-API-requests-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/phillipboles/Development/n8n-cyber-news/aci-frontend/tests/artifacts/auth-verification-final-Au-36995-tion-header-in-API-requests-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/phillipboles/Development/n8n-cyber-news/aci-frontend/tests/e2e/auth-verification-final.spec.ts",
+                        "column": 95,
+                        "line": 271
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "2b3f4364dee6dd1e3be6-8d15f6929c4a051e9beb",
+              "file": "auth-verification-final.spec.ts",
+              "line": 175,
+              "column": 3
+            }
+          ]
+        }
+      ]
     }
   ],
+  "errors": [],
   "stats": {
-    "startTime": "2025-12-17T04:47:03.156Z",
-    "duration": 18.045999999999992,
-    "expected": 0,
+    "startTime": "2025-12-17T04:57:04.821Z",
+    "duration": 21193.939,
+    "expected": 1,
     "skipped": 0,
-    "unexpected": 0,
+    "unexpected": 1,
     "flaky": 0
   }
 }

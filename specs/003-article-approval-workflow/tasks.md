@@ -24,6 +24,76 @@
 
 ---
 
+## Quality Gates - Test/Clean Protocol
+
+**MANDATORY**: Every wave MUST pass these quality gates before proceeding.
+
+### Pre-Wave Checks
+Before starting any wave implementation:
+```bash
+# Frontend
+cd aci-frontend && npm run lint && npm run test
+
+# Backend
+cd aci-backend && go vet ./... && go test ./...
+```
+
+### Post-Wave Checks
+After completing any wave implementation:
+```bash
+# Frontend - must pass with 0 errors
+cd aci-frontend && npm run lint && npm run test
+
+# Backend - must pass with 0 errors
+cd aci-backend && go vet ./... && go test ./...
+```
+
+### Quality Gate Criteria
+| Gate | Frontend Requirement | Backend Requirement |
+|------|---------------------|---------------------|
+| Lint | 0 errors (warnings OK) | `go vet` clean |
+| Unit Tests | 95%+ pass rate | 95%+ pass rate |
+| Type Check | `tsc --noEmit` clean | N/A (Go typed) |
+
+### Contract Testing (OpenAPI Spec Validation)
+Frontend API services MUST match the OpenAPI spec. This is validated at unit test level:
+- Parse `specs/003-article-approval-workflow/contracts/approval-api.yaml`
+- Validate request/response types match TypeScript interfaces
+- Ensure all endpoints in spec are implemented in API service
+- Ensure all HTTP methods and status codes are handled correctly
+
+---
+
+## Phase 0: Contract Testing Infrastructure (BLOCKING)
+
+**Purpose**: Establish OpenAPI contract testing before any API implementation
+**Why First**: Ensures frontend-backend contract is validated at unit test level
+
+### Wave 0.1 - Contract Test Infrastructure (Parallel)
+
+- [ ] T000a [P] Create OpenAPI spec parser utility in `aci-frontend/src/test/openapi-parser.ts`
+- [ ] T000b [P] Create contract test helpers in `aci-frontend/src/test/contract-helpers.ts`
+- [ ] T000c [P] Create MSW handler generator from OpenAPI spec in `aci-frontend/src/mocks/openapi-handlers.ts`
+
+### Wave 0.2 - Contract Validation Tests (Sequential - depends on 0.1)
+
+- [ ] T000d Create approval API contract tests in `aci-frontend/src/services/api/__tests__/approvals.contract.test.ts`
+- [ ] T000e Validate approval TypeScript types match OpenAPI schemas in `aci-frontend/src/types/__tests__/approval.contract.test.ts`
+
+### Wave 0.3 - Integration Test Setup (Parallel)
+
+- [ ] T000f [P] Create frontend-backend integration test runner in `aci-frontend/tests/integration/setup.ts`
+- [ ] T000g [P] Create API response mock factory from OpenAPI examples in `aci-frontend/src/mocks/factories/approval-factory.ts`
+
+### Post-Wave 0 Quality Gate
+
+- [ ] T000-QA Run quality gate: `npm run lint && npm run test` - must pass with 0 errors
+- [ ] T000-GIT Git commit with `git-manager` agent: "test(contract): add OpenAPI contract testing infrastructure"
+
+**Checkpoint**: Contract testing infrastructure ready - all future API changes auto-validated
+
+---
+
 ## Phase 1: Setup (Shared Infrastructure)
 
 **Purpose**: Database migration and domain type setup
@@ -43,6 +113,7 @@
 
 ### Post-Wave 1 Review & Commit
 
+- [ ] T006-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
 - [ ] T006-R1 [US1-7] Code review with `code-reviewer` agent - Wave 1 artifacts
 - [ ] T006-R2 [US1-7] Security review with `security-reviewer` agent - Wave 1 artifacts
 - [ ] T006-GIT Git commit with `git-manager` agent: "feat(approval): add database migrations and domain types for approval workflow"
@@ -81,6 +152,8 @@
 
 ### Post-Wave 2 Review & Commit
 
+- [ ] T015-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [ ] T015-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
 - [ ] T015-R1 [US1-7] Code review with `code-reviewer` agent - Wave 2 artifacts
 - [ ] T015-R2 [US1-7] Security review with `security-reviewer` agent - Wave 2 artifacts
 - [ ] T015-GIT Git commit with `git-manager` agent: "feat(approval): add approval repository, service, and frontend hooks"
@@ -137,6 +210,8 @@
 
 ### Post-Wave 3 Review & Commit
 
+- [ ] T036-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [ ] T036-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
 - [ ] T036-R1 [US1] Code review with `code-reviewer` agent - US1 complete implementation
 - [ ] T036-R2 [US1] Security review with `security-reviewer` agent - US1 complete implementation
 - [ ] T036-GIT Git commit with `git-manager` agent: "feat(approval): implement marketing approval gate (US1)"
@@ -170,6 +245,8 @@
 
 ### Post-Wave 4 Review & Commit
 
+- [ ] T045-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [ ] T045-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
 - [ ] T045-R1 [US2] Code review with `code-reviewer` agent - US2 complete implementation
 - [ ] T045-R2 [US2] Security review with `security-reviewer` agent - US2 complete implementation
 - [ ] T045-GIT Git commit with `git-manager` agent: "feat(approval): implement sequential gate progression (US2)"
@@ -203,6 +280,8 @@
 
 ### Post-Wave 5 Review & Commit
 
+- [ ] T054-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [ ] T054-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
 - [ ] T054-R1 [US3] Code review with `code-reviewer` agent - US3 complete implementation
 - [ ] T054-R2 [US3] Security review with `security-reviewer` agent - US3 complete implementation
 - [ ] T054-GIT Git commit with `git-manager` agent: "feat(approval): implement article release (US3) - MVP complete"
@@ -235,6 +314,8 @@
 
 ### Post-Wave 6 Review & Commit
 
+- [ ] T062-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [ ] T062-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
 - [ ] T062-R1 [US4] Code review with `code-reviewer` agent - US4 complete implementation
 - [ ] T062-R2 [US4] Security review with `security-reviewer` agent - US4 complete implementation
 - [ ] T062-GIT Git commit with `git-manager` agent: "feat(approval): implement rejection from pipeline (US4)"
@@ -265,6 +346,8 @@
 
 ### Post-Wave 7 Review & Commit
 
+- [ ] T068-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [ ] T068-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
 - [ ] T068-R1 [US5] Code review with `code-reviewer` agent - US5 complete implementation
 - [ ] T068-R2 [US5] Security review with `security-reviewer` agent - US5 complete implementation
 - [ ] T068-GIT Git commit with `git-manager` agent: "feat(approval): implement super admin override (US5)"
@@ -296,6 +379,8 @@
 
 ### Post-Wave 8 Review & Commit
 
+- [ ] T075-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [ ] T075-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
 - [ ] T075-R1 [US6] Code review with `code-reviewer` agent - US6 complete implementation
 - [ ] T075-R2 [US6] Security review with `security-reviewer` agent - US6 complete implementation
 - [ ] T075-GIT Git commit with `git-manager` agent: "feat(approval): implement admin role management (US6)"
@@ -327,6 +412,8 @@
 
 ### Post-Wave 9 Review & Commit
 
+- [ ] T082-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [ ] T082-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
 - [ ] T082-R1 [US7] Code review with `code-reviewer` agent - US7 complete implementation
 - [ ] T082-R2 [US7] Security review with `security-reviewer` agent - US7 complete implementation
 - [ ] T082-GIT Git commit with `git-manager` agent: "feat(approval): implement approval audit trail (US7)"
@@ -369,6 +456,8 @@
 
 ### Post-Wave 11 Review & Commit
 
+- [ ] T095-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [ ] T095-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
 - [ ] T095-R1 Code review with `code-reviewer` agent - Polish artifacts
 - [ ] T095-R2 Security review with `security-reviewer` agent - Polish artifacts
 - [ ] T095-GIT Git commit with `git-manager` agent: "chore(approval): polish and cross-cutting improvements"
@@ -484,22 +573,23 @@ Stream E: US7 (can start after US2)
 
 ## Summary
 
-| Phase | Tasks | Review/Git | Stories | Description |
-|-------|-------|------------|---------|-------------|
-| 1 | 6 | 3 | - | Setup & Migrations |
-| 2 | 9 | 3 | - | Foundational Infrastructure |
-| PM-1 | 5 | - | - | Pre-Implementation Gate |
-| 3 | 15 | 3 | US1 | Marketing Approval |
-| 4 | 8 | 3 | US2 | Sequential Progression |
-| 5 | 8 | 3 | US3 | Article Release |
-| 6 | 7 | 3 | US4 | Rejection |
-| 7 | 5 | 3 | US5 | Super Admin Override |
-| 8 | 6 | 3 | US6 | Role Management |
-| 9 | 6 | 3 | US7 | Audit Trail |
-| PM-2 | 4 | - | - | Mid-Implementation Gate |
-| 11 | 8 | 3 | - | Polish |
-| PM-3 | 8 | 1 | - | Release Gate |
-| **Total** | **95** | **31** | **7** | **126 total** |
+| Phase | Tasks | QA/Contract | Review/Git | Stories | Description |
+|-------|-------|-------------|------------|---------|-------------|
+| 0 | 7 | 2 | 1 | - | Contract Testing Infrastructure |
+| 1 | 6 | 1 | 3 | - | Setup & Migrations |
+| 2 | 9 | 2 | 3 | - | Foundational Infrastructure |
+| PM-1 | 5 | - | - | - | Pre-Implementation Gate |
+| 3 | 15 | 2 | 3 | US1 | Marketing Approval |
+| 4 | 8 | 2 | 3 | US2 | Sequential Progression |
+| 5 | 8 | 2 | 3 | US3 | Article Release |
+| 6 | 7 | 2 | 3 | US4 | Rejection |
+| 7 | 5 | 2 | 3 | US5 | Super Admin Override |
+| 8 | 6 | 2 | 3 | US6 | Role Management |
+| 9 | 6 | 2 | 3 | US7 | Audit Trail |
+| PM-2 | 4 | - | - | - | Mid-Implementation Gate |
+| 11 | 8 | 2 | 3 | - | Polish |
+| PM-3 | 8 | - | 1 | - | Release Gate |
+| **Total** | **102** | **21** | **32** | **7** | **155 total** |
 
 ### Task Counts by Story
 

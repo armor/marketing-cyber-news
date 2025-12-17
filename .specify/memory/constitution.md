@@ -1,27 +1,26 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 2.3.0 → 2.4.0 (MINOR: Added Post-Wave Review & Quality Assurance principle)
+Version Change: 2.5.0 → 2.6.0 (MINOR: Added Playwright E2E Testing principle)
 
 Modified Principles:
-- Principle XI (Parallel-First Orchestration) - Added reference to post-wave reviews
+- Principle VIII (Test-First Development) - Added E2E test requirements
 
 Added Sections:
-- Principle XVII: Post-Wave Review & Quality Assurance (NON-NEGOTIABLE)
-- Gate 10: Post-Wave Validation
+- Principle XIX: Playwright End-to-End Testing (NON-NEGOTIABLE)
+- Gate 12: Playwright E2E Validation
 
 Removed Sections: None
 
 Templates Requiring Updates:
-- .specify/templates/plan-template.md - ⚠ Add Post-Wave Review section
-- .specify/templates/spec-template.md - ✅ No changes needed
-- .specify/templates/tasks-template.md - ⚠ Add task completion tracking with ratings
+- .specify/templates/plan-template.md - ⚠ Add E2E test requirements
+- .specify/templates/spec-template.md - ⚠ Add E2E test acceptance criteria
+- .specify/templates/tasks-template.md - ⚠ Add E2E test tasks to each phase
 
 Follow-up TODOs:
-- [ ] Update tasks.md paths from signoz/frontend/ to platform/ (per Principle XV)
-- [ ] Create libs/monitoring/ui-charts/ structure in platform submodule
-- [ ] Create libs/monitoring/ui-flows/ structure in platform submodule
-- [ ] Add post-wave review tracking template to tasks-template.md
+- [ ] Add `npm run test:e2e` script to frontend package.json
+- [ ] Create Playwright test base configuration
+- [ ] Add E2E test templates for common user flows
 ==================
 -->
 
@@ -324,22 +323,41 @@ All user-facing features MUST follow established UX standards:
 **Rationale**: Superior UX drives adoption and reduces support burden. Complex
 interfaces increase cognitive load and error rates.
 
-### XIII. API-First Design
+### XIII. API-First Design (NON-NEGOTIABLE)
 
 All features with external interfaces MUST follow API-First methodology:
 
 - **Contract Before Code (MANDATORY)**: API contracts MUST be defined before
   implementation begins using OpenAPI 3.0+ for REST, Protocol Buffers for gRPC.
+- **OpenAPI Before UI (CRITICAL)**: NO UI implementation may begin until the
+  corresponding OpenAPI specification exists and is reviewed. The sequence is:
+  1. Define OpenAPI spec in `specs/[feature]/contracts/`
+  2. Review and approve spec
+  3. Generate MSW mocks from spec
+  4. Begin UI implementation using mocks
+  5. Implement backend against same spec
 - **Contract Location**: API specifications stored in `specs/[feature]/contracts/`
   or `api/` directory.
+- **Mock-Spec Synchronization (MANDATORY)**: MSW mock handlers MUST be generated
+  from or validated against the OpenAPI spec. Mocks MUST return values matching
+  the spec's response schemas exactly. Manual mock creation that diverges from
+  spec is prohibited.
 - **Contract Tests (MANDATORY)**: All API contracts MUST have corresponding
-  tests validating schemas, error formats, and auth requirements.
+  tests validating:
+  - Frontend API services match OpenAPI endpoint definitions
+  - Request/response types match OpenAPI schemas
+  - All HTTP methods and status codes are handled correctly
+  - Mock handlers return spec-compliant responses
+- **Interface Validation (MANDATORY)**: TypeScript types MUST be generated from
+  or validated against OpenAPI schemas. No manual type definitions that could
+  diverge from the API contract.
 - **Breaking Change Policy**: Follow semantic versioning for API changes.
   Deprecated endpoints MUST maintain backward compatibility for at least
   2 minor versions.
 
 **Rationale**: API-First ensures consistent interfaces, enables parallel
 frontend/backend development, and catches contract violations before runtime.
+OpenAPI-before-UI prevents UI implementation against imaginary APIs.
 
 ### XIV. Demonstrable Verification (NON-NEGOTIABLE)
 
@@ -630,6 +648,191 @@ perspectives (code quality, security, UX, business alignment). Numeric ratings p
 objective quality tracking. Documentation requirements prevent knowledge gaps from
 accumulating. This approach shifts quality left and reduces costly late-stage discoveries.
 
+### XVIII. Iteration Quality Gates (NON-NEGOTIABLE)
+
+Every development iteration (wave, feature, or commit) MUST pass automated quality gates:
+
+- **Mandatory Quality Checks (CRITICAL)**: The following commands MUST pass with zero
+  errors on EVERY iteration, before proceeding to the next task or wave:
+
+  | Stack | Commands | Pass Criteria |
+  |-------|----------|---------------|
+  | **Frontend** | `npm run lint` | 0 errors (warnings OK) |
+  | **Frontend** | `npm run test` | 95%+ pass rate |
+  | **Frontend** | `npm run test:contract` | 100% pass (spec compliance) |
+  | **Backend (Go)** | `go vet ./...` | 0 issues |
+  | **Backend (Go)** | `go test ./...` | 95%+ pass rate |
+
+- **Quality Gate Task Format**: Every wave in tasks.md MUST include quality gate tasks:
+  ```markdown
+  ### Post-Wave N Review & Commit
+
+  - [ ] TXX-QA **Quality Gate**: Run lint + test (frontend/backend) - must pass
+  - [ ] TXX-CT **Contract Test**: Run `npm run test:contract` - verify spec compliance
+  - [ ] TXX-R1 Code review with `code-reviewer` agent
+  - [ ] TXX-R2 Security review with `security-reviewer` agent
+  - [ ] TXX-GIT Git commit with `git-manager` agent
+  ```
+
+- **Contract Testing at Unit Level (MANDATORY)**: Frontend API services MUST be validated
+  against OpenAPI specs as unit tests, not just integration tests:
+  ```typescript
+  // Example: approvals.contract.test.ts
+  import { parseOpenAPISpec } from '@/test/openapi-parser';
+  import { approvalsApi } from '@/services/api/approvals';
+
+  describe('Approvals API Contract', () => {
+    const spec = parseOpenAPISpec('specs/003-article-approval-workflow/contracts/approval-api.yaml');
+
+    it('getQueue matches OpenAPI spec', () => {
+      expect(approvalsApi.getQueue).toMatchEndpoint(spec, 'GET /api/v1/approvals/queue');
+    });
+
+    it('approveArticle matches OpenAPI spec', () => {
+      expect(approvalsApi.approveArticle).toMatchEndpoint(spec, 'POST /api/v1/articles/{id}/approve');
+    });
+  });
+  ```
+
+- **Pre-Implementation Validation**: Before starting any UI component implementation:
+  1. Verify OpenAPI spec exists for all required endpoints
+  2. Verify MSW mock handlers are generated from spec
+  3. Verify TypeScript types are derived from spec schemas
+
+- **Failure Protocol**: If quality gates fail:
+  1. STOP - Do not proceed to next task or wave
+  2. FIX - Address all failing tests/lints immediately
+  3. RE-RUN - Execute quality checks again
+  4. VERIFY - Confirm all checks pass
+  5. CONTINUE - Only then proceed to next task
+
+- **Iteration Checkpoint Script**: Run after each wave:
+  ```bash
+  # Frontend checks
+  cd aci-frontend && npm run lint && npm run test && npm run test:contract
+
+  # Backend checks
+  cd aci-backend && go vet ./... && go test ./...
+  ```
+
+**Rationale**: Continuous quality validation catches issues immediately when they're
+cheapest to fix. Contract testing at the unit level ensures frontend-backend alignment
+before integration, preventing costly late-stage discovery of API mismatches. Every
+iteration that passes quality gates maintains a deployable, working state.
+
+### XIX. Playwright End-to-End Testing (NON-NEGOTIABLE)
+
+Every feature MUST have Playwright end-to-end tests that verify the feature works in
+a real browser environment with actual user interactions:
+
+- **E2E Test Coverage (MANDATORY)**: Every user-facing feature MUST have Playwright
+  E2E tests that cover:
+
+  | Requirement | Description | Example |
+  |-------------|-------------|---------|
+  | **Login Flow** | Test MUST authenticate using real login flow | `await page.fill('[name="email"]', 'test@example.com')` |
+  | **Navigation** | Test MUST navigate to the feature via UI | `await page.click('nav >> text=Threats')` |
+  | **Feature Interaction** | Test MUST click/interact with feature elements | `await page.click('[data-testid="threat-card"]')` |
+  | **Console Error Check** | Test MUST verify no console errors occur | `page.on('console', checkForErrors)` |
+  | **Expected Behavior** | Test MUST verify feature responds correctly | `await expect(page.locator('.detail-view')).toBeVisible()` |
+
+- **E2E Test Structure (MANDATORY)**:
+  ```typescript
+  // tests/e2e/[feature].spec.ts
+  import { test, expect, Page } from '@playwright/test';
+
+  // Capture console errors
+  const consoleErrors: string[] = [];
+
+  test.describe('[Feature Name] E2E Tests', () => {
+    test.beforeEach(async ({ page }) => {
+      // Clear error log
+      consoleErrors.length = 0;
+
+      // Listen for console errors
+      page.on('console', (msg) => {
+        if (msg.type() === 'error') {
+          consoleErrors.push(msg.text());
+        }
+      });
+
+      // Login flow - MUST use actual authentication
+      await page.goto('/login');
+      await page.fill('[name="email"]', process.env.TEST_USER_EMAIL!);
+      await page.fill('[name="password"]', process.env.TEST_USER_PASSWORD!);
+      await page.click('button[type="submit"]');
+      await page.waitForURL(/dashboard|home/);
+    });
+
+    test.afterEach(async () => {
+      // Verify no console errors occurred
+      expect(consoleErrors).toHaveLength(0);
+    });
+
+    test('should navigate to feature and interact with elements', async ({ page }) => {
+      // Navigate to feature
+      await page.click('nav >> text=Feature');
+      await page.waitForSelector('[data-testid="feature-list"]');
+
+      // Interact with feature elements
+      await page.click('[data-testid="feature-item"]:first-child');
+
+      // Verify expected behavior
+      await expect(page.locator('[data-testid="feature-detail"]')).toBeVisible();
+    });
+  });
+  ```
+
+- **Console Error Handling (CRITICAL)**: E2E tests MUST capture and assert on console
+  errors. The test MUST FAIL if any console.error messages are logged during test
+  execution. All console errors MUST be handled in application code before E2E tests
+  can pass.
+
+- **Test Environment Requirements**:
+  - Tests MUST run against a real application instance (dev server or staging)
+  - Tests MUST NOT mock authentication - use real test credentials
+  - Tests MUST use proper test user accounts created for E2E testing
+  - Test credentials MUST be stored in environment variables, never hardcoded
+
+- **E2E Test File Organization**:
+  ```
+  tests/
+  └── e2e/
+      ├── auth.setup.ts         # Shared authentication setup
+      ├── auth.spec.ts          # Login/logout E2E tests
+      ├── dashboard.spec.ts     # Dashboard feature E2E tests
+      ├── threats.spec.ts       # Threats feature E2E tests
+      ├── [feature].spec.ts     # Feature-specific E2E tests
+      └── fixtures/
+          └── test-data.ts      # Test data generators
+  ```
+
+- **Feature Completion Requirement (CRITICAL)**: A feature is NOT considered complete
+  until:
+  1. Playwright E2E test exists for the feature
+  2. Test performs actual login flow (no auth bypass)
+  3. Test navigates to the feature via UI
+  4. Test interacts with all critical feature elements
+  5. Test asserts no console errors occur
+  6. Test verifies expected feature behavior
+  7. Test passes in CI/CD pipeline
+
+- **Quality Gate Integration**: E2E tests MUST be included in quality gate checks:
+  ```bash
+  # Run E2E tests as part of quality gate
+  npm run test:e2e
+  ```
+
+  | Command | Pass Criteria |
+  |---------|---------------|
+  | `npm run test:e2e` | 100% pass (all E2E tests green) |
+
+**Rationale**: E2E tests catch integration issues, console errors, and user experience
+problems that unit and contract tests cannot detect. By requiring actual login flows
+and navigation, E2E tests verify the complete user journey works as expected. Console
+error checking ensures that runtime errors are caught and fixed before deployment,
+preventing degraded user experience in production.
+
 ## Security Requirements
 
 This section codifies security standards that apply across all components:
@@ -729,6 +932,31 @@ All changes to this repository MUST pass the following gates:
 - [ ] Wave summary report generated
 - [ ] No FAILED_REVIEW tasks remaining (or justified deferral)
 
+### Gate 11: Iteration Quality Validation
+
+- [ ] Frontend lint passes: `npm run lint` (0 errors)
+- [ ] Frontend tests pass: `npm run test` (95%+ pass rate)
+- [ ] Frontend contract tests pass: `npm run test:contract` (100% compliance)
+- [ ] Backend vet passes: `go vet ./...` (0 issues)
+- [ ] Backend tests pass: `go test ./...` (95%+ pass rate)
+- [ ] OpenAPI spec exists before UI implementation began
+- [ ] MSW mocks generated from/validated against OpenAPI spec
+- [ ] TypeScript types derived from OpenAPI schemas
+- [ ] Interface validation confirms frontend-backend alignment
+
+### Gate 12: Playwright E2E Validation
+
+- [ ] Playwright E2E test exists for each user-facing feature
+- [ ] E2E tests use real authentication flow (no auth bypass)
+- [ ] E2E tests navigate to features via UI (not direct URL)
+- [ ] E2E tests interact with feature elements (clicks, forms, etc.)
+- [ ] E2E tests capture console errors and assert none occurred
+- [ ] E2E tests verify expected feature behavior
+- [ ] E2E tests pass: `npm run test:e2e` (100% pass rate)
+- [ ] No console.error messages during test execution
+- [ ] Test credentials stored in environment variables (not hardcoded)
+- [ ] E2E tests integrated into CI/CD pipeline
+
 ## Governance
 
 ### Authority
@@ -791,4 +1019,4 @@ may be referenced but are not universally applicable:
 - **OpenTelemetry Native**: OTEL-only instrumentation, no vendor lock-in
 - **Observability Native (Self-Monitoring)**: Dogfooding own instrumentation
 
-**Version**: 2.4.0 | **Ratified**: 2025-12-10 | **Last Amended**: 2025-12-13
+**Version**: 2.6.0 | **Ratified**: 2025-12-10 | **Last Amended**: 2025-12-16
