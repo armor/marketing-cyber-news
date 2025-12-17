@@ -107,7 +107,7 @@ spec:
         # Pod will be removed from service endpoints if this fails
         readinessProbe:
           httpGet:
-            path: /v1/ready
+            path: /ready
             port: http
             scheme: HTTP
           # Wait 10 seconds after container starts before first probe
@@ -125,7 +125,7 @@ spec:
         # Kubernetes will restart the pod if this fails
         livenessProbe:
           httpGet:
-            path: /v1/health
+            path: /health
             port: http
             scheme: HTTP
           # Wait 30 seconds for application to fully start
@@ -180,6 +180,10 @@ spec:
         # Cache directory for application-specific cache
         - name: cache
           mountPath: /app/cache
+        # JWT keys mounted from secret
+        - name: jwt-keys
+          mountPath: /app/jwt
+          readOnly: true
 
       # Volumes for writable directories
       # Using emptyDir since we have read-only root filesystem
@@ -191,3 +195,6 @@ spec:
       - name: cache
         emptyDir:
           sizeLimit: 200Mi
+      - name: jwt-keys
+        secret:
+          secretName: jwt-keys

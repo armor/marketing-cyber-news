@@ -30,15 +30,16 @@ func (r UserRole) String() string {
 
 // User represents a user in the system
 type User struct {
-	ID            uuid.UUID  `json:"id"`
-	Email         string     `json:"email"`
-	PasswordHash  string     `json:"-"`
-	Name          string     `json:"name"`
-	Role          UserRole   `json:"role"`
-	CreatedAt     time.Time  `json:"created_at"`
-	UpdatedAt     time.Time  `json:"updated_at"`
-	EmailVerified bool       `json:"email_verified"`
-	LastLoginAt   *time.Time `json:"last_login_at,omitempty"`
+	ID               uuid.UUID        `json:"id"`
+	Email            string           `json:"email"`
+	PasswordHash     string           `json:"-"`
+	Name             string           `json:"name"`
+	Role             UserRole         `json:"role"`
+	SubscriptionTier SubscriptionTier `json:"subscription_tier"`
+	CreatedAt        time.Time        `json:"created_at"`
+	UpdatedAt        time.Time        `json:"updated_at"`
+	EmailVerified    bool             `json:"email_verified"`
+	LastLoginAt      *time.Time       `json:"last_login_at,omitempty"`
 }
 
 // Validate validates the user entity

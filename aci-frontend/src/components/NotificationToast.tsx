@@ -51,9 +51,9 @@ export function NotificationToast() {
   };
 
   const typeStyles = {
-    info: 'bg-blue-500',
-    success: 'bg-green-500',
-    warning: 'bg-orange-500',
+    info: 'bg-[var(--color-semantic-info)]',
+    success: 'bg-[var(--color-semantic-success)]',
+    warning: 'bg-[var(--color-semantic-warning)]',
   };
 
   if (toasts.length === 0) return null;
@@ -63,12 +63,12 @@ export function NotificationToast() {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`${typeStyles[toast.type]} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 max-w-sm animate-slide-in`}
+          className={`${typeStyles[toast.type]} text-[var(--color-bg-elevated)] px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 max-w-sm animate-slide-in`}
         >
           <span className="flex-1">{toast.message}</span>
           <button
             onClick={() => removeToast(toast.id)}
-            className="text-white/80 hover:text-white"
+            className="text-[var(--color-bg-elevated)]/80 hover:text-[var(--color-bg-elevated)]"
           >
             ✕
           </button>

@@ -9,7 +9,7 @@ interface WrapperProps {
  * Custom render function that wraps components with necessary providers
  * This can be extended to include Router, Theme Provider, etc.
  */
-const AllTheProviders = ({ children }: WrapperProps) => {
+const AllTheProviders = ({ children }: WrapperProps): JSX.Element => {
   return <>{children}</>;
 };
 
@@ -18,5 +18,7 @@ const customRender = (
   options?: Omit<RenderOptions, 'wrapper'>
 ) => render(ui, { wrapper: AllTheProviders, ...options });
 
+// Re-export everything from @testing-library/react
+// eslint-disable-next-line react-refresh/only-export-components
 export * from '@testing-library/react';
 export { customRender as render };

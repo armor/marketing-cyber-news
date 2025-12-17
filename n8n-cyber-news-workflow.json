@@ -76,7 +76,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://host.docker.internal:8080/v1/webhooks/n8n",
+        "url": "http://aci-backend.aci-backend.svc.cluster.local:80/v1/webhooks/n8n",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendHeaders": true,

@@ -68,31 +68,36 @@ type SourceSummary struct {
 
 // ArticleResponse represents a single article in list view
 type ArticleResponse struct {
-	ID                 uuid.UUID        `json:"id"`
-	Title              string           `json:"title"`
-	Slug               string           `json:"slug"`
-	Summary            *string          `json:"summary,omitempty"`
-	Category           *CategorySummary `json:"category,omitempty"`
-	Source             *SourceSummary   `json:"source,omitempty"`
-	Severity           string           `json:"severity"`
-	Tags               []string         `json:"tags"`
-	CVEs               []string         `json:"cves"`
-	Vendors            []string         `json:"vendors"`
-	ReadingTimeMinutes int              `json:"reading_time_minutes"`
-	ViewCount          int              `json:"view_count"`
-	PublishedAt        string           `json:"published_at"`
+	ID                 uuid.UUID               `json:"id"`
+	Title              string                  `json:"title"`
+	Slug               string                  `json:"slug"`
+	Summary            *string                 `json:"summary,omitempty"`
+	Category           *CategorySummary        `json:"category,omitempty"`
+	Source             *SourceSummary          `json:"source,omitempty"`
+	SourceURL          string                  `json:"source_url"`
+	Severity           string                  `json:"severity"`
+	Tags               []string                `json:"tags"`
+	CVEs               []string                `json:"cves"`
+	Vendors            []string                `json:"vendors"`
+	Industries         []domain.Industry       `json:"industries,omitempty"`
+	HasDeepDive        bool                    `json:"has_deep_dive"`
+	ReadingTimeMinutes int                     `json:"reading_time_minutes"`
+	ViewCount          int                     `json:"view_count"`
+	PublishedAt        string                  `json:"published_at"`
 }
 
 // ArticleDetailResponse represents a full article with all details
 type ArticleDetailResponse struct {
 	ArticleResponse
-	Content            string           `json:"content"`
-	ThreatType         *string          `json:"threat_type,omitempty"`
-	AttackVector       *string          `json:"attack_vector,omitempty"`
-	ImpactAssessment   *string          `json:"impact_assessment,omitempty"`
-	RecommendedActions []string         `json:"recommended_actions,omitempty"`
-	IOCs               []domain.IOC     `json:"iocs,omitempty"`
-	ArmorCTA           *domain.ArmorCTA `json:"armor_cta,omitempty"`
+	Content            string                      `json:"content"`
+	ThreatType         *string                     `json:"threat_type,omitempty"`
+	AttackVector       *string                     `json:"attack_vector,omitempty"`
+	ImpactAssessment   *string                     `json:"impact_assessment,omitempty"`
+	RecommendedActions []string                    `json:"recommended_actions,omitempty"`
+	IOCs               []domain.IOC                `json:"iocs,omitempty"`
+	ArmorCTA           *domain.ArmorCTA            `json:"armor_cta,omitempty"`
+	ExternalReferences []domain.ExternalReference  `json:"external_references,omitempty"`
+	Recommendations    []domain.Recommendation     `json:"recommendations,omitempty"`
 }
 
 // List handles GET /v1/articles - returns paginated list of articles
@@ -350,6 +355,22 @@ func parseArticleFilter(r *http.Request) (*domain.ArticleFilter, error) {
 		filter.Vendor = &vendorStr
 	}
 
+	// Parse industry
+	if industryStr := query.Get("industry"); industryStr != "" {
+		filter.Industry = &industryStr
+	}
+
+	// Parse has_deep_dive
+	if hasDeepDiveStr := query.Get("has_deep_dive"); hasDeepDiveStr != "" {
+		if hasDeepDiveStr == "true" {
+			hasDeepDive := true
+			filter.HasDeepDive = &hasDeepDive
+		} else if hasDeepDiveStr == "false" {
+			hasDeepDive := false
+			filter.HasDeepDive = &hasDeepDive
+		}
+	}
+
 	// Parse date range
 	if dateFromStr := query.Get("date_from"); dateFromStr != "" {
 		dateFrom, err := time.Parse(time.RFC3339, dateFromStr)
@@ -381,10 +402,13 @@ func toArticleResponse(article *domain.Article) ArticleResponse {
 		Title:              article.Title,
 		Slug:               article.Slug,
 		Summary:            article.Summary,
+		SourceURL:          article.SourceURL,
 		Severity:           string(article.Severity),
 		Tags:               article.Tags,
 		CVEs:               article.CVEs,
 		Vendors:            article.Vendors,
+		Industries:         article.Industries,
+		HasDeepDive:        article.HasDeepDive,
 		ReadingTimeMinutes: article.ReadingTimeMinutes,
 		ViewCount:          article.ViewCount,
 		PublishedAt:        article.PublishedAt.Format(time.RFC3339),
@@ -426,6 +450,8 @@ func toArticleDetailResponse(article *domain.Article) ArticleDetailResponse {
 		RecommendedActions: article.RecommendedActions,
 		IOCs:               article.IOCs,
 		ArmorCTA:           article.ArmorCTA,
+		ExternalReferences: article.ExternalReferences,
+		Recommendations:    article.Recommendations,
 	}
 }
 

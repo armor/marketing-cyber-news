@@ -16,6 +16,8 @@ commonAnnotations:
 # Resources to include in this kustomization
 resources:
   - namespace.yaml
+  - postgres.yaml
+  - redis.yaml
   - configmap.yaml
   - secret.yaml
   - deployment.yaml
@@ -23,6 +25,7 @@ resources:
   - ingress.yaml
   - hpa.yaml
   - pdb.yaml
+  - n8n.yaml
 
 # Images to customize
 images:

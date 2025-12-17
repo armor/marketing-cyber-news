@@ -1,0 +1,719 @@
+openapi: 3.0.3
+info:
+  title: Article Approval Workflow API
+  description: API for multi-gate article approval workflow with role-based access control
+  version: 1.0.0
+  contact:
+    name: ACI Development Team
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development
+  - url: https://api.aci.armor.com/v1
+    description: Production
+
+tags:
+  - name: Approvals
+    description: Article approval workflow operations
+  - name: Users
+    description: User role management
+
+paths:
+  /approvals/queue:
+    get:
+      summary: Get approval queue for current user's role
+      description: Returns articles pending approval at the gate corresponding to the authenticated user's role
+      operationId: getApprovalQueue
+      tags:
+        - Approvals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+          description: Page number
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+          description: Items per page
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum: [created_at, severity, category]
+            default: created_at
+          description: Sort field
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order
+        - name: category_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by category
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [critical, high, medium, low, informational]
+          description: Filter by severity
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Filter articles created after this date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Filter articles created before this date
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalQueueResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User role does not have approval permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: INSUFFICIENT_ROLE
+                  message: Your role does not have approval queue access
+
+  /articles/{articleId}/approve:
+    post:
+      summary: Approve article at current gate
+      description: Advances article to the next approval gate
+      operationId: approveArticle
+      tags:
+        - Approvals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: articleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Article ID
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveRequest'
+      responses:
+        '200':
+          description: Article approved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalActionResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidGate:
+                  value:
+                    error:
+                      code: INVALID_GATE
+                      message: Article is not at your approval gate
+                alreadyRejected:
+                  value:
+                    error:
+                      code: ALREADY_REJECTED
+                      message: Article has already been rejected
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Insufficient role for this gate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /articles/{articleId}/reject:
+    post:
+      summary: Reject article from pipeline
+      description: Marks article as rejected with mandatory reason
+      operationId: rejectArticle
+      tags:
+        - Approvals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: articleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Article ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectRequest'
+      responses:
+        '200':
+          description: Article rejected successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalActionResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingReason:
+                  value:
+                    error:
+                      code: MISSING_REASON
+                      message: Rejection reason is required
+                alreadyRejected:
+                  value:
+                    error:
+                      code: ALREADY_REJECTED
+                      message: Article has already been rejected
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Insufficient role for this gate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /articles/{articleId}/release:
+    post:
+      summary: Release fully-approved article
+      description: Publishes article for public viewing (requires all gates passed)
+      operationId: releaseArticle
+      tags:
+        - Approvals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: articleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Article ID
+      responses:
+        '200':
+          description: Article released successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalActionResponse'
+        '400':
+          description: Article not fully approved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: NOT_FULLY_APPROVED
+                  message: Article must pass all approval gates before release
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only admin, ciso, or super_admin can release
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /articles/{articleId}/approval-history:
+    get:
+      summary: Get article approval history
+      description: Returns all gate approvals and rejection details for an article
+      operationId: getApprovalHistory
+      tags:
+        - Approvals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: articleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Article ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalHistoryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /articles/{articleId}/reset:
+    post:
+      summary: Reset rejected article to initial state
+      description: Admin-only endpoint to reset a rejected article back to pending_marketing
+      operationId: resetArticle
+      tags:
+        - Approvals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: articleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Article ID
+      responses:
+        '200':
+          description: Article reset successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalActionResponse'
+        '400':
+          description: Article is not rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only admin can reset articles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/{userId}/role:
+    put:
+      summary: Update user role
+      description: Admin-only endpoint to change a user's role
+      operationId: updateUserRole
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoleRequest'
+      responses:
+        '200':
+          description: Role updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid role value
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only admin can change roles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ApprovalStatus:
+      type: string
+      enum:
+        - pending_marketing
+        - pending_branding
+        - pending_soc_l1
+        - pending_soc_l3
+        - pending_ciso
+        - approved
+        - rejected
+        - released
+
+    ApprovalGate:
+      type: string
+      enum:
+        - marketing
+        - branding
+        - soc_l1
+        - soc_l3
+        - ciso
+
+    UserRole:
+      type: string
+      enum:
+        - user
+        - marketing
+        - branding
+        - soc_level_1
+        - soc_level_3
+        - ciso
+        - admin
+        - super_admin
+
+    ArticleForApproval:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        slug:
+          type: string
+        summary:
+          type: string
+        content:
+          type: string
+        category:
+          $ref: '#/components/schemas/Category'
+        source:
+          $ref: '#/components/schemas/Source'
+        severity:
+          type: string
+          enum: [critical, high, medium, low, informational]
+        tags:
+          type: array
+          items:
+            type: string
+        cves:
+          type: array
+          items:
+            type: string
+        vendors:
+          type: array
+          items:
+            type: string
+        approvalStatus:
+          $ref: '#/components/schemas/ApprovalStatus'
+        rejected:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        publishedAt:
+          type: string
+          format: date-time
+        approvalProgress:
+          $ref: '#/components/schemas/ApprovalProgress'
+      required:
+        - id
+        - title
+        - slug
+        - approvalStatus
+        - rejected
+        - createdAt
+
+    ApprovalProgress:
+      type: object
+      properties:
+        completedGates:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApprovalGate'
+        currentGate:
+          $ref: '#/components/schemas/ApprovalGate'
+        pendingGates:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApprovalGate'
+        totalGates:
+          type: integer
+        completedCount:
+          type: integer
+
+    ArticleApproval:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        articleId:
+          type: string
+          format: uuid
+        gate:
+          $ref: '#/components/schemas/ApprovalGate'
+        approvedBy:
+          type: string
+          format: uuid
+        approverName:
+          type: string
+        approverEmail:
+          type: string
+        approvedAt:
+          type: string
+          format: date-time
+        notes:
+          type: string
+      required:
+        - id
+        - articleId
+        - gate
+        - approvedBy
+        - approvedAt
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        color:
+          type: string
+
+    Source:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        url:
+          type: string
+
+    ApprovalQueueResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArticleForApproval'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        meta:
+          type: object
+          properties:
+            userRole:
+              $ref: '#/components/schemas/UserRole'
+            targetGate:
+              $ref: '#/components/schemas/ApprovalGate'
+            queueCount:
+              type: integer
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+
+    ApproveRequest:
+      type: object
+      properties:
+        notes:
+          type: string
+          maxLength: 1000
+          description: Optional approval notes
+
+    RejectRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 10
+          maxLength: 2000
+          description: Mandatory rejection reason
+      required:
+        - reason
+
+    UpdateRoleRequest:
+      type: object
+      properties:
+        role:
+          $ref: '#/components/schemas/UserRole'
+      required:
+        - role
+
+    ApprovalActionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        article:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            approvalStatus:
+              $ref: '#/components/schemas/ApprovalStatus'
+            rejected:
+              type: boolean
+
+    ApprovalHistoryResponse:
+      type: object
+      properties:
+        articleId:
+          type: string
+          format: uuid
+        currentStatus:
+          $ref: '#/components/schemas/ApprovalStatus'
+        rejected:
+          type: boolean
+        rejectionDetails:
+          type: object
+          properties:
+            reason:
+              type: string
+            rejectedBy:
+              type: string
+              format: uuid
+            rejectorName:
+              type: string
+            rejectedAt:
+              type: string
+              format: date-time
+        releaseDetails:
+          type: object
+          properties:
+            releasedBy:
+              type: string
+              format: uuid
+            releaserName:
+              type: string
+            releasedAt:
+              type: string
+              format: date-time
+        approvals:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArticleApproval'
+        progress:
+          $ref: '#/components/schemas/ApprovalProgress'
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        updatedAt:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+          required:
+            - code
+            - message
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: UNAUTHORIZED
+              message: Authentication required
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: NOT_FOUND
+              message: Article not found

@@ -20,9 +20,10 @@ import (
 
 // WebhookHandler handles n8n webhook events
 type WebhookHandler struct {
-	articleService *service.ArticleService
-	webhookLogRepo repository.WebhookLogRepository
-	webhookSecret  string
+	articleService    *service.ArticleService
+	enrichmentService *service.EnrichmentService
+	webhookLogRepo    repository.WebhookLogRepository
+	webhookSecret     string
 }
 
 // WebhookPayload represents the incoming webhook payload from n8n
@@ -98,13 +99,15 @@ type IOC struct {
 // NewWebhookHandler creates a new webhook handler
 func NewWebhookHandler(
 	articleService *service.ArticleService,
+	enrichmentService *service.EnrichmentService,
 	webhookLogRepo repository.WebhookLogRepository,
 	webhookSecret string,
 ) *WebhookHandler {
 	return &WebhookHandler{
-		articleService: articleService,
-		webhookLogRepo: webhookLogRepo,
-		webhookSecret:  webhookSecret,
+		articleService:    articleService,
+		enrichmentService: enrichmentService,
+		webhookLogRepo:    webhookLogRepo,
+		webhookSecret:     webhookSecret,
 	}
 }
 
@@ -236,6 +239,18 @@ func (h *WebhookHandler) handleArticleCreated(ctx context.Context, data json.Raw
 		return nil, fmt.Errorf("failed to create article: %w", err)
 	}
 
+	// Trigger AI enrichment asynchronously if not skipped
+	if !articleData.SkipEnrichment && h.enrichmentService != nil {
+		go func() {
+			enrichCtx := context.Background()
+			if err := h.enrichmentService.EnrichArticle(enrichCtx, article.ID); err != nil {
+				fmt.Printf("Failed to enrich article %s: %v\n", article.ID, err)
+			} else {
+				fmt.Printf("Successfully enriched article %s\n", article.ID)
+			}
+		}()
+	}
+
 	return map[string]interface{}{
 		"article_id": article.ID.String(),
 		"slug":       article.Slug,
@@ -354,6 +369,51 @@ func (h *WebhookHandler) handleEnrichmentComplete(ctx context.Context, data json
 		"article_id": enrichmentData.ArticleID,
 		"enriched":   true,
 	}, nil
+}
+
+// TriggerEnrichmentRequest represents the request to trigger enrichment
+type TriggerEnrichmentRequest struct {
+	Limit int `json:"limit"`
+}
+
+// TriggerEnrichment handles POST /v1/webhooks/trigger-enrichment
+// This endpoint triggers AI enrichment for articles that haven't been enriched yet
+func (h *WebhookHandler) TriggerEnrichment(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Parse request body
+	var req TriggerEnrichmentRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		// Default to 10 if no body or invalid
+		req.Limit = 10
+	}
+
+	// Validate limit
+	if req.Limit < 1 {
+		req.Limit = 10
+	}
+	if req.Limit > 100 {
+		req.Limit = 100
+	}
+
+	// Check if enrichment service is available
+	if h.enrichmentService == nil {
+		response.ServiceUnavailable(w, "enrichment service is not available")
+		return
+	}
+
+	// Trigger enrichment
+	enrichedCount, err := h.enrichmentService.EnrichPendingArticles(ctx, req.Limit)
+	if err != nil {
+		response.InternalError(w, fmt.Sprintf("failed to enrich articles: %v", err), "")
+		return
+	}
+
+	response.JSON(w, http.StatusOK, map[string]interface{}{
+		"enriched_count": enrichedCount,
+		"limit":          req.Limit,
+		"message":        fmt.Sprintf("Successfully enriched %d articles", enrichedCount),
+	})
 }
 
 // verifySignature verifies the HMAC-SHA256 signature

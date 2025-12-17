@@ -42,14 +42,14 @@
 **Purpose**: Project initialization and basic structure
 
 ### Wave 1.1: Project Bootstrap
-- [ ] T001 [P] Initialize Vite 7.2 + React 19 + TypeScript 5.9 project in aci-frontend/
-- [ ] T002 [P] Configure TypeScript strict mode in aci-frontend/tsconfig.json
-- [ ] T003 [P] Configure ESLint + Prettier in aci-frontend/.eslintrc.cjs and aci-frontend/.prettierrc
+- [x] T001 [P] Initialize Vite 7.2 + React 19 + TypeScript 5.9 project in aci-frontend/ ✅ 2024-12-13
+- [x] T002 [P] Configure TypeScript strict mode in aci-frontend/tsconfig.json ✅ 2024-12-13
+- [x] T003 [P] Configure ESLint + Prettier in aci-frontend/.eslintrc.cjs and aci-frontend/.prettierrc ✅ 2024-12-13
 
 ### Wave 1.2: Styling & Testing Setup
-- [ ] T004 [P] Install and configure Tailwind CSS 4.0 with dark theme in aci-frontend/tailwind.config.ts
-- [ ] T005 [P] Install shadcn/ui and configure components.json in aci-frontend/
-- [ ] T006 [P] Install and configure Vitest + React Testing Library in aci-frontend/vitest.config.ts
+- [x] T004 [P] Install and configure Tailwind CSS 4.0 with dark theme in aci-frontend/tailwind.config.ts ✅ 2024-12-13
+- [x] T005 [P] Install shadcn/ui and configure components.json in aci-frontend/ ✅ 2024-12-13
+- [x] T006 [P] Install and configure Vitest + React Testing Library in aci-frontend/vitest.config.ts ✅ 2024-12-13
 - [ ] T007 [P] Install and configure Playwright in aci-frontend/playwright.config.ts
 
 ### Wave 1.3: Design Tokens & Theming (NO HARDCODED VALUES)
@@ -58,16 +58,16 @@
 
 **CRITICAL**: All CSS values (colors, spacing, motion, typography) MUST be tokenized for easy reskinning.
 
-- [ ] T008 [P] Create design tokens configuration in aci-frontend/src/styles/tokens/index.ts
-- [ ] T009 [P] Create color palette tokens (brand, semantic, severity) in aci-frontend/src/styles/tokens/colors.ts
-- [ ] T010 [P] Create motion/animation tokens (durations, easings) in aci-frontend/src/styles/tokens/motion.ts
-- [ ] T011 [P] Create typography scale tokens (font sizes, weights, line heights) in aci-frontend/src/styles/tokens/typography.ts
-- [ ] T012 [P] Create spacing scale tokens (padding, margin, gap) in aci-frontend/src/styles/tokens/spacing.ts
-- [ ] T013 [P] Create shadow tokens (elevation levels) in aci-frontend/src/styles/tokens/shadows.ts
-- [ ] T014 [P] Create border tokens (radius, width) in aci-frontend/src/styles/tokens/borders.ts
-- [ ] T015 Create CSS custom properties from tokens in aci-frontend/src/styles/variables.css
-- [ ] T016 Update Tailwind config to use design tokens in aci-frontend/tailwind.config.ts
-- [ ] T017 Create ThemeProvider context for runtime theme switching in aci-frontend/src/stores/ThemeContext.tsx
+- [x] T008 [P] Create design tokens configuration in aci-frontend/src/styles/tokens/index.ts ✅ 2024-12-13
+- [x] T009 [P] Create color palette tokens (brand, semantic, severity) in aci-frontend/src/styles/tokens/colors.ts ✅ 2024-12-13
+- [x] T010 [P] Create motion/animation tokens (durations, easings) in aci-frontend/src/styles/tokens/motion.ts ✅ 2024-12-13
+- [x] T011 [P] Create typography scale tokens (font sizes, weights, line heights) in aci-frontend/src/styles/tokens/typography.ts ✅ 2024-12-13
+- [x] T012 [P] Create spacing scale tokens (padding, margin, gap) in aci-frontend/src/styles/tokens/spacing.ts ✅ 2024-12-13
+- [x] T013 [P] Create shadow tokens (elevation levels) in aci-frontend/src/styles/tokens/shadows.ts ✅ 2024-12-13
+- [x] T014 [P] Create border tokens (radius, width) in aci-frontend/src/styles/tokens/borders.ts ✅ 2024-12-13
+- [x] T015 Create CSS custom properties from tokens in aci-frontend/src/styles/variables.css ✅ 2024-12-13
+- [x] T016 Update Tailwind config to use design tokens in aci-frontend/tailwind.config.ts ✅ 2024-12-13
+- [x] T017 Create ThemeProvider context for runtime theme switching in aci-frontend/src/stores/ThemeContext.tsx ✅ 2024-12-13
 
 **Token Structure Example**:
 ```typescript
@@ -121,9 +121,9 @@ export const motion = {
 ```
 
 ### Wave 1.4: Directory Structure
-- [ ] T018 Create project directory structure per plan.md in aci-frontend/src/
+- [x] T018 Create project directory structure per plan.md in aci-frontend/src/ ✅ 2024-12-13
 
-**Checkpoint**: Project bootstrapped with all dependencies installed, design tokens configured for reskinning
+**Checkpoint**: Project bootstrapped with all dependencies installed, design tokens configured for reskinning ✅
 
 ---
 
@@ -134,63 +134,63 @@ export const motion = {
 **WARNING**: No user story work can begin until this phase is complete AND PM-1 gate passes
 
 ### Wave 2.1: TypeScript Types
-- [ ] T019 [P] Create Threat types in aci-frontend/src/types/threat.ts
-- [ ] T020 [P] Create User and Auth types in aci-frontend/src/types/user.ts
-- [ ] T021 [P] Create Alert types in aci-frontend/src/types/alert.ts
-- [ ] T022 [P] Create Bookmark types in aci-frontend/src/types/bookmark.ts
-- [ ] T023 [P] Create API response types in aci-frontend/src/types/api.ts
-- [ ] T024 [P] Create WebSocket message types in aci-frontend/src/types/websocket.ts
+- [x] T019 [P] Create Threat types in aci-frontend/src/types/threat.ts ✅ 2024-12-13
+- [x] T020 [P] Create User and Auth types in aci-frontend/src/types/user.ts ✅ 2024-12-13
+- [x] T021 [P] Create Alert types in aci-frontend/src/types/alert.ts ✅ 2024-12-13
+- [x] T022 [P] Create Bookmark types in aci-frontend/src/types/bookmark.ts ✅ 2024-12-13
+- [x] T023 [P] Create API response types in aci-frontend/src/types/api.ts ✅ 2024-12-13
+- [x] T024 [P] Create WebSocket message types in aci-frontend/src/types/websocket.ts ✅ 2024-12-13
 
 ### Wave 2.2: API Client Infrastructure
-- [ ] T025 Create base API client with credentials handling in aci-frontend/src/services/api/client.ts
-- [ ] T026 [P] Create API error handling utilities in aci-frontend/src/services/api/errors.ts
-- [ ] T027 [P] Configure TanStack Query client in aci-frontend/src/services/api/queryClient.ts
+- [x] T025 Create base API client with credentials handling in aci-frontend/src/services/api/client.ts ✅ 2024-12-13
+- [x] T026 [P] Create API error handling utilities in aci-frontend/src/services/api/errors.ts ✅ 2024-12-13
+- [x] T027 [P] Configure TanStack Query client in aci-frontend/src/services/api/queryClient.ts ✅ 2024-12-13
 
 ### Wave 2.3: Authentication Context
-- [ ] T028 Create AuthContext provider in aci-frontend/src/stores/AuthContext.tsx
-- [ ] T029 [P] Create auth API functions in aci-frontend/src/services/api/auth.ts
-- [ ] T030 [P] Create useAuth hook in aci-frontend/src/hooks/useAuth.ts
+- [x] T028 Create AuthContext provider in aci-frontend/src/stores/AuthContext.tsx ✅ 2024-12-13
+- [x] T029 [P] Create auth API functions in aci-frontend/src/services/api/auth.ts ✅ 2024-12-13
+- [x] T030 [P] Create useAuth hook in aci-frontend/src/hooks/useAuth.ts ✅ 2024-12-13
 
 ### Wave 2.4: Routing Infrastructure
-- [ ] T031 Configure React Router v7 with routes in aci-frontend/src/App.tsx
-- [ ] T032 [P] Create ProtectedRoute component in aci-frontend/src/components/layout/ProtectedRoute.tsx
-- [ ] T033 [P] Create PublicRoute component in aci-frontend/src/components/layout/PublicRoute.tsx
+- [x] T031 Configure React Router v7 with routes in aci-frontend/src/App.tsx ✅ 2024-12-13
+- [x] T032 [P] Create ProtectedRoute component in aci-frontend/src/components/layout/ProtectedRoute.tsx ✅ 2024-12-13
+- [x] T033 [P] Create PublicRoute component in aci-frontend/src/components/layout/PublicRoute.tsx ✅ 2024-12-13
 
 ### Wave 2.5: Base Layout Components (USE DESIGN TOKENS ONLY)
-- [ ] T034 [P] Create Header component with navigation in aci-frontend/src/components/layout/Header.tsx
-- [ ] T035 [P] Create Sidebar component with nav links in aci-frontend/src/components/layout/Sidebar.tsx
-- [ ] T036 [P] Create Footer component in aci-frontend/src/components/layout/Footer.tsx
-- [ ] T037 Create MainLayout wrapper component in aci-frontend/src/components/layout/MainLayout.tsx
+- [x] T034 [P] Create Header component with navigation in aci-frontend/src/components/layout/Header.tsx ✅ 2024-12-13
+- [x] T035 [P] Create Sidebar component with nav links in aci-frontend/src/components/layout/Sidebar.tsx ✅ 2024-12-13
+- [x] T036 [P] Create Footer component in aci-frontend/src/components/layout/Footer.tsx ✅ 2024-12-13
+- [x] T037 Create MainLayout wrapper component in aci-frontend/src/components/layout/MainLayout.tsx ✅ 2024-12-13
 
 ### Wave 2.6: Shared UI Components (shadcn/ui - VERIFY TOKEN USAGE)
-- [ ] T038 [P] Add Button component via shadcn/ui in aci-frontend/src/components/ui/button.tsx
-- [ ] T039 [P] Add Card component via shadcn/ui in aci-frontend/src/components/ui/card.tsx
-- [ ] T040 [P] Add Badge component via shadcn/ui in aci-frontend/src/components/ui/badge.tsx
-- [ ] T041 [P] Add Input component via shadcn/ui in aci-frontend/src/components/ui/input.tsx
-- [ ] T042 [P] Add Select component via shadcn/ui in aci-frontend/src/components/ui/select.tsx
-- [ ] T043 [P] Add Dialog component via shadcn/ui in aci-frontend/src/components/ui/dialog.tsx
-- [ ] T044 [P] Add Skeleton component via shadcn/ui in aci-frontend/src/components/ui/skeleton.tsx
-- [ ] T045 [P] Add Toast component via shadcn/ui in aci-frontend/src/components/ui/toast.tsx
+- [x] T038 [P] Add Button component via shadcn/ui in aci-frontend/src/components/ui/button.tsx ✅ 2024-12-13
+- [x] T039 [P] Add Card component via shadcn/ui in aci-frontend/src/components/ui/card.tsx ✅ 2024-12-13
+- [x] T040 [P] Add Badge component via shadcn/ui in aci-frontend/src/components/ui/badge.tsx ✅ 2024-12-13
+- [x] T041 [P] Add Input component via shadcn/ui in aci-frontend/src/components/ui/input.tsx ✅ 2024-12-13
+- [x] T042 [P] Add Select component via shadcn/ui in aci-frontend/src/components/ui/select.tsx ✅ 2024-12-13
+- [x] T043 [P] Add Dialog component via shadcn/ui in aci-frontend/src/components/ui/dialog.tsx ✅ 2024-12-13
+- [x] T044 [P] Add Skeleton component via shadcn/ui in aci-frontend/src/components/ui/skeleton.tsx ✅ 2024-12-13
+- [x] T045 [P] Add Sonner (Toast) component via shadcn/ui in aci-frontend/src/components/ui/sonner.tsx ✅ 2024-12-13
 
 ### Wave 2.7: Error Handling & Loading States
-- [ ] T046 [P] Create ErrorBoundary component in aci-frontend/src/components/ErrorBoundary.tsx
-- [ ] T047 [P] Create LoadingSpinner component in aci-frontend/src/components/ui/LoadingSpinner.tsx
-- [ ] T048 [P] Create EmptyState component in aci-frontend/src/components/ui/EmptyState.tsx
+- [x] T046 [P] Create ErrorBoundary component in aci-frontend/src/components/ErrorBoundary.tsx ✅ 2024-12-13
+- [x] T047 [P] Create LoadingSpinner component in aci-frontend/src/components/ui/LoadingSpinner.tsx ✅ 2024-12-13
+- [x] T048 [P] Create EmptyState component in aci-frontend/src/components/ui/EmptyState.tsx ✅ 2024-12-13
 
 ### Wave 2.8: MSW Mock Setup
-- [ ] T049 [P] Configure MSW browser worker in aci-frontend/src/mocks/browser.ts
-- [ ] T050 [P] Create mock handlers for auth endpoints in aci-frontend/src/mocks/handlers/auth.ts
-- [ ] T051 [P] Create mock data fixtures in aci-frontend/src/mocks/fixtures/
+- [x] T049 [P] Configure MSW browser worker in aci-frontend/src/mocks/browser.ts ✅ 2024-12-13
+- [x] T050 [P] Create mock handlers for auth endpoints in aci-frontend/src/mocks/handlers/auth.ts ✅ 2024-12-13
+- [x] T051 [P] Create mock data fixtures in aci-frontend/src/mocks/fixtures/ ✅ 2024-12-13
 
 ### PM-1 Gate (Required before Phase 3)
 
 *Per Constitution Principle XVI - Product Manager Ownership*
 
-- [ ] T052 PM-1: Verify spec approval with prioritized backlog
-- [ ] T053 PM-1: Confirm success metrics defined and measurable
-- [ ] T054 PM-1: Verify gap analysis completed (Critical items addressed)
-- [ ] T055 PM-1: Create pm-review.md in specs/002-nexus-frontend/
-- [ ] T056 PM-1: Obtain PM sign-off for user story implementation
+- [x] T052 PM-1: Verify spec approval with prioritized backlog ✅ 2024-12-13
+- [x] T053 PM-1: Confirm success metrics defined and measurable ✅ 2024-12-13
+- [x] T054 PM-1: Verify gap analysis completed (Critical items addressed) ✅ 2024-12-13
+- [x] T055 PM-1: Create pm-review.md in specs/002-nexus-frontend/ ✅ 2024-12-13
+- [x] T056 PM-1: Obtain PM sign-off for user story implementation ✅ 2024-12-13
 
 **Checkpoint**: Foundation ready AND PM-1 passed - user story implementation can now begin
 
@@ -206,36 +206,36 @@ export const motion = {
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T057 [P] [US1] Unit test for MetricCard component in aci-frontend/tests/unit/components/dashboard/MetricCard.test.tsx
-- [ ] T058 [P] [US1] Unit test for SeverityDonut chart in aci-frontend/tests/unit/components/charts/SeverityDonut.test.tsx
-- [ ] T059 [P] [US1] Unit test for ThreatTimeline chart in aci-frontend/tests/unit/components/charts/ThreatTimeline.test.tsx
-- [ ] T060 [P] [US1] Unit test for ActivityFeed component in aci-frontend/tests/unit/components/dashboard/ActivityFeed.test.tsx
-- [ ] T061 [P] [US1] Integration test for Dashboard page in aci-frontend/tests/integration/Dashboard.test.tsx
+- [x] T057 [P] [US1] Unit test for MetricCard component in aci-frontend/tests/unit/components/dashboard/MetricCard.test.tsx ✅ 2024-12-14
+- [x] T058 [P] [US1] Unit test for SeverityDonut chart in aci-frontend/tests/unit/components/charts/SeverityDonut.test.tsx ✅ 2024-12-14
+- [x] T059 [P] [US1] Unit test for ThreatTimeline chart in aci-frontend/tests/unit/components/charts/ThreatTimeline.test.tsx ✅ 2024-12-14
+- [x] T060 [P] [US1] Unit test for ActivityFeed component in aci-frontend/tests/unit/components/dashboard/ActivityFeed.test.tsx ✅ 2024-12-14
+- [x] T061 [P] [US1] Integration test for Dashboard page in aci-frontend/tests/integration/Dashboard.test.tsx ✅ 2024-12-14
 
 ### Implementation for User Story 1
 
 #### Wave 3.1: Dashboard API Layer
-- [ ] T062 [P] [US1] Create dashboard API functions in aci-frontend/src/services/api/dashboard.ts
-- [ ] T063 [P] [US1] Create useDashboardSummary hook in aci-frontend/src/hooks/useDashboardSummary.ts
-- [ ] T064 [P] [US1] Create mock handlers for dashboard endpoints in aci-frontend/src/mocks/handlers/dashboard.ts
+- [x] T062 [P] [US1] Create dashboard API functions in aci-frontend/src/services/api/dashboard.ts ✅ 2024-12-14
+- [x] T063 [P] [US1] Create useDashboardSummary hook in aci-frontend/src/hooks/useDashboardSummary.ts ✅ 2024-12-14
+- [x] T064 [P] [US1] Create mock handlers for dashboard endpoints in aci-frontend/src/mocks/handlers/dashboard.ts ✅ 2024-12-14
 
 #### Wave 3.2: Chart Components (Reviz - USE DESIGN TOKENS FOR COLORS/MOTION)
-- [ ] T065 [P] [US1] Create SeverityDonut chart component in aci-frontend/src/components/charts/SeverityDonut.tsx
-- [ ] T066 [P] [US1] Create ThreatTimeline chart component in aci-frontend/src/components/charts/ThreatTimeline.tsx
-- [ ] T067 [P] [US1] Create chart theme utilities using design tokens in aci-frontend/src/utils/chartTheme.ts
+- [x] T065 [P] [US1] Create SeverityDonut chart component in aci-frontend/src/components/charts/SeverityDonut.tsx ✅ 2024-12-14
+- [x] T066 [P] [US1] Create ThreatTimeline chart component in aci-frontend/src/components/charts/ThreatTimeline.tsx ✅ 2024-12-14
+- [x] T067 [P] [US1] Create chart theme utilities using design tokens in aci-frontend/src/utils/chartTheme.ts ✅ 2024-12-14
 
 #### Wave 3.3: Dashboard Components
-- [ ] T068 [P] [US1] Create MetricCard component in aci-frontend/src/components/dashboard/MetricCard.tsx
-- [ ] T069 [P] [US1] Create MetricCardsGrid component in aci-frontend/src/components/dashboard/MetricCardsGrid.tsx
-- [ ] T070 [P] [US1] Create ActivityFeed component in aci-frontend/src/components/dashboard/ActivityFeed.tsx
-- [ ] T071 [P] [US1] Create ActivityItem component in aci-frontend/src/components/dashboard/ActivityItem.tsx
+- [x] T068 [P] [US1] Create MetricCard component in aci-frontend/src/components/dashboard/MetricCard.tsx ✅ 2024-12-14
+- [x] T069 [P] [US1] Create MetricCardsGrid component in aci-frontend/src/components/dashboard/MetricCardsGrid.tsx ✅ 2024-12-14
+- [x] T070 [P] [US1] Create ActivityFeed component in aci-frontend/src/components/dashboard/ActivityFeed.tsx ✅ 2024-12-14
+- [x] T071 [P] [US1] Create ActivityItem component in aci-frontend/src/components/dashboard/ActivityItem.tsx ✅ 2024-12-14
 
 #### Wave 3.4: Dashboard Page Assembly
-- [ ] T072 [US1] Create DashboardPage component in aci-frontend/src/pages/DashboardPage.tsx
-- [ ] T073 [US1] Add Dashboard route to App.tsx router configuration
-- [ ] T074 [US1] Create dashboard loading skeleton in aci-frontend/src/components/dashboard/DashboardSkeleton.tsx
+- [x] T072 [US1] Create DashboardPage component in aci-frontend/src/pages/DashboardPage.tsx ✅ 2024-12-14
+- [x] T073 [US1] Add Dashboard route to App.tsx router configuration ✅ 2024-12-14
+- [x] T074 [US1] Create dashboard loading skeleton in aci-frontend/src/components/dashboard/DashboardSkeleton.tsx ✅ 2024-12-14
 
-**Checkpoint**: User Story 1 (Dashboard) fully functional and testable independently
+**Checkpoint**: User Story 1 (Dashboard) fully functional and testable independently ✅
 
 ---
 
@@ -247,39 +247,39 @@ export const motion = {
 
 ### Tests for User Story 2
 
-- [ ] T075 [P] [US2] Unit test for ThreatCard component in aci-frontend/tests/unit/components/threat/ThreatCard.test.tsx
-- [ ] T076 [P] [US2] Unit test for FilterPanel component in aci-frontend/tests/unit/components/threat/FilterPanel.test.tsx
-- [ ] T077 [P] [US2] Unit test for useThreats hook in aci-frontend/tests/unit/hooks/useThreats.test.ts
-- [ ] T078 [P] [US2] Integration test for Threats page in aci-frontend/tests/integration/ThreatsPage.test.tsx
+- [x] T075 [P] [US2] Unit test for ThreatCard component in aci-frontend/tests/unit/components/threat/ThreatCard.test.tsx ✅ 2024-12-14
+- [x] T076 [P] [US2] Unit test for FilterPanel component in aci-frontend/tests/unit/components/threat/FilterPanel.test.tsx ✅ 2024-12-14
+- [x] T077 [P] [US2] Unit test for useThreats hook in aci-frontend/tests/unit/hooks/useThreats.test.tsx ✅ 2024-12-14
+- [x] T078 [P] [US2] Integration test for Threats page in aci-frontend/tests/integration/ThreatsPage.test.tsx ✅ 2024-12-14
 
 ### Implementation for User Story 2
 
 #### Wave 4.1: Threats API Layer
-- [ ] T079 [P] [US2] Create threats API functions in aci-frontend/src/services/api/threats.ts
-- [ ] T080 [P] [US2] Create useThreats hook with pagination in aci-frontend/src/hooks/useThreats.ts
-- [ ] T081 [P] [US2] Create useThreatFilters hook in aci-frontend/src/hooks/useThreatFilters.ts
-- [ ] T082 [P] [US2] Create mock handlers for threats endpoints in aci-frontend/src/mocks/handlers/threats.ts
+- [x] T079 [P] [US2] Create threats API functions in aci-frontend/src/services/api/threats.ts ✅ 2024-12-14
+- [x] T080 [P] [US2] Create useThreats hook with pagination in aci-frontend/src/hooks/useThreats.ts ✅ 2024-12-14
+- [x] T081 [P] [US2] Create useThreatFilters hook in aci-frontend/src/hooks/useThreatFilters.ts ✅ 2024-12-14
+- [x] T082 [P] [US2] Create mock handlers for threats endpoints in aci-frontend/src/mocks/handlers/threats.ts ✅ 2024-12-14
 
 #### Wave 4.2: Filter Components (USE DESIGN TOKENS)
-- [ ] T083 [P] [US2] Create SeverityFilter component in aci-frontend/src/components/threat/filters/SeverityFilter.tsx
-- [ ] T084 [P] [US2] Create CategoryFilter component in aci-frontend/src/components/threat/filters/CategoryFilter.tsx
-- [ ] T085 [P] [US2] Create SourceFilter component in aci-frontend/src/components/threat/filters/SourceFilter.tsx
-- [ ] T086 [P] [US2] Create DateRangeFilter component in aci-frontend/src/components/threat/filters/DateRangeFilter.tsx
-- [ ] T087 [P] [US2] Create SearchInput component in aci-frontend/src/components/threat/filters/SearchInput.tsx
+- [x] T083 [P] [US2] Create SeverityFilter component in aci-frontend/src/components/threat/filters/SeverityFilter.tsx ✅ 2024-12-14
+- [x] T084 [P] [US2] Create CategoryFilter component in aci-frontend/src/components/threat/filters/CategoryFilter.tsx ✅ 2024-12-14
+- [x] T085 [P] [US2] Create SourceFilter component in aci-frontend/src/components/threat/filters/SourceFilter.tsx ✅ 2024-12-14
+- [x] T086 [P] [US2] Create DateRangeFilter component in aci-frontend/src/components/threat/filters/DateRangeFilter.tsx ✅ 2024-12-14
+- [x] T087 [P] [US2] Create SearchInput component in aci-frontend/src/components/threat/filters/SearchInput.tsx ✅ 2024-12-14
 
 #### Wave 4.3: Threat List Components (USE SEVERITY COLOR TOKENS)
-- [ ] T088 [P] [US2] Create ThreatCard component in aci-frontend/src/components/threat/ThreatCard.tsx
-- [ ] T089 [P] [US2] Create SeverityBadge component using severity color tokens in aci-frontend/src/components/threat/SeverityBadge.tsx
-- [ ] T090 [P] [US2] Create ThreatList component in aci-frontend/src/components/threat/ThreatList.tsx
-- [ ] T091 [P] [US2] Create Pagination component in aci-frontend/src/components/ui/Pagination.tsx
+- [x] T088 [P] [US2] Create ThreatCard component in aci-frontend/src/components/threat/ThreatCard.tsx ✅ 2024-12-14
+- [x] T089 [P] [US2] Create SeverityBadge component using severity color tokens in aci-frontend/src/components/threat/SeverityBadge.tsx ✅ 2024-12-14
+- [x] T090 [P] [US2] Create ThreatList component in aci-frontend/src/components/threat/ThreatList.tsx ✅ 2024-12-14
+- [x] T091 [P] [US2] Create Pagination component in aci-frontend/src/components/ui/Pagination.tsx ✅ 2024-12-14
 
 #### Wave 4.4: Threats Page Assembly
-- [ ] T092 [US2] Create FilterPanel container component in aci-frontend/src/components/threat/FilterPanel.tsx
-- [ ] T093 [US2] Create ThreatsPage component in aci-frontend/src/pages/ThreatsPage.tsx
-- [ ] T094 [US2] Add Threats route to App.tsx router configuration
-- [ ] T095 [US2] Create threats loading skeleton in aci-frontend/src/components/threat/ThreatsSkeleton.tsx
+- [x] T092 [US2] Create FilterPanel container component in aci-frontend/src/components/threat/FilterPanel.tsx ✅ 2024-12-14
+- [x] T093 [US2] Create ThreatsPage component in aci-frontend/src/pages/ThreatsPage.tsx ✅ 2024-12-14
+- [x] T094 [US2] Add Threats route to App.tsx router configuration ✅ 2024-12-14
+- [x] T095 [US2] Create threats loading skeleton in aci-frontend/src/components/threat/ThreatsSkeleton.tsx ✅ 2024-12-14
 
-**Checkpoint**: User Story 2 (Threat Browsing) fully functional and testable independently
+**Checkpoint**: User Story 2 (Threat Browsing) fully functional and testable independently ✅
 
 ---
 
@@ -291,33 +291,56 @@ export const motion = {
 
 ### Tests for User Story 3
 
-- [ ] T096 [P] [US3] Unit test for ThreatDetail component in aci-frontend/tests/unit/components/threat/ThreatDetail.test.tsx
-- [ ] T097 [P] [US3] Unit test for CVEList component in aci-frontend/tests/unit/components/threat/CVEList.test.tsx
-- [ ] T098 [P] [US3] Unit test for useThreat hook in aci-frontend/tests/unit/hooks/useThreat.test.ts
-- [ ] T099 [P] [US3] Integration test for ThreatDetail page in aci-frontend/tests/integration/ThreatDetail.test.tsx
+- [x] T096 [P] [US3] Unit test for ThreatDetail component in aci-frontend/tests/unit/components/threat/ThreatDetail.test.tsx ✅ 2024-12-14
+- [x] T097 [P] [US3] Unit test for CVEList component in aci-frontend/tests/unit/components/threat/CVEList.test.tsx ✅ 2024-12-14
+- [x] T098 [P] [US3] Unit test for useThreat hook in aci-frontend/tests/unit/hooks/useThreat.test.ts ✅ 2024-12-14
+- [x] T099 [P] [US3] Integration test for ThreatDetail page in aci-frontend/tests/integration/ThreatDetail.test.tsx ✅ 2024-12-14
 
 ### Implementation for User Story 3
 
 #### Wave 5.1: Threat Detail API Layer
-- [ ] T100 [P] [US3] Create getThreat API function in aci-frontend/src/services/api/threats.ts
-- [ ] T101 [P] [US3] Create useThreat hook in aci-frontend/src/hooks/useThreat.ts
-- [ ] T102 [P] [US3] Create bookmark API functions in aci-frontend/src/services/api/bookmarks.ts
-- [ ] T103 [P] [US3] Create useToggleBookmark hook in aci-frontend/src/hooks/useToggleBookmark.ts
+- [x] T100 [P] [US3] Create getThreat API function in aci-frontend/src/services/api/threats.ts ✅ 2024-12-14
+- [x] T101 [P] [US3] Create useThreat hook in aci-frontend/src/hooks/useThreat.ts ✅ 2024-12-14
+- [x] T102 [P] [US3] Create bookmark API functions in aci-frontend/src/services/api/bookmarks.ts ✅ 2024-12-14
+- [x] T103 [P] [US3] Create useToggleBookmark hook in aci-frontend/src/hooks/useToggleBookmark.ts ✅ 2024-12-14
 
 #### Wave 5.2: Threat Detail Components (USE DESIGN TOKENS)
-- [ ] T104 [P] [US3] Create ThreatHeader component in aci-frontend/src/components/threat/ThreatHeader.tsx
-- [ ] T105 [P] [US3] Create ThreatContent component (markdown render) in aci-frontend/src/components/threat/ThreatContent.tsx
-- [ ] T106 [P] [US3] Create CVEList component in aci-frontend/src/components/threat/CVEList.tsx
-- [ ] T107 [P] [US3] Create CVEBadge component using severity tokens in aci-frontend/src/components/threat/CVEBadge.tsx
-- [ ] T108 [P] [US3] Create ArmorCTA component using brand tokens in aci-frontend/src/components/threat/ArmorCTA.tsx
-- [ ] T109 [P] [US3] Create BookmarkButton component in aci-frontend/src/components/threat/BookmarkButton.tsx
+- [x] T104 [P] [US3] Create ThreatHeader component in aci-frontend/src/components/threat/ThreatHeader.tsx ✅ 2024-12-14
+- [x] T105 [P] [US3] Create ThreatContent component (markdown render) in aci-frontend/src/components/threat/ThreatContent.tsx ✅ 2024-12-14
+- [x] T106 [P] [US3] Create CVEList component in aci-frontend/src/components/threat/CVEList.tsx ✅ 2024-12-14
+- [x] T107 [P] [US3] Create CVEBadge component using severity tokens in aci-frontend/src/components/threat/CVEBadge.tsx ✅ 2024-12-14
+- [x] T108 [P] [US3] Create ArmorCTA component using brand tokens in aci-frontend/src/components/threat/ArmorCTA.tsx ✅ 2024-12-14
+- [x] T109 [P] [US3] Create BookmarkButton component in aci-frontend/src/components/threat/BookmarkButton.tsx ✅ 2024-12-14
 
 #### Wave 5.3: Threat Detail Page Assembly
-- [ ] T110 [US3] Create ThreatDetailPage component in aci-frontend/src/pages/ThreatDetailPage.tsx
-- [ ] T111 [US3] Add ThreatDetail route to App.tsx router configuration
-- [ ] T112 [US3] Create threat detail loading skeleton in aci-frontend/src/components/threat/ThreatDetailSkeleton.tsx
+- [x] T110 [US3] Create ThreatDetailPage component in aci-frontend/src/pages/ThreatDetailPage.tsx ✅ 2024-12-14
+- [x] T111 [US3] Add ThreatDetail route to App.tsx router configuration ✅ 2024-12-14
+- [x] T112 [US3] Create threat detail loading skeleton in aci-frontend/src/components/threat/ThreatDetailSkeleton.tsx ✅ 2024-12-14
 
-**Checkpoint**: User Story 3 (Threat Detail) fully functional and testable independently
+**Checkpoint**: User Story 3 (Threat Detail) fully functional and testable independently ✅
+
+#### Wave 5.4: Enhanced Threat Intelligence Display (NEW)
+- [x] T200 [P] [US3] Create ExternalReferencesList component in aci-frontend/src/components/threat/ExternalReferencesList.tsx ✅ 2024-12-15
+- [x] T201 [P] [US3] Create IndustryBadges component in aci-frontend/src/components/threat/IndustryBadges.tsx ✅ 2024-12-15
+- [x] T202 [P] [US3] Create RecommendationsList component in aci-frontend/src/components/threat/RecommendationsList.tsx ✅ 2024-12-15
+- [x] T203 [P] [US3] Create IOCTable component in aci-frontend/src/components/threat/IOCTable.tsx ✅ 2024-12-15
+- [x] T204 [P] [US3] Create MitreTechniquesList component in aci-frontend/src/components/threat/MitreTechniquesList.tsx ✅ 2024-12-15
+- [x] T205 [P] [US3] Create ThreatTimeline component in aci-frontend/src/components/threat/ThreatTimeline.tsx ✅ 2024-12-15
+- [x] T206 [P] [US3] Create DeepDiveSection component (premium content) in aci-frontend/src/components/threat/DeepDiveSection.tsx ✅ 2024-12-15
+- [x] T207 [US3] Update ThreatDetail to integrate all enhanced components ✅ 2024-12-15
+- [x] T208 [P] Update threat types with enhanced fields (ExternalReference, Industry, Recommendation, DeepDive) in aci-frontend/src/types/threat.ts ✅ 2024-12-15
+- [x] T209 [P] Update mock fixtures with enhanced threat data (IOCs, MITRE, timeline) in aci-frontend/src/mocks/fixtures/threats.ts ✅ 2024-12-15
+
+**Checkpoint**: Enhanced Threat Intelligence Display fully implemented ✅
+
+#### Wave 5.5: Code Quality Cleanup
+- [x] T210 Fix ESLint errors in chart components (CustomTooltip render issue) ✅ 2024-12-15
+- [x] T211 Clean unused imports from test files (26 errors fixed) ✅ 2024-12-15
+- [x] T212 Add TypeScript interfaces for chart tooltips (TooltipPayload, ChartDataEntry) ✅ 2024-12-15
+- [x] T213 Extract button/badge variants for react-refresh compliance ✅ 2024-12-15
+- [x] T214 Fix button-in-button HTML violation in CategoryFilter ✅ 2024-12-15
+
+**Checkpoint**: All lint errors resolved (0 errors) ✅
 
 ---
 
@@ -326,12 +349,12 @@ export const motion = {
 **Purpose**: Mid-implementation PM alignment check (Constitution Principle XVI)
 
 **PM-2 Gate Deliverables**:
-- [ ] T113 PM-2: Feature completeness check - verify P1 stories functional
-- [ ] T114 PM-2: Scope validation - confirm no scope creep
-- [ ] T115 PM-2: Risk assessment - document implementation risks
-- [ ] T116 PM-2: Update pm-review.md with PM-2 sign-off
+- [x] T113 PM-2: Feature completeness check - verify P1 stories functional ✅ 2024-12-14
+- [x] T114 PM-2: Scope validation - confirm no scope creep ✅ 2024-12-14
+- [x] T115 PM-2: Risk assessment - document implementation risks ✅ 2024-12-14
+- [x] T116 PM-2: Update pm-review.md with PM-2 sign-off ✅ 2024-12-14
 
-**Checkpoint**: PM-2 gate passed - proceed to P2 stories
+**Checkpoint**: PM-2 gate passed - proceed to P2 stories ✅
 
 ---
 
@@ -493,19 +516,19 @@ export const motion = {
 ### Implementation for User Story 8
 
 #### Wave 11.1: Admin API Layer
-- [ ] T177 [P] [US8] Create admin API functions in aci-frontend/src/services/api/admin.ts
-- [ ] T178 [P] [US8] Create useReviewQueue hook in aci-frontend/src/hooks/useReviewQueue.ts
-- [ ] T179 [P] [US8] Create mock handlers for admin endpoints in aci-frontend/src/mocks/handlers/admin.ts
+- [x] T177 [P] [US8] Create admin API functions in aci-frontend/src/services/api/admin.ts ✅ 2024-12-14
+- [x] T178 [P] [US8] Create useReviewQueue hook in aci-frontend/src/hooks/useReviewQueue.ts ✅ 2024-12-14
+- [x] T179 [P] [US8] Create mock handlers for admin endpoints in aci-frontend/src/mocks/handlers/admin.ts ✅ 2024-12-14
 
 #### Wave 11.2: Admin Components (USE DESIGN TOKENS)
-- [ ] T180 [P] [US8] Create ContentReviewCard component in aci-frontend/src/components/admin/ContentReviewCard.tsx
-- [ ] T181 [P] [US8] Create ReviewQueue component in aci-frontend/src/components/admin/ReviewQueue.tsx
-- [ ] T182 [P] [US8] Create ApproveRejectButtons using semantic color tokens in aci-frontend/src/components/admin/ApproveRejectButtons.tsx
+- [x] T180 [P] [US8] Create ContentReviewCard component in aci-frontend/src/components/admin/ContentReviewCard.tsx ✅ 2024-12-14
+- [x] T181 [P] [US8] Create ReviewQueue component in aci-frontend/src/components/admin/ReviewQueue.tsx ✅ 2024-12-14
+- [x] T182 [P] [US8] Create ApproveRejectButtons using semantic color tokens in aci-frontend/src/components/admin/ApproveRejectButtons.tsx ✅ 2024-12-14
 - [ ] T183 [P] [US8] Create AdminGuard component in aci-frontend/src/components/admin/AdminGuard.tsx
 
 #### Wave 11.3: Admin Page Assembly
-- [ ] T184 [US8] Create AdminPage component in aci-frontend/src/pages/AdminPage.tsx
-- [ ] T185 [US8] Add Admin route (protected) to App.tsx router configuration
+- [x] T184 [US8] Create AdminPage component in aci-frontend/src/pages/AdminPage.tsx ✅ 2024-12-14
+- [x] T185 [US8] Add Admin route (protected) to App.tsx router configuration ✅ 2024-12-14 (MainLayout wrapper added)
 - [ ] T186 [US8] Add Admin nav link (role-based) to Sidebar in aci-frontend/src/components/layout/Sidebar.tsx
 
 **Checkpoint**: User Story 8 (Admin Review) fully functional

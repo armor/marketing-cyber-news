@@ -61,11 +61,26 @@ func (s *Server) setupRoutesWithWebSocket(wsHandler WebSocketHandler) {
 		// Webhook routes (HMAC validation handled in handler)
 		r.Route("/webhooks", func(r chi.Router) {
 			r.Post("/n8n", s.handlers.Webhook.HandleN8nWebhook)
+			r.Post("/trigger-enrichment", s.handlers.Webhook.TriggerEnrichment)
 		})
 
 		// Protected routes (authentication required)
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.Auth(s.jwtService))
+
+			// Dashboard routes
+			r.Route("/dashboard", func(r chi.Router) {
+				// Handle case where Dashboard handler is not initialized
+				if s.handlers.Dashboard == nil {
+					r.HandleFunc("/*", func(w http.ResponseWriter, req *http.Request) {
+						response.ServiceUnavailable(w, "Dashboard service is not available")
+					})
+					return
+				}
+
+				r.Get("/summary", s.handlers.Dashboard.GetSummary)
+				r.Get("/recent-activity", s.handlers.Dashboard.GetRecentActivity)
+			})
 
 			// Article routes
 			r.Route("/articles", func(r chi.Router) {
@@ -73,6 +88,9 @@ func (s *Server) setupRoutesWithWebSocket(wsHandler WebSocketHandler) {
 				r.Get("/search", s.handlers.Article.Search)
 				r.Get("/{id}", s.handlers.Article.GetByID)
 				r.Get("/slug/{slug}", s.handlers.Article.GetBySlug)
+
+				// Deep dive route
+				r.Get("/{id}/deep-dive", s.handlers.DeepDive.GetDeepDive)
 
 				// Article engagement routes
 				r.Post("/{id}/bookmark", s.handlers.Article.AddBookmark)

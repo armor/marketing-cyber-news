@@ -17,7 +17,8 @@ import (
 
 // AdminHandler handles admin-only HTTP requests
 type AdminHandler struct {
-	adminService *service.AdminService
+	adminService      *service.AdminService
+	enrichmentService *service.EnrichmentService
 }
 
 // NewAdminHandler creates a new admin handler instance

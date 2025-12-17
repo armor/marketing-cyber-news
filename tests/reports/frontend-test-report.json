@@ -1,0 +1,23 @@
+{
+  "loginStatus": "FAILED",
+  "loginErrors": [
+    "Login failed: page.waitForURL: Timeout 15000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+  ],
+  "threatsPage": {
+    "status": "FAILED",
+    "articlesVisible": 0,
+    "consoleErrors": [],
+    "consoleWarnings": []
+  },
+  "dashboardPage": {
+    "status": "NOT_FOUND",
+    "consoleErrors": [],
+    "consoleWarnings": []
+  },
+  "otherPagesTested": [],
+  "allConsoleErrors": [],
+  "allConsoleWarnings": [],
+  "allConsoleLogs": [],
+  "pageErrors": []
+}

@@ -1,5 +1,5 @@
-import { useAuth } from '../contexts/AuthContext';
-import { websocketService } from '../services/websocketService';
+import { useAuth } from '@/hooks/useAuth';
+import { websocketService } from '@/services/websocketService';
 import { useState, useEffect } from 'react';
 
 interface HeaderProps {
@@ -10,6 +10,8 @@ interface HeaderProps {
 export function Header({ onNavigate, currentPage }: HeaderProps) {
   const { user, logout } = useAuth();
   const [wsStatus, setWsStatus] = useState<'connected' | 'connecting' | 'disconnected'>('disconnected');
+  const [hoveredNav, setHoveredNav] = useState<string | null>(null);
+  const [hoveredLogout, setHoveredLogout] = useState(false);
 
   useEffect(() => {
     // Connect to WebSocket when component mounts
@@ -26,9 +28,9 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
   }, []);
 
   const wsStatusColors = {
-    connected: 'bg-green-500',
-    connecting: 'bg-yellow-500 animate-pulse',
-    disconnected: 'bg-red-500',
+    connected: 'var(--color-success)',
+    connecting: 'var(--color-warning)',
+    disconnected: 'var(--color-critical)',
   };
 
   const navItems = [
@@ -38,61 +40,162 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
     { key: 'stats', label: 'Stats', icon: '📊' },
   ] as const;
 
+  const getNavButtonStyle = (itemKey: string) => {
+    const isActive = currentPage === itemKey;
+    const isHovered = hoveredNav === itemKey;
+
+    if (isActive) {
+      return {
+        background: 'var(--gradient-btn-trust)',
+        color: 'var(--color-text-primary)',
+        boxShadow: 'var(--shadow-btn-accent)',
+      };
+    }
+
+    return {
+      backgroundColor: isHovered ? 'var(--color-bg-elevated)' : 'transparent',
+      color: 'var(--color-text-secondary)',
+    };
+  };
+
   return (
-    <header className="bg-gray-800 border-b border-gray-700">
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
+    <header
+      style={{
+        backgroundColor: 'var(--color-bg-elevated)',
+        borderBottom: `var(--border-width-thin) solid var(--color-border-default)`,
+        boxShadow: 'var(--shadow-sm)',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: '80rem',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          padding: 'var(--spacing-4)',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           {/* Logo and Brand */}
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-white">
-              <span className="text-primary">NEXUS</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-4)' }}>
+            <h1
+              style={{
+                fontSize: 'var(--typography-font-size-2xl)',
+                fontWeight: 'var(--typography-font-weight-bold)',
+                color: 'var(--color-text-primary)',
+              }}
+            >
+              <span style={{ color: 'var(--color-brand-primary)' }}>NEXUS</span>
             </h1>
             <div className="hidden sm:block">
-              <span className="text-sm text-gray-400">by Armor</span>
-              <span className="text-xs text-gray-500 block">Proactive Cyber Defense</span>
+              <span style={{ fontSize: 'var(--typography-font-size-sm)', color: 'var(--color-text-muted)' }}>
+                by Armor
+              </span>
+              <span
+                style={{
+                  fontSize: 'var(--typography-font-size-xs)',
+                  color: 'var(--color-text-muted)',
+                  display: 'block',
+                }}
+              >
+                Proactive Cyber Defense
+              </span>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center gap-2">
+          <nav
+            className="hidden md:flex"
+            style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-2)' }}
+          >
             {navItems.map((item) => (
               <button
                 key={item.key}
                 onClick={() => onNavigate(item.key)}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  currentPage === item.key
-                    ? 'bg-primary text-white'
-                    : 'text-gray-300 hover:bg-gray-700'
-                }`}
+                onMouseEnter={() => setHoveredNav(item.key)}
+                onMouseLeave={() => setHoveredNav(null)}
+                style={{
+                  ...getNavButtonStyle(item.key),
+                  padding: `var(--spacing-2) var(--spacing-4)`,
+                  borderRadius: 'var(--border-radius-lg)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: 'var(--typography-font-size-sm)',
+                  fontWeight: 'var(--typography-font-weight-medium)',
+                  transition: `all var(--motion-duration-fast) var(--motion-easing-default)`,
+                }}
               >
-                <span className="mr-2">{item.icon}</span>
+                <span style={{ marginRight: 'var(--spacing-2)' }}>{item.icon}</span>
                 {item.label}
               </button>
             ))}
           </nav>
 
           {/* User Menu */}
-          <div className="flex items-center gap-4">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-4)' }}>
             {/* WebSocket Status Indicator */}
-            <div className="flex items-center gap-2">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-2)' }}>
               <div
-                className={`w-2 h-2 rounded-full ${wsStatusColors[wsStatus]}`}
+                style={{
+                  width: 'var(--spacing-2)',
+                  height: 'var(--spacing-2)',
+                  borderRadius: 'var(--border-radius-full)',
+                  backgroundColor: wsStatusColors[wsStatus],
+                  animation: wsStatus === 'connecting' ? 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none',
+                }}
                 title={`WebSocket: ${wsStatus}`}
               />
-              <span className="text-xs text-gray-400 hidden sm:block">
+              <span
+                className="hidden sm:block"
+                style={{
+                  fontSize: 'var(--typography-font-size-xs)',
+                  color: 'var(--color-text-muted)',
+                }}
+              >
                 {wsStatus === 'connected' ? 'Live' : wsStatus}
               </span>
             </div>
 
             {/* User Info */}
-            <div className="flex items-center gap-3">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium text-white">{user?.name}</p>
-                <p className="text-xs text-gray-400">{user?.email}</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-3)' }}>
+              <div className="hidden sm:block" style={{ textAlign: 'right' }}>
+                <p
+                  style={{
+                    fontSize: 'var(--typography-font-size-sm)',
+                    fontWeight: 'var(--typography-font-weight-medium)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                >
+                  {user?.name}
+                </p>
+                <p
+                  style={{
+                    fontSize: 'var(--typography-font-size-xs)',
+                    color: 'var(--color-text-muted)',
+                  }}
+                >
+                  {user?.email}
+                </p>
               </div>
               <button
                 onClick={logout}
-                className="px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+                onMouseEnter={() => setHoveredLogout(true)}
+                onMouseLeave={() => setHoveredLogout(false)}
+                style={{
+                  padding: `var(--spacing-2) var(--spacing-3)`,
+                  fontSize: 'var(--typography-font-size-sm)',
+                  color: hoveredLogout ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                  backgroundColor: hoveredLogout ? 'var(--color-bg-secondary)' : 'transparent',
+                  borderRadius: 'var(--border-radius-lg)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: `all var(--motion-duration-fast) var(--motion-easing-default)`,
+                }}
               >
                 Logout
               </button>
@@ -101,18 +204,36 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
         </div>
 
         {/* Mobile Navigation */}
-        <nav className="md:hidden flex items-center gap-2 mt-4 overflow-x-auto pb-2">
+        <nav
+          className="md:hidden"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--spacing-2)',
+            marginTop: 'var(--spacing-4)',
+            overflowX: 'auto',
+            paddingBottom: 'var(--spacing-2)',
+          }}
+        >
           {navItems.map((item) => (
             <button
               key={item.key}
               onClick={() => onNavigate(item.key)}
-              className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
-                currentPage === item.key
-                  ? 'bg-primary text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
-              }`}
+              onMouseEnter={() => setHoveredNav(item.key)}
+              onMouseLeave={() => setHoveredNav(null)}
+              style={{
+                ...getNavButtonStyle(item.key),
+                padding: `var(--spacing-2) var(--spacing-4)`,
+                borderRadius: 'var(--border-radius-lg)',
+                whiteSpace: 'nowrap',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 'var(--typography-font-size-sm)',
+                fontWeight: 'var(--typography-font-weight-medium)',
+                transition: `all var(--motion-duration-fast) var(--motion-easing-default)`,
+              }}
             >
-              <span className="mr-2">{item.icon}</span>
+              <span style={{ marginRight: 'var(--spacing-2)' }}>{item.icon}</span>
               {item.label}
             </button>
           ))}

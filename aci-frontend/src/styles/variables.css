@@ -1,0 +1,921 @@
+/**
+ * CSS Custom Properties (Design Tokens)
+ * NEXUS Cybersecurity Dashboard - Fortified Horizon Theme
+ *
+ * All design token values are defined here. This file supports light and dark themes.
+ * Components should NEVER hardcode values - always reference these CSS custom properties.
+ *
+ * Token categories:
+ * - Colors (brand, severity, semantic, backgrounds, text, borders)
+ * - Gradients (page, card, button, badge, icon, progress)
+ * - Shadows (card, button, badge, icon, progress)
+ * - Motion (duration, easing)
+ * - Typography (fonts, sizes, weights, line-height, letter-spacing)
+ * - Spacing (base scale, component, layout, gaps)
+ * - Borders (radius, width)
+ */
+
+/* ===================================================================
+   LIGHT THEME (Default) - Fortified Horizon Light
+   =================================================================== */
+
+:root {
+  /* ---------------------------------------------------------------
+     FORTIFIED HORIZON - Background Scale (Warm Grays)
+     --------------------------------------------------------------- */
+  --color-cream: #f0f0e8;
+  --color-bone: #e5e5dc;
+  --color-pearl: #d8d8d0;
+  --color-stone: #c8c8c0;
+  --color-pebble: #b8b8b0;
+  --color-dove: #a8a8a0;
+  --color-cement: #989890;
+
+  /* ---------------------------------------------------------------
+     FORTIFIED HORIZON - Foreground Scale (Light Theme)
+     --------------------------------------------------------------- */
+  --color-silver: #888880;
+  --color-ash: #686860;
+  --color-slate: #484840;
+  --color-steel: #303028;
+  --color-iron: #282820;
+  --color-graphite: #1a1a14;
+  --color-charcoal: #121210;
+  --color-black: #000000;
+
+  /* ---------------------------------------------------------------
+     FORTIFIED HORIZON - Accent Colors
+     --------------------------------------------------------------- */
+  --color-signal-orange: #ea580c;
+  --color-armor-blue: #2563eb;
+  --color-shield-cyan: #0891b2;
+  --color-compliant: #7c3aed;
+
+  /* ---------------------------------------------------------------
+     FORTIFIED HORIZON - Semantic Colors
+     --------------------------------------------------------------- */
+  --color-critical: #dc2626;
+  --color-warning: #d97706;
+  --color-success: #16a34a;
+
+  /* ---------------------------------------------------------------
+     COLORS - Brand (mapped to Fortified Horizon)
+     --------------------------------------------------------------- */
+  --color-brand-primary: var(--color-armor-blue);
+  --color-brand-secondary: var(--color-shield-cyan);
+  --color-brand-accent: var(--color-compliant);
+
+  /* ---------------------------------------------------------------
+     COLORS - Severity (Threat Levels - mapped to Fortified Horizon)
+     --------------------------------------------------------------- */
+  --color-severity-critical: var(--color-critical);
+  --color-severity-high: var(--color-signal-orange);
+  --color-severity-medium: var(--color-warning);
+  --color-severity-low: var(--color-success);
+
+  /* ---------------------------------------------------------------
+     COLORS - Semantic (UI States - mapped to Fortified Horizon)
+     --------------------------------------------------------------- */
+  --color-semantic-success: var(--color-success);
+  --color-semantic-warning: var(--color-warning);
+  --color-semantic-error: var(--color-critical);
+  --color-semantic-info: var(--color-armor-blue);
+
+  /* ---------------------------------------------------------------
+     COLORS - Backgrounds (mapped to Fortified Horizon)
+     --------------------------------------------------------------- */
+  --color-bg-primary: var(--color-pearl);
+  --color-bg-secondary: var(--color-bone);
+  --color-bg-elevated: var(--color-cream);
+
+  /* ---------------------------------------------------------------
+     COLORS - Text (mapped to Fortified Horizon)
+     --------------------------------------------------------------- */
+  --color-text-primary: var(--color-iron);
+  --color-text-secondary: var(--color-slate);
+  --color-text-muted: var(--color-ash);
+
+  /* ---------------------------------------------------------------
+     COLORS - Borders (mapped to Fortified Horizon)
+     --------------------------------------------------------------- */
+  --color-border-default: var(--color-dove);
+  --color-border-focus: var(--color-armor-blue);
+  --color-border-error: var(--color-critical);
+
+  /* ---------------------------------------------------------------
+     GRADIENTS - Page & Section Backgrounds
+     --------------------------------------------------------------- */
+  --gradient-page: linear-gradient(180deg,
+    #d8d8d0 0%,
+    #c8c8c0 30%,
+    #b8b8b0 60%,
+    #a8a8a0 100%);
+
+  --gradient-hero:
+    radial-gradient(ellipse at 20% 0%, rgba(37, 99, 235, 0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 80% 100%, rgba(8, 145, 178, 0.05) 0%, transparent 40%),
+    linear-gradient(180deg,
+      #f0f0e8 0%,
+      #e5e5dc 20%,
+      #d8d8d0 50%,
+      #c8c8c0 80%,
+      #b8b8b0 100%);
+
+  --gradient-diagonal: linear-gradient(135deg,
+    #f0f0e8 0%,
+    #e5e5dc 25%,
+    #d8d8d0 50%,
+    #c8c8c0 75%,
+    #b8b8b0 100%);
+
+  /* ---------------------------------------------------------------
+     GRADIENTS - Card & Surface
+     --------------------------------------------------------------- */
+  --gradient-card: linear-gradient(180deg,
+    #f0f0e8 0%,
+    #e5e5dc 40%,
+    #d8d8d0 100%);
+
+  --gradient-component: linear-gradient(180deg,
+    #f0f0e8 0%,
+    #e5e5dc 30%,
+    #d8d8d0 70%,
+    #c8c8c0 100%);
+
+  --gradient-panel-header: linear-gradient(180deg,
+    #f0f0e8 0%,
+    #e5e5dc 100%);
+
+  --gradient-dashboard-body: linear-gradient(180deg,
+    #d8d8d0 0%,
+    #c8c8c0 50%,
+    #b8b8b0 100%);
+
+  /* ---------------------------------------------------------------
+     GRADIENTS - Buttons
+     --------------------------------------------------------------- */
+  --gradient-btn-primary: linear-gradient(180deg,
+    #484840 0%,
+    #303028 30%,
+    #202018 70%,
+    #000000 100%);
+
+  --gradient-btn-secondary: linear-gradient(180deg,
+    #f0f0e8 0%,
+    #e5e5dc 40%,
+    #d8d8d0 100%);
+
+  --gradient-btn-alert: linear-gradient(180deg,
+    #ff9050 0%,
+    #ff7030 30%,
+    #ea580c 70%,
+    #d04a00 100%);
+
+  --gradient-btn-trust: linear-gradient(180deg,
+    #6ba3ff 0%,
+    #4b8df5 30%,
+    #2563eb 70%,
+    #1d4ed8 100%);
+
+  /* ---------------------------------------------------------------
+     GRADIENTS - Badges
+     --------------------------------------------------------------- */
+  --gradient-badge-neutral: linear-gradient(180deg,
+    #d8d8d0 0%,
+    #c8c8c0 50%,
+    #b8b8b0 100%);
+
+  --gradient-badge-critical: linear-gradient(180deg,
+    rgba(220, 38, 38, 0.08) 0%,
+    rgba(220, 38, 38, 0.12) 100%);
+
+  --gradient-badge-warning: linear-gradient(180deg,
+    rgba(217, 119, 6, 0.08) 0%,
+    rgba(217, 119, 6, 0.12) 100%);
+
+  --gradient-badge-success: linear-gradient(180deg,
+    rgba(22, 163, 74, 0.08) 0%,
+    rgba(22, 163, 74, 0.12) 100%);
+
+  --gradient-badge-info: linear-gradient(180deg,
+    rgba(37, 99, 235, 0.08) 0%,
+    rgba(37, 99, 235, 0.12) 100%);
+
+  /* ---------------------------------------------------------------
+     GRADIENTS - Icons
+     --------------------------------------------------------------- */
+  --gradient-icon-threat: linear-gradient(135deg,
+    rgba(234, 88, 12, 0.15) 0%,
+    rgba(234, 88, 12, 0.25) 100%);
+
+  --gradient-icon-warning: linear-gradient(135deg,
+    rgba(217, 119, 6, 0.15) 0%,
+    rgba(217, 119, 6, 0.25) 100%);
+
+  --gradient-icon-success: linear-gradient(135deg,
+    rgba(22, 163, 74, 0.15) 0%,
+    rgba(22, 163, 74, 0.25) 100%);
+
+  --gradient-icon-neutral: linear-gradient(135deg,
+    #d8d8d0 0%,
+    #c8c8c0 50%,
+    #b8b8b0 100%);
+
+  /* ---------------------------------------------------------------
+     GRADIENTS - Progress Bars
+     --------------------------------------------------------------- */
+  --gradient-progress-default: linear-gradient(90deg,
+    #303028 0%,
+    #202018 50%,
+    #121210 100%);
+
+  --gradient-progress-success: linear-gradient(90deg,
+    #4ade80 0%,
+    #34d058 30%,
+    #22c55e 70%,
+    #16a34a 100%);
+
+  --gradient-progress-warning: linear-gradient(90deg,
+    #fcd34d 0%,
+    #fbbf24 30%,
+    #f59e0b 70%,
+    #d97706 100%);
+
+  --gradient-progress-track: linear-gradient(180deg,
+    #b8b8b0 0%,
+    #a8a8a0 50%,
+    #989890 100%);
+
+  /* ---------------------------------------------------------------
+     SHADOWS - Card Shadows (Layered)
+     --------------------------------------------------------------- */
+  --shadow-card:
+    0 4px 8px rgba(0, 0, 0, 0.08),
+    0 8px 16px rgba(0, 0, 0, 0.08),
+    0 16px 32px rgba(0, 0, 0, 0.06),
+    inset 0 2px 0 rgba(255, 255, 255, 0.7);
+
+  --shadow-hero:
+    0 2px 4px rgba(0, 0, 0, 0.08),
+    0 4px 8px rgba(0, 0, 0, 0.08),
+    0 8px 16px rgba(0, 0, 0, 0.08),
+    0 16px 32px rgba(0, 0, 0, 0.10),
+    0 32px 64px rgba(0, 0, 0, 0.12),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4);
+
+  /* ---------------------------------------------------------------
+     SHADOWS - Button Shadows
+     --------------------------------------------------------------- */
+  --shadow-btn-primary:
+    0 4px 8px rgba(0, 0, 0, 0.25),
+    0 8px 16px rgba(0, 0, 0, 0.25),
+    0 16px 32px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+
+  --shadow-btn-primary-hover:
+    0 8px 16px rgba(0, 0, 0, 0.3),
+    0 16px 32px rgba(0, 0, 0, 0.25),
+    0 24px 48px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+  --shadow-btn-accent:
+    0 2px 4px rgba(0, 0, 0, 0.15),
+    0 4px 8px rgba(0, 0, 0, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+
+  --shadow-btn-accent-hover:
+    0 4px 8px rgba(0, 0, 0, 0.18),
+    0 8px 16px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+
+  /* ---------------------------------------------------------------
+     SHADOWS - Badge & Icon
+     --------------------------------------------------------------- */
+  --shadow-badge: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+
+  --shadow-icon: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+
+  /* ---------------------------------------------------------------
+     SHADOWS - Progress Bars
+     --------------------------------------------------------------- */
+  --shadow-progress-track: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-progress-fill: 0 1px 2px rgba(0, 0, 0, 0.15);
+
+  /* ---------------------------------------------------------------
+     MOTION - Duration
+     --------------------------------------------------------------- */
+  --motion-duration-instant: 0ms;   /* No animation */
+  --motion-duration-fast: 150ms;    /* Quick interactions */
+  --motion-duration-normal: 300ms;  /* Standard transitions */
+  --motion-duration-slow: 500ms;    /* Deliberate animations */
+
+  /* ---------------------------------------------------------------
+     MOTION - Easing
+     --------------------------------------------------------------- */
+  --motion-easing-default: cubic-bezier(0.4, 0, 0.2, 1);     /* Standard ease */
+  --motion-easing-in: cubic-bezier(0.4, 0, 1, 1);            /* Ease-in */
+  --motion-easing-out: cubic-bezier(0, 0, 0.2, 1);           /* Ease-out */
+  --motion-easing-in-out: cubic-bezier(0.4, 0, 0.2, 1);      /* Ease-in-out */
+  --motion-easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* Spring effect */
+
+  /* ---------------------------------------------------------------
+     TYPOGRAPHY - Font Families (Fortified Horizon)
+     --------------------------------------------------------------- */
+  --typography-font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --typography-font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ---------------------------------------------------------------
+     TYPOGRAPHY - Font Sizes
+     --------------------------------------------------------------- */
+  --typography-font-size-xs: 0.75rem;   /* 12px */
+  --typography-font-size-sm: 0.875rem;  /* 14px */
+  --typography-font-size-base: 1rem;    /* 16px */
+  --typography-font-size-lg: 1.125rem;  /* 18px */
+  --typography-font-size-xl: 1.25rem;   /* 20px */
+  --typography-font-size-2xl: 1.5rem;   /* 24px */
+  --typography-font-size-3xl: 1.875rem; /* 30px */
+  --typography-font-size-4xl: 2.25rem;  /* 36px */
+
+  /* ---------------------------------------------------------------
+     TYPOGRAPHY - Font Weights
+     --------------------------------------------------------------- */
+  --typography-font-weight-normal: 400;
+  --typography-font-weight-medium: 500;
+  --typography-font-weight-semibold: 600;
+  --typography-font-weight-bold: 700;
+
+  /* ---------------------------------------------------------------
+     TYPOGRAPHY - Line Heights
+     --------------------------------------------------------------- */
+  --typography-line-height-tight: 1.25;   /* Compact text */
+  --typography-line-height-normal: 1.5;   /* Body text */
+  --typography-line-height-relaxed: 1.75; /* Spacious text */
+
+  /* ---------------------------------------------------------------
+     TYPOGRAPHY - Letter Spacing
+     --------------------------------------------------------------- */
+  --typography-letter-spacing-tight: -0.01em;
+  --typography-letter-spacing-normal: 0em;
+  --typography-letter-spacing-wide: 0.025em;
+
+  /* ---------------------------------------------------------------
+     SPACING - Base Scale (4px/0.25rem grid)
+     --------------------------------------------------------------- */
+  --spacing-0: 0;           /* 0px */
+  --spacing-1: 0.25rem;     /* 4px */
+  --spacing-2: 0.5rem;      /* 8px */
+  --spacing-3: 0.75rem;     /* 12px */
+  --spacing-4: 1rem;        /* 16px */
+  --spacing-5: 1.25rem;     /* 20px */
+  --spacing-6: 1.5rem;      /* 24px */
+  --spacing-8: 2rem;        /* 32px */
+  --spacing-10: 2.5rem;     /* 40px */
+  --spacing-12: 3rem;       /* 48px */
+  --spacing-16: 4rem;       /* 64px */
+  --spacing-20: 5rem;       /* 80px */
+  --spacing-24: 6rem;       /* 96px */
+  --spacing-32: 8rem;       /* 128px */
+  --spacing-40: 10rem;      /* 160px */
+  --spacing-48: 12rem;      /* 192px */
+  --spacing-64: 16rem;      /* 256px */
+
+  /* ---------------------------------------------------------------
+     SPACING - Semantic Component Spacing
+     --------------------------------------------------------------- */
+  --spacing-component-xs: 0.5rem;   /* 8px */
+  --spacing-component-sm: 0.75rem;  /* 12px */
+  --spacing-component-md: 1rem;     /* 16px */
+  --spacing-component-lg: 1.5rem;   /* 24px */
+  --spacing-component-xl: 2rem;     /* 32px */
+
+  /* ---------------------------------------------------------------
+     SPACING - Semantic Layout Spacing
+     --------------------------------------------------------------- */
+  --spacing-layout-page: 2rem;      /* 32px - Page padding */
+  --spacing-layout-section: 3rem;   /* 48px - Section spacing */
+  --spacing-layout-card: 1.5rem;    /* 24px - Card padding */
+
+  /* ---------------------------------------------------------------
+     SPACING - Semantic Gap Spacing
+     --------------------------------------------------------------- */
+  --spacing-gap-xs: 0.5rem;   /* 8px */
+  --spacing-gap-sm: 0.75rem;  /* 12px */
+  --spacing-gap-md: 1rem;     /* 16px */
+  --spacing-gap-lg: 1.5rem;   /* 24px */
+
+  /* ---------------------------------------------------------------
+     LAYOUT - Fixed Dimensions
+     --------------------------------------------------------------- */
+  --layout-header-height: 4.5rem;        /* 72px */
+  --layout-sidebar-width: 16rem;         /* 256px */
+  --layout-sidebar-collapsed: 4rem;      /* 64px */
+  --layout-full-width: 100%;             /* Full width */
+
+  /* ---------------------------------------------------------------
+     SPACING - Icon Sizes
+     --------------------------------------------------------------- */
+  --spacing-icon-sm: 1rem;       /* 16px */
+  --spacing-icon-md: 1.5rem;     /* 24px */
+  --spacing-icon-lg: 2rem;       /* 32px */
+  --spacing-icon-avatar-sm: 2rem;    /* 32px */
+  --spacing-icon-avatar-md: 2.5rem;  /* 40px */
+  --spacing-icon-avatar-lg: 3rem;    /* 48px */
+
+  /* ---------------------------------------------------------------
+     SHADOWS - Elevation Levels
+     --------------------------------------------------------------- */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* ---------------------------------------------------------------
+     SHADOWS - Focus States
+     --------------------------------------------------------------- */
+  --shadow-focus: 0 0 0 3px rgba(14, 165, 233, 0.3);        /* Brand primary focus ring */
+  --shadow-focus-error: 0 0 0 3px rgba(239, 68, 68, 0.3);   /* Error focus ring */
+
+  /* ---------------------------------------------------------------
+     BORDERS - Radius
+     --------------------------------------------------------------- */
+  --border-radius-none: 0;
+  --border-radius-sm: 0.25rem;   /* 4px */
+  --border-radius-md: 0.5rem;    /* 8px */
+  --border-radius-lg: 0.75rem;   /* 12px */
+  --border-radius-xl: 1rem;      /* 16px */
+  --border-radius-full: 9999px;  /* Fully rounded (pills, avatars) */
+
+  /* ---------------------------------------------------------------
+     BORDERS - Width
+     --------------------------------------------------------------- */
+  --border-width-none: 0;
+  --border-width-thin: 1px;
+  --border-width-medium: 2px;
+  --border-width-thick: 4px;
+}
+
+/* ===================================================================
+   DARK THEME - Fortified Horizon Dark
+   =================================================================== */
+
+[data-theme="dark"] {
+  /* ---------------------------------------------------------------
+     FORTIFIED HORIZON - Background Scale (Deep Blacks)
+     --------------------------------------------------------------- */
+  --color-void: #000000;
+  --color-abyss: #05050a;
+  --color-obsidian: #0a0a10;
+  --color-onyx: #101018;
+  --color-coal: #161620;
+  --color-charcoal: #1c1c28;
+  --color-graphite: #242432;
+
+  /* ---------------------------------------------------------------
+     FORTIFIED HORIZON - Foreground Scale (Dark Theme)
+     --------------------------------------------------------------- */
+  --color-slate: #2e2e3e;
+  --color-steel: #3a3a4a;
+  --color-iron: #484858;
+  --color-pewter: #5a5a6a;
+  --color-silver: #727284;
+  --color-ash: #8e8e9e;
+  --color-mist: #a8a8b8;
+  --color-cloud: #c4c4d0;
+  --color-snow: #e0e0e8;
+
+  /* ---------------------------------------------------------------
+     FORTIFIED HORIZON - Accent Colors
+     --------------------------------------------------------------- */
+  --color-signal-orange: #f97316;
+  --color-armor-blue: #2563eb;
+  --color-shield-cyan: #06b6d4;
+  --color-compliant: #8b5cf6;
+
+  /* ---------------------------------------------------------------
+     FORTIFIED HORIZON - Semantic Colors
+     --------------------------------------------------------------- */
+  --color-critical: #ef4444;
+  --color-warning: #f59e0b;
+  --color-success: #22c55e;
+
+  /* ---------------------------------------------------------------
+     COLORS - Brand (mapped to Fortified Horizon)
+     --------------------------------------------------------------- */
+  --color-brand-primary: var(--color-armor-blue);
+  --color-brand-secondary: var(--color-shield-cyan);
+  --color-brand-accent: var(--color-compliant);
+
+  /* ---------------------------------------------------------------
+     COLORS - Severity (Threat Levels - mapped to Fortified Horizon)
+     --------------------------------------------------------------- */
+  --color-severity-critical: var(--color-critical);
+  --color-severity-high: var(--color-signal-orange);
+  --color-severity-medium: var(--color-warning);
+  --color-severity-low: var(--color-success);
+
+  /* ---------------------------------------------------------------
+     COLORS - Semantic (UI States - mapped to Fortified Horizon)
+     --------------------------------------------------------------- */
+  --color-semantic-success: var(--color-success);
+  --color-semantic-warning: var(--color-warning);
+  --color-semantic-error: var(--color-critical);
+  --color-semantic-info: var(--color-armor-blue);
+
+  /* ---------------------------------------------------------------
+     COLORS - Backgrounds (mapped to Fortified Horizon)
+     --------------------------------------------------------------- */
+  --color-bg-primary: var(--color-obsidian);
+  --color-bg-secondary: var(--color-onyx);
+  --color-bg-elevated: var(--color-coal);
+
+  /* ---------------------------------------------------------------
+     COLORS - Text (mapped to Fortified Horizon)
+     --------------------------------------------------------------- */
+  --color-text-primary: var(--color-snow);
+  --color-text-secondary: var(--color-mist);
+  --color-text-muted: var(--color-ash);
+
+  /* ---------------------------------------------------------------
+     COLORS - Borders (mapped to Fortified Horizon)
+     --------------------------------------------------------------- */
+  --color-border-default: var(--color-slate);
+  --color-border-focus: var(--color-armor-blue);
+  --color-border-error: var(--color-critical);
+
+  /* ---------------------------------------------------------------
+     GRADIENTS - Page & Section Backgrounds
+     --------------------------------------------------------------- */
+  --gradient-page: linear-gradient(180deg,
+    #0a0a10 0%,
+    #101018 30%,
+    #161620 60%,
+    #1c1c28 100%);
+
+  --gradient-hero:
+    radial-gradient(ellipse at 20% 0%, rgba(37, 99, 235, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(6, 182, 212, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+    linear-gradient(180deg,
+      #000000 0%,
+      #05050a 15%,
+      #0a0a10 35%,
+      #101018 55%,
+      #161620 75%,
+      #1c1c28 100%);
+
+  --gradient-diagonal: linear-gradient(135deg,
+    #0a0a10 0%,
+    #101018 25%,
+    #161620 50%,
+    #1c1c28 75%,
+    #242432 100%);
+
+  /* ---------------------------------------------------------------
+     GRADIENTS - Card & Surface
+     --------------------------------------------------------------- */
+  --gradient-card: linear-gradient(180deg,
+    #0a0a10 0%,
+    #101018 40%,
+    #161620 100%);
+
+  --gradient-component: linear-gradient(180deg,
+    #0a0a10 0%,
+    #101018 30%,
+    #161620 70%,
+    #1c1c28 100%);
+
+  --gradient-panel-header: linear-gradient(180deg,
+    #05050a 0%,
+    #0a0a10 100%);
+
+  --gradient-dashboard-body: linear-gradient(180deg,
+    #161620 0%,
+    #1c1c28 50%,
+    #242432 100%);
+
+  /* ---------------------------------------------------------------
+     GRADIENTS - Buttons
+     --------------------------------------------------------------- */
+  --gradient-btn-primary: linear-gradient(180deg,
+    #ffffff 0%,
+    #e0e0e8 30%,
+    #c4c4d0 70%,
+    #a8a8b8 100%);
+
+  --gradient-btn-secondary: linear-gradient(180deg,
+    #242432 0%,
+    #2e2e3e 40%,
+    #3a3a4a 100%);
+
+  --gradient-btn-alert: linear-gradient(180deg,
+    #ffb380 0%,
+    #ff9050 25%,
+    #f97316 60%,
+    #ea580c 100%);
+
+  --gradient-btn-trust: linear-gradient(180deg,
+    #93c5fd 0%,
+    #60a5fa 25%,
+    #2563eb 60%,
+    #1d4ed8 100%);
+
+  /* ---------------------------------------------------------------
+     GRADIENTS - Badges
+     --------------------------------------------------------------- */
+  --gradient-badge-neutral: linear-gradient(180deg,
+    #1c1c28 0%,
+    #242432 50%,
+    #2e2e3e 100%);
+
+  --gradient-badge-critical: linear-gradient(180deg,
+    rgba(239, 68, 68, 0.12) 0%,
+    rgba(239, 68, 68, 0.18) 100%);
+
+  --gradient-badge-warning: linear-gradient(180deg,
+    rgba(245, 158, 11, 0.12) 0%,
+    rgba(245, 158, 11, 0.18) 100%);
+
+  --gradient-badge-success: linear-gradient(180deg,
+    rgba(34, 197, 94, 0.12) 0%,
+    rgba(34, 197, 94, 0.18) 100%);
+
+  --gradient-badge-info: linear-gradient(180deg,
+    rgba(37, 99, 235, 0.12) 0%,
+    rgba(37, 99, 235, 0.18) 100%);
+
+  /* ---------------------------------------------------------------
+     GRADIENTS - Icons
+     --------------------------------------------------------------- */
+  --gradient-icon-threat: linear-gradient(135deg,
+    rgba(249, 115, 22, 0.15) 0%,
+    rgba(249, 115, 22, 0.25) 100%);
+
+  --gradient-icon-warning: linear-gradient(135deg,
+    rgba(245, 158, 11, 0.15) 0%,
+    rgba(245, 158, 11, 0.25) 100%);
+
+  --gradient-icon-success: linear-gradient(135deg,
+    rgba(34, 197, 94, 0.15) 0%,
+    rgba(34, 197, 94, 0.25) 100%);
+
+  --gradient-icon-neutral: linear-gradient(135deg,
+    #1c1c28 0%,
+    #242432 50%,
+    #2e2e3e 100%);
+
+  /* ---------------------------------------------------------------
+     GRADIENTS - Progress Bars
+     --------------------------------------------------------------- */
+  --gradient-progress-default: linear-gradient(90deg,
+    #a8a8b8 0%,
+    #c4c4d0 50%,
+    #e0e0e8 100%);
+
+  --gradient-progress-success: linear-gradient(90deg,
+    #86efac 0%,
+    #4ade80 30%,
+    #22c55e 70%,
+    #16a34a 100%);
+
+  --gradient-progress-warning: linear-gradient(90deg,
+    #fde68a 0%,
+    #fcd34d 30%,
+    #f59e0b 70%,
+    #d97706 100%);
+
+  --gradient-progress-track: linear-gradient(180deg,
+    #2e2e3e 0%,
+    #3a3a4a 50%,
+    #484858 100%);
+
+  /* ---------------------------------------------------------------
+     SHADOWS - Card Shadows (Layered)
+     --------------------------------------------------------------- */
+  --shadow-card:
+    0 4px 8px rgba(0, 0, 0, 0.4),
+    0 8px 16px rgba(0, 0, 0, 0.3),
+    0 16px 32px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  --shadow-hero:
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    0 4px 8px rgba(0, 0, 0, 0.4),
+    0 8px 16px rgba(0, 0, 0, 0.3),
+    0 16px 32px rgba(0, 0, 0, 0.3),
+    0 32px 64px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* ---------------------------------------------------------------
+     SHADOWS - Button Shadows
+     --------------------------------------------------------------- */
+  --shadow-btn-primary:
+    0 4px 8px rgba(255, 255, 255, 0.15),
+    0 8px 16px rgba(255, 255, 255, 0.10),
+    0 16px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  --shadow-btn-primary-hover:
+    0 8px 16px rgba(255, 255, 255, 0.2),
+    0 16px 32px rgba(255, 255, 255, 0.15),
+    0 24px 48px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+
+  --shadow-btn-accent:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    0 4px 8px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+  --shadow-btn-accent-hover:
+    0 4px 8px rgba(0, 0, 0, 0.35),
+    0 8px 16px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+
+  /* ---------------------------------------------------------------
+     SHADOWS - Badge & Icon
+     --------------------------------------------------------------- */
+  --shadow-badge: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  --shadow-icon: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  /* ---------------------------------------------------------------
+     SHADOWS - Progress Bars
+     --------------------------------------------------------------- */
+  --shadow-progress-track: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-progress-fill: 0 1px 2px rgba(0, 0, 0, 0.2);
+
+  /* ---------------------------------------------------------------
+     SHADOWS - Elevation & Focus States (Legacy)
+     --------------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.6), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+  --shadow-focus: 0 0 0 3px rgba(37, 99, 235, 0.4);
+  --shadow-focus-error: 0 0 0 3px rgba(239, 68, 68, 0.4);
+}
+
+/* ===================================================================
+   ALTERNATIVE DARK THEME SELECTOR (class-based)
+   Use this if you prefer class-based theme switching (.dark)
+   Same values as [data-theme="dark"] - Fortified Horizon Dark
+   =================================================================== */
+
+.dark {
+  /* Fortified Horizon - Background Scale (Deep Blacks) */
+  --color-void: #000000;
+  --color-abyss: #05050a;
+  --color-obsidian: #0a0a10;
+  --color-onyx: #101018;
+  --color-coal: #161620;
+  --color-charcoal: #1c1c28;
+  --color-graphite: #242432;
+
+  /* Fortified Horizon - Foreground Scale (Dark Theme) */
+  --color-slate: #2e2e3e;
+  --color-steel: #3a3a4a;
+  --color-iron: #484858;
+  --color-pewter: #5a5a6a;
+  --color-silver: #727284;
+  --color-ash: #8e8e9e;
+  --color-mist: #a8a8b8;
+  --color-cloud: #c4c4d0;
+  --color-snow: #e0e0e8;
+
+  /* Fortified Horizon - Accent Colors */
+  --color-signal-orange: #f97316;
+  --color-armor-blue: #2563eb;
+  --color-shield-cyan: #06b6d4;
+  --color-compliant: #8b5cf6;
+
+  /* Fortified Horizon - Semantic Colors */
+  --color-critical: #ef4444;
+  --color-warning: #f59e0b;
+  --color-success: #22c55e;
+
+  /* Mapped Brand Colors */
+  --color-brand-primary: var(--color-armor-blue);
+  --color-brand-secondary: var(--color-shield-cyan);
+  --color-brand-accent: var(--color-compliant);
+
+  /* Mapped Severity Colors */
+  --color-severity-critical: var(--color-critical);
+  --color-severity-high: var(--color-signal-orange);
+  --color-severity-medium: var(--color-warning);
+  --color-severity-low: var(--color-success);
+
+  /* Mapped Semantic Colors */
+  --color-semantic-success: var(--color-success);
+  --color-semantic-warning: var(--color-warning);
+  --color-semantic-error: var(--color-critical);
+  --color-semantic-info: var(--color-armor-blue);
+
+  /* Mapped Backgrounds */
+  --color-bg-primary: var(--color-obsidian);
+  --color-bg-secondary: var(--color-onyx);
+  --color-bg-elevated: var(--color-coal);
+
+  /* Mapped Text */
+  --color-text-primary: var(--color-snow);
+  --color-text-secondary: var(--color-mist);
+  --color-text-muted: var(--color-ash);
+
+  /* Mapped Borders */
+  --color-border-default: var(--color-slate);
+  --color-border-focus: var(--color-armor-blue);
+  --color-border-error: var(--color-critical);
+
+  /* Gradients - Page & Section */
+  --gradient-page: linear-gradient(180deg, #0a0a10 0%, #101018 30%, #161620 60%, #1c1c28 100%);
+  --gradient-hero: radial-gradient(ellipse at 20% 0%, rgba(37, 99, 235, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 100%, rgba(6, 182, 212, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%), linear-gradient(180deg, #000000 0%, #05050a 15%, #0a0a10 35%, #101018 55%, #161620 75%, #1c1c28 100%);
+  --gradient-diagonal: linear-gradient(135deg, #0a0a10 0%, #101018 25%, #161620 50%, #1c1c28 75%, #242432 100%);
+
+  /* Gradients - Card & Surface */
+  --gradient-card: linear-gradient(180deg, #0a0a10 0%, #101018 40%, #161620 100%);
+  --gradient-component: linear-gradient(180deg, #0a0a10 0%, #101018 30%, #161620 70%, #1c1c28 100%);
+  --gradient-panel-header: linear-gradient(180deg, #05050a 0%, #0a0a10 100%);
+  --gradient-dashboard-body: linear-gradient(180deg, #161620 0%, #1c1c28 50%, #242432 100%);
+
+  /* Gradients - Buttons */
+  --gradient-btn-primary: linear-gradient(180deg, #ffffff 0%, #e0e0e8 30%, #c4c4d0 70%, #a8a8b8 100%);
+  --gradient-btn-secondary: linear-gradient(180deg, #242432 0%, #2e2e3e 40%, #3a3a4a 100%);
+  --gradient-btn-alert: linear-gradient(180deg, #ffb380 0%, #ff9050 25%, #f97316 60%, #ea580c 100%);
+  --gradient-btn-trust: linear-gradient(180deg, #93c5fd 0%, #60a5fa 25%, #2563eb 60%, #1d4ed8 100%);
+
+  /* Gradients - Badges */
+  --gradient-badge-neutral: linear-gradient(180deg, #1c1c28 0%, #242432 50%, #2e2e3e 100%);
+  --gradient-badge-critical: linear-gradient(180deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.18) 100%);
+  --gradient-badge-warning: linear-gradient(180deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.18) 100%);
+  --gradient-badge-success: linear-gradient(180deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.18) 100%);
+  --gradient-badge-info: linear-gradient(180deg, rgba(37, 99, 235, 0.12) 0%, rgba(37, 99, 235, 0.18) 100%);
+
+  /* Gradients - Icons */
+  --gradient-icon-threat: linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(249, 115, 22, 0.25) 100%);
+  --gradient-icon-warning: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.25) 100%);
+  --gradient-icon-success: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.25) 100%);
+  --gradient-icon-neutral: linear-gradient(135deg, #1c1c28 0%, #242432 50%, #2e2e3e 100%);
+
+  /* Gradients - Progress Bars */
+  --gradient-progress-default: linear-gradient(90deg, #a8a8b8 0%, #c4c4d0 50%, #e0e0e8 100%);
+  --gradient-progress-success: linear-gradient(90deg, #86efac 0%, #4ade80 30%, #22c55e 70%, #16a34a 100%);
+  --gradient-progress-warning: linear-gradient(90deg, #fde68a 0%, #fcd34d 30%, #f59e0b 70%, #d97706 100%);
+  --gradient-progress-track: linear-gradient(180deg, #2e2e3e 0%, #3a3a4a 50%, #484858 100%);
+
+  /* Shadows - Card */
+  --shadow-card: 0 4px 8px rgba(0, 0, 0, 0.4), 0 8px 16px rgba(0, 0, 0, 0.3), 0 16px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-hero: 0 2px 4px rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.4), 0 8px 16px rgba(0, 0, 0, 0.3), 0 16px 32px rgba(0, 0, 0, 0.3), 0 32px 64px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* Shadows - Button */
+  --shadow-btn-primary: 0 4px 8px rgba(255, 255, 255, 0.15), 0 8px 16px rgba(255, 255, 255, 0.10), 0 16px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --shadow-btn-primary-hover: 0 8px 16px rgba(255, 255, 255, 0.2), 0 16px 32px rgba(255, 255, 255, 0.15), 0 24px 48px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 1);
+  --shadow-btn-accent: 0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  --shadow-btn-accent-hover: 0 4px 8px rgba(0, 0, 0, 0.35), 0 8px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+
+  /* Shadows - Badge & Icon */
+  --shadow-badge: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --shadow-icon: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  /* Shadows - Progress */
+  --shadow-progress-track: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-progress-fill: 0 1px 2px rgba(0, 0, 0, 0.2);
+
+  /* Shadows - Legacy */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.6), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+  --shadow-focus: 0 0 0 3px rgba(37, 99, 235, 0.4);
+  --shadow-focus-error: 0 0 0 3px rgba(239, 68, 68, 0.4);
+}
+
+/* ===================================================================
+   USAGE NOTES
+   ===================================================================
+
+   Components should reference these tokens via the TypeScript token files:
+
+   import { colors } from '@/styles/tokens/colors';
+   import { spacing } from '@/styles/tokens/spacing';
+   import { typography } from '@/styles/tokens/typography';
+
+   Example (styled-components):
+   ```tsx
+   const Button = styled.button`
+     background: ${colors.brand.primary};
+     padding: ${spacing[4]};
+     font-size: ${typography.fontSize.base};
+     border-radius: ${borders.radius.md};
+     transition: all ${motion.duration.fast} ${motion.easing.default};
+   `;
+   ```
+
+   Example (Tailwind via arbitrary values):
+   ```tsx
+   <div className="bg-[var(--color-brand-primary)] p-[var(--spacing-4)]">
+   ```
+
+   Dark Mode Toggle:
+   - Add data-theme="dark" to <html> or <body>
+   - Or add class="dark" to <html> or <body>
+
+   ================================================================ */

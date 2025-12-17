@@ -1,3 +1,16 @@
+/* Fortified Horizon Theme - Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* Import Fortified Horizon design tokens */
+@import "./styles/variables.css";
+
+@import "tw-animate-css";
+
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,21 +30,170 @@
   animation: slide-in 0.3s ease-out;
 }
 
-/* Custom scrollbar for dark theme */
+/* Custom scrollbar - Fortified Horizon Theme */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
+/* Light theme scrollbar */
 ::-webkit-scrollbar-track {
-  background: #1f2937;
+  background: var(--color-dove, #a8a8a0);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: var(--color-slate, #484840);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: var(--color-steel, #303028);
+}
+
+/* Dark theme scrollbar */
+.dark ::-webkit-scrollbar-track,
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--color-onyx, #101018);
+}
+
+.dark ::-webkit-scrollbar-thumb,
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--color-slate, #2e2e3e);
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover,
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-steel, #3a3a4a);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+  /* Fortified Horizon Light Theme - Warm Grays */
+  --background: #d8d8d0;           /* pearl - page background */
+  --foreground: #282820;           /* iron - primary text */
+  --card: #f0f0e8;                 /* cream - card surface */
+  --card-foreground: #282820;      /* iron - card text */
+  --popover: #f0f0e8;              /* cream - popover surface */
+  --popover-foreground: #282820;   /* iron - popover text */
+  --primary: #2563eb;              /* armor-blue - primary actions */
+  --primary-foreground: #f0f0e8;   /* cream - primary button text */
+  --secondary: #e5e5dc;            /* bone - secondary surface */
+  --secondary-foreground: #303028; /* steel - secondary text */
+  --muted: #c8c8c0;                /* stone - muted surface */
+  --muted-foreground: #686860;     /* ash - muted text */
+  --accent: #0891b2;               /* shield-cyan - accent */
+  --accent-foreground: #f0f0e8;    /* cream - accent text */
+  --destructive: #dc2626;          /* critical - destructive */
+  --border: #a8a8a0;               /* dove - borders */
+  --input: #b8b8b0;                /* pebble - input borders */
+  --ring: #2563eb;                 /* armor-blue - focus ring */
+  /* Chart colors - Fortified Horizon accent palette */
+  --chart-1: #ea580c;              /* signal-orange */
+  --chart-2: #0891b2;              /* shield-cyan */
+  --chart-3: #2563eb;              /* armor-blue */
+  --chart-4: #16a34a;              /* success */
+  --chart-5: #7c3aed;              /* compliant */
+  /* Sidebar - Fortified Horizon */
+  --sidebar: #e5e5dc;              /* bone */
+  --sidebar-foreground: #282820;   /* iron */
+  --sidebar-primary: #2563eb;      /* armor-blue */
+  --sidebar-primary-foreground: #f0f0e8; /* cream */
+  --sidebar-accent: #d8d8d0;       /* pearl */
+  --sidebar-accent-foreground: #303028;  /* steel */
+  --sidebar-border: #a8a8a0;       /* dove */
+  --sidebar-ring: #2563eb;         /* armor-blue */
+}
+
+.dark {
+  /* Fortified Horizon Dark Theme - Deep Blacks with Warm Undertones */
+  --background: #0a0a10;           /* obsidian - page background */
+  --foreground: #e0e0e8;           /* snow - primary text */
+  --card: #161620;                 /* coal - card surface */
+  --card-foreground: #e0e0e8;      /* snow - card text */
+  --popover: #161620;              /* coal - popover surface */
+  --popover-foreground: #e0e0e8;   /* snow - popover text */
+  --primary: #e0e0e8;              /* snow - primary actions (inverted) */
+  --primary-foreground: #0a0a10;   /* obsidian - primary button text */
+  --secondary: #1c1c28;            /* charcoal - secondary surface */
+  --secondary-foreground: #c4c4d0; /* cloud - secondary text */
+  --muted: #242432;                /* graphite - muted surface */
+  --muted-foreground: #8e8e9e;     /* ash - muted text */
+  --accent: #06b6d4;               /* shield-cyan - accent */
+  --accent-foreground: #e0e0e8;    /* snow - accent text */
+  --destructive: #ef4444;          /* critical - destructive */
+  --border: #2e2e3e;               /* slate - borders */
+  --input: #3a3a4a;                /* steel - input borders */
+  --ring: #2563eb;                 /* armor-blue - focus ring */
+  /* Chart colors - Fortified Horizon accent palette */
+  --chart-1: #f97316;              /* signal-orange */
+  --chart-2: #06b6d4;              /* shield-cyan */
+  --chart-3: #2563eb;              /* armor-blue */
+  --chart-4: #22c55e;              /* success */
+  --chart-5: #8b5cf6;              /* compliant */
+  /* Sidebar - Fortified Horizon Dark */
+  --sidebar: #101018;              /* onyx */
+  --sidebar-foreground: #e0e0e8;   /* snow */
+  --sidebar-primary: #2563eb;      /* armor-blue */
+  --sidebar-primary-foreground: #e0e0e8; /* snow */
+  --sidebar-accent: #1c1c28;       /* charcoal */
+  --sidebar-accent-foreground: #c4c4d0;  /* cloud */
+  --sidebar-border: #2e2e3e;       /* slate */
+  --sidebar-ring: #2563eb;         /* armor-blue */
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  /* Apply Fortified Horizon page gradient background */
+  body {
+    font-family: var(--typography-font-family-sans);
+    background: var(--gradient-page);
+    min-height: 100vh;
+    color: var(--color-text-primary);
+    line-height: var(--typography-line-height-normal);
+  }
 }

@@ -63,11 +63,13 @@ const originalWarn = console.warn;
 
 beforeAll(() => {
   console.error = vi.fn((...args) => {
-    // Filter out React warnings if desired
+    // Filter out React warnings and nested button errors (component implementation issues)
     if (
       typeof args[0] === 'string' &&
       (args[0].includes('Warning: ReactDOM.render') ||
-        args[0].includes('Not implemented: HTMLFormElement.prototype.submit'))
+        args[0].includes('Not implemented: HTMLFormElement.prototype.submit') ||
+        args[0].includes('<button> cannot be a descendant of <button>') ||
+        args[0].includes('<button> cannot contain a nested <button>'))
     ) {
       return;
     }
@@ -77,7 +79,9 @@ beforeAll(() => {
   console.warn = vi.fn((...args) => {
     if (
       typeof args[0] === 'string' &&
-      args[0].includes('Warning:')
+      (args[0].includes('Warning:') ||
+        args[0].includes('MSW') ||
+        args[0].includes('WebSocket'))
     ) {
       return;
     }

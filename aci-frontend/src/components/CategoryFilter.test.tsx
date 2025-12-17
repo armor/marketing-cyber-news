@@ -3,8 +3,7 @@
  * Component provides category selection/filtering functionality
  */
 
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '../test/utils';
+import { describe, it, expect } from 'vitest';
 import {
   mockCategories,
   mockVulnerabilityCategory,
@@ -25,8 +24,6 @@ describe('CategoryFilter', () => {
   });
 
   it('should pass category slug when selection changes', () => {
-    const mockOnSelect = vi.fn();
-
     // Once component is implemented:
     // render(
     //   <CategoryFilter
@@ -40,11 +37,10 @@ describe('CategoryFilter', () => {
     // expect(mockOnSelect).toHaveBeenCalledWith('vulnerabilities');
 
     // For now, verify test structure
-    expect(mockOnSelect).not.toHaveBeenCalled();
+    expect(mockCategories).toHaveLength(3);
   });
 
   it('should clear filter when All Categories is selected', () => {
-    const mockOnSelect = vi.fn();
 
     // Once component is implemented:
     // render(
@@ -107,8 +103,6 @@ describe('CategoryFilter', () => {
   });
 
   it('should not call onSelect if selection is the same', () => {
-    const mockOnSelect = vi.fn();
-
     // Once component is implemented:
     // render(
     //   <CategoryFilter

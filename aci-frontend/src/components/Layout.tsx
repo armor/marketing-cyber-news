@@ -9,15 +9,64 @@ interface LayoutProps {
 
 export function Layout({ children, onNavigate, currentPage }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'var(--gradient-page)',
+      }}
+    >
       <Header onNavigate={onNavigate} currentPage={currentPage} />
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main
+        style={{
+          maxWidth: '80rem',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          padding: 'var(--spacing-4)',
+          paddingTop: 'var(--spacing-8)',
+          paddingBottom: 'var(--spacing-8)',
+        }}
+      >
         {children}
       </main>
-      <footer className="border-t border-gray-800 py-6 mt-8">
-        <div className="max-w-7xl mx-auto px-4 text-center text-gray-500 text-sm">
-          <p><span className="text-primary font-semibold">NEXUS</span> by Armor</p>
-          <p className="mt-1 text-xs">Proactive Cyber Defense | © 2025 Armor</p>
+      <footer
+        style={{
+          borderTop: `var(--border-width-thin) solid var(--color-border-default)`,
+          paddingTop: 'var(--spacing-6)',
+          paddingBottom: 'var(--spacing-6)',
+          marginTop: 'var(--spacing-8)',
+          backgroundColor: 'var(--color-bg-elevated)',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: '80rem',
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            padding: 'var(--spacing-4)',
+            textAlign: 'center',
+            color: 'var(--color-text-muted)',
+            fontSize: 'var(--typography-font-size-sm)',
+          }}
+        >
+          <p>
+            <span
+              style={{
+                color: 'var(--color-brand-primary)',
+                fontWeight: 'var(--typography-font-weight-semibold)',
+              }}
+            >
+              NEXUS
+            </span>{' '}
+            by Armor
+          </p>
+          <p
+            style={{
+              marginTop: 'var(--spacing-1)',
+              fontSize: 'var(--typography-font-size-xs)',
+            }}
+          >
+            Proactive Cyber Defense | © 2025 Armor
+          </p>
         </div>
       </footer>
     </div>

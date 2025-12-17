@@ -1,6 +1,14 @@
+/**
+ * Register Page
+ *
+ * Registration page with themed design using Fortified Horizon tokens.
+ * Centered card layout with NEXUS branding.
+ */
+
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
+import { Shield } from 'lucide-react';
 
 export function Register(): React.JSX.Element {
   const [name, setName] = useState('');
@@ -29,8 +37,8 @@ export function Register(): React.JSX.Element {
     setIsLoading(true);
 
     try {
-      await register(email, password, name);
-      navigate('/');
+      await register({ email, password, name });
+      navigate('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
@@ -38,27 +46,142 @@ export function Register(): React.JSX.Element {
     }
   };
 
+  const inputStyle = {
+    width: '100%',
+    padding: 'var(--spacing-3) var(--spacing-4)',
+    background: 'var(--color-bg-secondary)',
+    border: '1px solid var(--color-border-default)',
+    borderRadius: 'var(--border-radius-lg)',
+    color: 'var(--color-text-primary)',
+    fontSize: 'var(--typography-font-size-base)',
+    transition: 'all var(--motion-duration-fast)',
+    outline: 'none',
+    boxSizing: 'border-box' as const,
+  };
+
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.currentTarget.style.borderColor = 'var(--color-border-focus)';
+    e.currentTarget.style.boxShadow = 'var(--shadow-focus)';
+  };
+
+  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.currentTarget.style.borderColor = 'var(--color-border-default)';
+    e.currentTarget.style.boxShadow = 'none';
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
-      <div className="max-w-md w-full space-y-8 p-8 bg-gray-800 rounded-xl shadow-2xl">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-white">
-            <span className="text-primary">NEXUS</span>
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{
+        background: 'var(--gradient-hero)',
+      }}
+    >
+      {/* Register Card */}
+      <div
+        className="mx-4"
+        style={{
+          width: '400px',
+          maxWidth: '100%',
+          background: 'var(--gradient-card)',
+          borderRadius: 'var(--border-radius-xl)',
+          boxShadow: 'var(--shadow-hero)',
+          border: '1px solid var(--color-border-default)',
+          padding: 'var(--spacing-6)',
+          boxSizing: 'border-box',
+        }}
+      >
+        {/* Header/Branding */}
+        <div className="text-center" style={{ marginBottom: 'var(--spacing-5)' }}>
+          {/* Logo */}
+          <div
+            className="inline-flex items-center justify-center"
+            style={{
+              width: 'var(--spacing-12)',
+              height: 'var(--spacing-12)',
+              borderRadius: 'var(--border-radius-lg)',
+              background: 'var(--gradient-btn-primary)',
+              boxShadow: 'var(--shadow-btn-primary)',
+              marginBottom: 'var(--spacing-3)',
+            }}
+          >
+            <Shield
+              className="w-6 h-6"
+              style={{ color: 'var(--color-bg-elevated)' }}
+            />
+          </div>
+
+          <h1
+            className="font-bold tracking-tight"
+            style={{
+              fontSize: 'var(--typography-font-size-2xl)',
+              color: 'var(--color-text-primary)',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            NEXUS
           </h1>
-          <p className="mt-2 text-gray-400">by Armor</p>
-          <p className="text-xs text-gray-500">Proactive Cyber Defense</p>
-          <h2 className="mt-6 text-2xl font-semibold text-white">Create Account</h2>
+          <p
+            className="font-medium"
+            style={{
+              color: 'var(--color-brand-primary)',
+              fontSize: 'var(--typography-font-size-sm)',
+              marginTop: 'var(--spacing-1)',
+            }}
+          >
+            by Armor
+          </p>
+          <p
+            style={{
+              color: 'var(--color-text-muted)',
+              fontSize: 'var(--typography-font-size-xs)',
+              marginTop: 'var(--spacing-1)',
+            }}
+          >
+            Proactive Cyber Defense
+          </p>
+
+          <h2
+            className="font-semibold"
+            style={{
+              fontSize: 'var(--typography-font-size-xl)',
+              color: 'var(--color-text-primary)',
+              marginTop: 'var(--spacing-6)',
+            }}
+          >
+            Create Account
+          </h2>
         </div>
 
+        {/* Error Message */}
         {error && (
-          <div className="bg-red-500/20 border border-red-500 text-red-400 px-4 py-3 rounded">
+          <div
+            style={{
+              background: 'var(--gradient-badge-critical)',
+              border: '1px solid var(--color-semantic-error)',
+              color: 'var(--color-semantic-error)',
+              padding: 'var(--spacing-3) var(--spacing-4)',
+              borderRadius: 'var(--border-radius-md)',
+              marginBottom: 'var(--spacing-6)',
+              fontSize: 'var(--typography-font-size-sm)',
+            }}
+          >
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-300">
+        {/* Register Form */}
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: 'var(--spacing-4)' }}>
+            <label
+              htmlFor="name"
+              style={{
+                display: 'block',
+                fontSize: 'var(--typography-font-size-sm)',
+                fontWeight: 'var(--typography-font-weight-medium)',
+                color: 'var(--color-text-secondary)',
+                marginBottom: 'var(--spacing-2)',
+              }}
+            >
               Full Name
             </label>
             <input
@@ -67,13 +190,24 @@ export function Register(): React.JSX.Element {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="John Doe"
+              style={inputStyle}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
             />
           </div>
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300">
+          <div style={{ marginBottom: 'var(--spacing-4)' }}>
+            <label
+              htmlFor="email"
+              style={{
+                display: 'block',
+                fontSize: 'var(--typography-font-size-sm)',
+                fontWeight: 'var(--typography-font-weight-medium)',
+                color: 'var(--color-text-secondary)',
+                marginBottom: 'var(--spacing-2)',
+              }}
+            >
               Email
             </label>
             <input
@@ -82,13 +216,24 @@ export function Register(): React.JSX.Element {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="you@example.com"
+              style={inputStyle}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
             />
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300">
+          <div style={{ marginBottom: 'var(--spacing-4)' }}>
+            <label
+              htmlFor="password"
+              style={{
+                display: 'block',
+                fontSize: 'var(--typography-font-size-sm)',
+                fontWeight: 'var(--typography-font-weight-medium)',
+                color: 'var(--color-text-secondary)',
+                marginBottom: 'var(--spacing-2)',
+              }}
+            >
               Password
             </label>
             <input
@@ -97,13 +242,24 @@ export function Register(): React.JSX.Element {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="••••••••"
+              style={inputStyle}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
             />
           </div>
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">
+          <div style={{ marginBottom: 'var(--spacing-6)' }}>
+            <label
+              htmlFor="confirmPassword"
+              style={{
+                display: 'block',
+                fontSize: 'var(--typography-font-size-sm)',
+                fontWeight: 'var(--typography-font-weight-medium)',
+                color: 'var(--color-text-secondary)',
+                marginBottom: 'var(--spacing-2)',
+              }}
+            >
               Confirm Password
             </label>
             <input
@@ -112,23 +268,69 @@ export function Register(): React.JSX.Element {
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="••••••••"
+              style={inputStyle}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
             />
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 px-4 bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              width: '100%',
+              padding: 'var(--spacing-3) var(--spacing-4)',
+              background: 'var(--gradient-btn-primary)',
+              color: 'var(--color-bg-elevated)',
+              fontWeight: 'var(--typography-font-weight-semibold)',
+              fontSize: 'var(--typography-font-size-base)',
+              borderRadius: 'var(--border-radius-lg)',
+              border: 'none',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              opacity: isLoading ? 0.6 : 1,
+              boxShadow: 'var(--shadow-btn-primary)',
+              transition: 'all var(--motion-duration-fast)',
+            }}
+            onMouseEnter={(e) => {
+              if (!isLoading) {
+                e.currentTarget.style.boxShadow = 'var(--shadow-btn-primary-hover)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = 'var(--shadow-btn-primary)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
           >
             {isLoading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
 
-        <p className="text-center text-gray-400">
+        {/* Footer Link */}
+        <p
+          className="text-center"
+          style={{
+            color: 'var(--color-text-muted)',
+            fontSize: 'var(--typography-font-size-sm)',
+            marginTop: 'var(--spacing-6)',
+          }}
+        >
           Already have an account?{' '}
-          <Link to="/login" className="text-primary hover:underline">
+          <Link
+            to="/login"
+            style={{
+              color: 'var(--color-brand-primary)',
+              textDecoration: 'none',
+              fontWeight: 'var(--typography-font-weight-medium)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.textDecoration = 'underline';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.textDecoration = 'none';
+            }}
+          >
             Sign in
           </Link>
         </p>

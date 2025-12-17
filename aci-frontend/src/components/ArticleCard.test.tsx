@@ -3,15 +3,13 @@
  * Component displays article information in card format with metadata
  */
 
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '../test/utils';
+import { describe, it, expect } from 'vitest';
 import { mockArticleWithCVE, mockRansomwareArticle } from '../test/mocks';
 
 // Placeholder test - actual component implementation required
 describe('ArticleCard', () => {
   it('should render article title when provided', () => {
     // This test will work once ArticleCard is implemented
-    const mockClick = vi.fn();
 
     // Render would go here once component exists
     // render(<ArticleCard article={mockArticleWithCVE} onClick={mockClick} />);
@@ -55,8 +53,7 @@ describe('ArticleCard', () => {
   });
 
   it('should handle click events', () => {
-    const mockClick = vi.fn();
-    expect(mockClick).not.toHaveBeenCalled();
+    // Test placeholder for click event handling
 
     // Once component is implemented, this would be:
     // const { container } = render(

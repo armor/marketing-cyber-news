@@ -14,31 +14,42 @@ const (
 	RoleAdmin UserRole = "admin"
 )
 
+// SubscriptionTier represents user subscription levels
+type SubscriptionTier string
+
+const (
+	SubscriptionFree       SubscriptionTier = "free"
+	SubscriptionPremium    SubscriptionTier = "premium"
+	SubscriptionEnterprise SubscriptionTier = "enterprise"
+)
+
 // User represents a user in the system
 type User struct {
-	ID            uuid.UUID
-	Email         string
-	PasswordHash  string
-	Name          string
-	Role          UserRole
-	EmailVerified bool
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	LastLoginAt   *time.Time
+	ID               uuid.UUID
+	Email            string
+	PasswordHash     string
+	Name             string
+	Role             UserRole
+	SubscriptionTier SubscriptionTier
+	EmailVerified    bool
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	LastLoginAt      *time.Time
 }
 
 // NewUser creates a new user with default values
 func NewUser(email, passwordHash, name string) *User {
 	now := time.Now()
 	return &User{
-		ID:            uuid.New(),
-		Email:         email,
-		PasswordHash:  passwordHash,
-		Name:          name,
-		Role:          RoleUser,
-		EmailVerified: false,
-		CreatedAt:     now,
-		UpdatedAt:     now,
+		ID:               uuid.New(),
+		Email:            email,
+		PasswordHash:     passwordHash,
+		Name:             name,
+		Role:             RoleUser,
+		SubscriptionTier: SubscriptionFree,
+		EmailVerified:    false,
+		CreatedAt:        now,
+		UpdatedAt:        now,
 	}
 }
 

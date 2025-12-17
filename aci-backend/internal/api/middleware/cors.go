@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 )
@@ -36,7 +37,7 @@ func DefaultCORSConfig() CORSConfig {
 			"X-Request-ID",
 		},
 		MaxAge:           300,
-		AllowCredentials: false,
+		AllowCredentials: true,
 	}
 }
 
@@ -76,7 +77,7 @@ func CORSWithConfig(config CORSConfig) func(http.Handler) http.Handler {
 			}
 
 			if config.MaxAge > 0 {
-				w.Header().Set("Access-Control-Max-Age", string(rune(config.MaxAge)))
+				w.Header().Set("Access-Control-Max-Age", fmt.Sprintf("%d", config.MaxAge))
 			}
 
 			// Handle preflight request

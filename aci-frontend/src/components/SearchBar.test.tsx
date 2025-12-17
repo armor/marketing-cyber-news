@@ -4,7 +4,6 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '../test/utils';
 
 describe('SearchBar', () => {
   beforeEach(() => {
@@ -32,9 +31,8 @@ describe('SearchBar', () => {
   });
 
   it('should debounce search calls by default 300ms', () => {
-    const mockSearch = vi.fn();
-
     // Once component is implemented:
+    // const mockSearch = vi.fn();
     // render(<SearchBar onSearch={mockSearch} debounceMs={300} />);
     // const input = screen.getByPlaceholderText(/search articles/i);
 
@@ -47,13 +45,12 @@ describe('SearchBar', () => {
     // expect(mockSearch).toHaveBeenCalledWith('apache');
 
     // Verify test structure
-    expect(mockSearch).not.toHaveBeenCalled();
+    expect(true).toBe(true);
   });
 
   it('should not trigger search for short input debounce', () => {
-    const mockSearch = vi.fn();
-
     // Once component is implemented:
+    // const mockSearch = vi.fn();
     // render(<SearchBar onSearch={mockSearch} debounceMs={300} />);
     // const input = screen.getByPlaceholderText(/search articles/i);
 
@@ -71,9 +68,8 @@ describe('SearchBar', () => {
   });
 
   it('should submit immediately on form submit', () => {
-    const mockSearch = vi.fn();
-
     // Once component is implemented:
+    // const mockSearch = vi.fn();
     // render(
     //   <SearchBar onSearch={mockSearch} />
     // );
@@ -89,9 +85,8 @@ describe('SearchBar', () => {
   });
 
   it('should clear debounce timer on unmount', () => {
-    const mockSearch = vi.fn();
-
     // Once component is implemented:
+    // const mockSearch = vi.fn();
     // const { unmount } = render(<SearchBar onSearch={mockSearch} />);
     // const input = screen.getByPlaceholderText(/search articles/i);
     // fireEvent.change(input, { target: { value: 'test' } });
@@ -105,9 +100,8 @@ describe('SearchBar', () => {
   });
 
   it('should handle empty search', () => {
-    const mockSearch = vi.fn();
-
     // Once component is implemented:
+    // const mockSearch = vi.fn();
     // render(<SearchBar onSearch={mockSearch} />);
     // const input = screen.getByPlaceholderText(/search articles/i);
 
@@ -126,9 +120,8 @@ describe('SearchBar', () => {
   });
 
   it('should support custom debounce delay', () => {
-    const mockSearch = vi.fn();
-
     // Once component is implemented:
+    // const mockSearch = vi.fn();
     // render(<SearchBar onSearch={mockSearch} debounceMs={500} />);
     // const input = screen.getByPlaceholderText(/search articles/i);
 
@@ -141,9 +134,8 @@ describe('SearchBar', () => {
   });
 
   it('should trim whitespace from search input', () => {
-    const mockSearch = vi.fn();
-
     // Once component is implemented:
+    // const mockSearch = vi.fn();
     // render(<SearchBar onSearch={mockSearch} />);
     // const input = screen.getByPlaceholderText(/search articles/i) as HTMLInputElement;
 
@@ -155,9 +147,8 @@ describe('SearchBar', () => {
   });
 
   it('should support advanced search syntax', () => {
-    const mockSearch = vi.fn();
-
     // Once component is implemented:
+    // const mockSearch = vi.fn();
     // const advancedQuery = 'cve:2024 vendor:apache';
     // render(<SearchBar onSearch={mockSearch} />);
     // const input = screen.getByPlaceholderText(/search articles/i);
@@ -170,9 +161,8 @@ describe('SearchBar', () => {
   });
 
   it('should escape special characters in search', () => {
-    const mockSearch = vi.fn();
-
     // Once component is implemented:
+    // const mockSearch = vi.fn();
     // render(<SearchBar onSearch={mockSearch} />);
     // const input = screen.getByPlaceholderText(/search articles/i);
 

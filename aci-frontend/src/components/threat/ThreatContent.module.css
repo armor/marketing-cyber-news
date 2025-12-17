@@ -1,0 +1,102 @@
+/**
+ * ThreatContent Styles
+ * Markdown content styling using design tokens
+ */
+
+.threat-content {
+  /* Base styles already applied via inline styles */
+}
+
+.threat-content h1 {
+  font-size: var(--typography-font-size-3xl);
+  font-weight: var(--typography-font-weight-bold);
+  line-height: var(--typography-line-height-tight);
+  color: var(--color-text-primary);
+  margin-top: var(--spacing-8);
+  margin-bottom: var(--spacing-4);
+}
+
+.threat-content h2 {
+  font-size: var(--typography-font-size-2xl);
+  font-weight: var(--typography-font-weight-semibold);
+  line-height: var(--typography-line-height-tight);
+  color: var(--color-text-primary);
+  margin-top: var(--spacing-6);
+  margin-bottom: var(--spacing-3);
+}
+
+.threat-content h3 {
+  font-size: var(--typography-font-size-xl);
+  font-weight: var(--typography-font-weight-semibold);
+  line-height: var(--typography-line-height-tight);
+  color: var(--color-text-primary);
+  margin-top: var(--spacing-5);
+  margin-bottom: var(--spacing-2);
+}
+
+.threat-content p {
+  margin-top: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+  color: var(--color-text-secondary);
+}
+
+.threat-content ul,
+.threat-content ol {
+  margin-top: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+  padding-left: var(--spacing-6);
+}
+
+.threat-content li {
+  margin-top: var(--spacing-2);
+  margin-bottom: var(--spacing-2);
+  color: var(--color-text-secondary);
+}
+
+.threat-content code {
+  font-size: var(--typography-font-size-sm);
+  font-family: var(--typography-font-family-mono);
+  background-color: var(--color-bg-elevated);
+  color: var(--color-brand-accent);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--border-radius-sm);
+  font-weight: var(--typography-font-weight-medium);
+}
+
+.threat-content pre {
+  background-color: var(--color-bg-elevated);
+  padding: var(--spacing-4);
+  border-radius: var(--border-radius-md);
+  overflow: auto;
+  margin-top: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+  border: 1px solid var(--color-border-default);
+}
+
+.threat-content pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: var(--typography-font-size-sm);
+  line-height: var(--typography-line-height-relaxed);
+}
+
+.threat-content a {
+  color: var(--color-brand-primary);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--color-brand-primary) 30%, transparent);
+  transition: color 150ms ease;
+}
+
+.threat-content a:hover {
+  color: var(--color-brand-accent);
+}
+
+.threat-content strong {
+  font-weight: var(--typography-font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.threat-content em {
+  font-style: italic;
+  color: var(--color-text-primary);
+}

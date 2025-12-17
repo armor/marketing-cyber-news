@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Article } from '../types';
 import { userService } from '../services/userService';
+import { SEVERITY_COLORS } from '../config/severity-colors';
 
 interface HistoryEntry {
   article: Article;
@@ -12,18 +13,14 @@ interface HistoryProps {
   onArticleClick: (article: Article) => void;
 }
 
-export function History({ onArticleClick }: HistoryProps) {
+export function History({ onArticleClick }: HistoryProps): JSX.Element {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    fetchHistory();
-  }, [currentPage]);
-
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     setError(null);
 
@@ -36,9 +33,13 @@ export function History({ onArticleClick }: HistoryProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage]);
 
-  const formatDate = (dateString: string) => {
+  useEffect(() => {
+    void fetchHistory();
+  }, [fetchHistory]);
+
+  const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       month: 'short',
@@ -48,18 +49,10 @@ export function History({ onArticleClick }: HistoryProps) {
     });
   };
 
-  const formatReadingTime = (seconds: number) => {
+  const formatReadingTime = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`;
     const minutes = Math.floor(seconds / 60);
     return `${minutes}m`;
-  };
-
-  const severityColors: Record<string, string> = {
-    critical: 'bg-red-500',
-    high: 'bg-orange-500',
-    medium: 'bg-yellow-500',
-    low: 'bg-green-500',
-    info: 'bg-blue-500',
   };
 
   return (
@@ -105,7 +98,7 @@ export function History({ onArticleClick }: HistoryProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span
-                      className={`px-2 py-0.5 text-xs font-bold text-white rounded ${severityColors[entry.article.severity]}`}
+                      className={`px-2 py-0.5 text-xs font-bold text-white rounded ${SEVERITY_COLORS[entry.article.severity]}`}
                     >
                       {entry.article.severity.toUpperCase()}
                     </span>
