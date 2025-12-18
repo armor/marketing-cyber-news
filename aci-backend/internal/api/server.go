@@ -32,6 +32,7 @@ type Handlers struct {
 	Category  *handlers.CategoryHandler
 	Dashboard *handlers.DashboardHandler
 	DeepDive  *handlers.DeepDiveHandler
+	Approval  *handlers.ApprovalHandler
 }
 
 // Config holds server configuration

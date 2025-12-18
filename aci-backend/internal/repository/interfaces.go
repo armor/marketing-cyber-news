@@ -142,3 +142,121 @@ type UserReadStats struct {
 	ArticlesThisMonth      int
 	AverageReadingTime     float64
 }
+
+// =============================================================================
+// Newsletter System Repositories
+// =============================================================================
+
+// NewsletterConfigRepository defines operations for newsletter configuration persistence
+type NewsletterConfigRepository interface {
+	Create(ctx context.Context, config *domain.NewsletterConfiguration) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.NewsletterConfiguration, error)
+	List(ctx context.Context, filter *domain.NewsletterConfigFilter) ([]*domain.NewsletterConfiguration, int, error)
+	Update(ctx context.Context, config *domain.NewsletterConfiguration) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	GetBySegmentID(ctx context.Context, segmentID uuid.UUID) ([]*domain.NewsletterConfiguration, error)
+}
+
+// SegmentRepository defines operations for segment persistence
+type SegmentRepository interface {
+	Create(ctx context.Context, segment *domain.Segment) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.Segment, error)
+	List(ctx context.Context, filter *domain.SegmentFilter) ([]*domain.Segment, int, error)
+	Update(ctx context.Context, segment *domain.Segment) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	UpdateContactCount(ctx context.Context, id uuid.UUID, count int) error
+}
+
+// ContactRepository defines operations for contact persistence
+type ContactRepository interface {
+	Create(ctx context.Context, contact *domain.Contact) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.Contact, error)
+	GetByEmail(ctx context.Context, email string) (*domain.Contact, error)
+	List(ctx context.Context, filter *domain.ContactFilter) ([]*domain.Contact, int, error)
+	Update(ctx context.Context, contact *domain.Contact) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	BulkCreate(ctx context.Context, contacts []*domain.Contact) error
+	BulkUpdate(ctx context.Context, contacts []*domain.Contact) error
+	GetBySegmentID(ctx context.Context, segmentID uuid.UUID, limit, offset int) ([]*domain.Contact, int, error)
+	UpdateEngagementScore(ctx context.Context, id uuid.UUID, score float64) error
+	UpdateNewsletterTracking(ctx context.Context, id uuid.UUID, sentAt time.Time) error
+	MarkUnsubscribed(ctx context.Context, id uuid.UUID) error
+	MarkBounced(ctx context.Context, id uuid.UUID) error
+}
+
+// ContentSourceRepository defines operations for content source persistence
+type ContentSourceRepository interface {
+	Create(ctx context.Context, source *domain.ContentSource) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.ContentSource, error)
+	List(ctx context.Context, filter *domain.ContentSourceFilter) ([]*domain.ContentSource, int, error)
+	Update(ctx context.Context, source *domain.ContentSource) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	GetActiveSources(ctx context.Context) ([]*domain.ContentSource, error)
+	UpdateLastPolled(ctx context.Context, id uuid.UUID, polledAt time.Time, success bool, errorMsg *string) error
+}
+
+// ContentItemRepository defines operations for content item persistence
+type ContentItemRepository interface {
+	Create(ctx context.Context, item *domain.ContentItem) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.ContentItem, error)
+	GetByURL(ctx context.Context, url string) (*domain.ContentItem, error)
+	List(ctx context.Context, filter *domain.ContentItemFilter) ([]*domain.ContentItem, int, error)
+	Update(ctx context.Context, item *domain.ContentItem) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	BulkCreate(ctx context.Context, items []*domain.ContentItem) error
+	UpdateHistoricalMetrics(ctx context.Context, id uuid.UUID, opens, clicks int) error
+	GetFreshContent(ctx context.Context, daysThreshold int, topicTags []string, limit int) ([]*domain.ContentItem, error)
+}
+
+// NewsletterIssueRepository defines operations for newsletter issue persistence
+type NewsletterIssueRepository interface {
+	Create(ctx context.Context, issue *domain.NewsletterIssue) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.NewsletterIssue, error)
+	List(ctx context.Context, filter *domain.NewsletterIssueFilter) ([]*domain.NewsletterIssue, int, error)
+	Update(ctx context.Context, issue *domain.NewsletterIssue) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	GetByConfigAndNumber(ctx context.Context, configID uuid.UUID, number int) (*domain.NewsletterIssue, error)
+	GetNextIssueNumber(ctx context.Context, configID uuid.UUID) (int, error)
+	UpdateStatus(ctx context.Context, id uuid.UUID, status domain.IssueStatus) error
+	UpdateMetrics(ctx context.Context, id uuid.UUID, recipients, delivered, opens, clicks, bounces, unsubscribes, complaints int) error
+	GetPendingApprovals(ctx context.Context) ([]*domain.NewsletterIssue, error)
+	GetScheduledIssues(ctx context.Context, before time.Time) ([]*domain.NewsletterIssue, error)
+}
+
+// NewsletterBlockRepository defines operations for newsletter block persistence
+type NewsletterBlockRepository interface {
+	Create(ctx context.Context, block *domain.NewsletterBlock) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.NewsletterBlock, error)
+	GetByIssueID(ctx context.Context, issueID uuid.UUID) ([]*domain.NewsletterBlock, error)
+	Update(ctx context.Context, block *domain.NewsletterBlock) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	BulkCreate(ctx context.Context, blocks []*domain.NewsletterBlock) error
+	UpdatePositions(ctx context.Context, issueID uuid.UUID, positions map[uuid.UUID]int) error
+	IncrementClicks(ctx context.Context, id uuid.UUID) error
+}
+
+// TestVariantRepository defines operations for A/B test variant persistence
+type TestVariantRepository interface {
+	Create(ctx context.Context, variant *domain.TestVariant) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.TestVariant, error)
+	GetByIssueID(ctx context.Context, issueID uuid.UUID) ([]*domain.TestVariant, error)
+	Update(ctx context.Context, variant *domain.TestVariant) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	BulkCreate(ctx context.Context, variants []*domain.TestVariant) error
+	UpdateResults(ctx context.Context, id uuid.UUID, opens, clicks int) error
+	DeclareWinner(ctx context.Context, id uuid.UUID, significance float64) error
+	GetWinner(ctx context.Context, issueID uuid.UUID) (*domain.TestVariant, error)
+}
+
+// EngagementEventRepository defines operations for engagement event persistence
+type EngagementEventRepository interface {
+	Create(ctx context.Context, event *domain.EngagementEvent) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.EngagementEvent, error)
+	List(ctx context.Context, filter *domain.EngagementEventFilter) ([]*domain.EngagementEvent, int, error)
+	BulkCreate(ctx context.Context, events []*domain.EngagementEvent) error
+	GetByIssueID(ctx context.Context, issueID uuid.UUID) ([]*domain.EngagementEvent, error)
+	GetByContactID(ctx context.Context, contactID uuid.UUID, limit int) ([]*domain.EngagementEvent, error)
+	GetMetricsForIssue(ctx context.Context, issueID uuid.UUID) (*domain.EngagementMetrics, error)
+	GetTopicEngagement(ctx context.Context, issueID uuid.UUID) ([]domain.TopicEngagement, error)
+	GetDeviceBreakdown(ctx context.Context, issueID uuid.UUID) (*domain.DeviceBreakdown, error)
+}

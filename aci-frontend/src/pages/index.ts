@@ -4,3 +4,6 @@ export { Dashboard } from './Dashboard';
 export { Bookmarks } from './Bookmarks';
 export { History } from './History';
 export { Stats } from './Stats';
+export { ApprovalPage } from './ApprovalPage';
+export { NewsletterConfigPage } from './NewsletterConfigPage';
+export { NewsletterPreviewPage } from './NewsletterPreviewPage';

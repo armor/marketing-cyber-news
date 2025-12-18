@@ -124,6 +124,15 @@ type Article struct {
 	EnrichedAt         *time.Time `json:"enriched_at,omitempty"`
 	CreatedAt          time.Time  `json:"created_at"`
 	UpdatedAt          time.Time  `json:"updated_at"`
+
+	// Approval Workflow fields (5-gate process)
+	ApprovalStatus   ApprovalStatus `json:"approval_status" db:"approval_status"`
+	Rejected         bool           `json:"rejected" db:"rejected"`
+	RejectionReason  *string        `json:"rejection_reason,omitempty" db:"rejection_reason"`
+	RejectedBy       *uuid.UUID     `json:"rejected_by,omitempty" db:"rejected_by"`
+	RejectedAt       *time.Time     `json:"rejected_at,omitempty" db:"rejected_at"`
+	ReleasedAt       *time.Time     `json:"released_at,omitempty" db:"released_at"`
+	ReleasedBy       *uuid.UUID     `json:"released_by,omitempty" db:"released_by"`
 }
 
 // Validate performs validation on the Article

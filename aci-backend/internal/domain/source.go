@@ -13,6 +13,7 @@ type Source struct {
 	ID            uuid.UUID  `json:"id"`
 	Name          string     `json:"name"`
 	URL           string     `json:"url"`
+	FeedURL       *string    `json:"feed_url,omitempty" db:"feed_url"`
 	Description   *string    `json:"description,omitempty"`
 	IsActive      bool       `json:"is_active"`
 	TrustScore    float64    `json:"trust_score"`

@@ -66,7 +66,7 @@ export function useAuth(): UseAuthReturn {
 
   // Memoize role checks to avoid recalculation on every render
   const isAdmin = useMemo((): boolean => {
-    return user?.role === 'admin';
+    return user?.role === 'admin' || user?.role === 'super_admin';
   }, [user?.role]);
 
   const isAnalyst = useMemo((): boolean => {

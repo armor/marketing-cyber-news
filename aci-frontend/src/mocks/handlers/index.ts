@@ -8,6 +8,7 @@ import { dashboardHandlers } from './dashboard';
 import { threatsHandlers } from './threats';
 import { bookmarkHandlers } from './bookmarks';
 import { adminHandlers } from './admin';
+import { approvalHandlers } from './approvals';
 
 export const handlers = [
   ...authHandlers,
@@ -15,4 +16,5 @@ export const handlers = [
   ...threatsHandlers,
   ...bookmarkHandlers,
   ...adminHandlers,
+  ...approvalHandlers,
 ];

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Article, PaginationMeta } from '../types';
 import { articleService, type ArticleFilters } from '../services/articleService';
 
@@ -16,12 +16,15 @@ export function useArticles(filters: ArticleFilters = {}): UseArticlesResult {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Memoize filters to ensure stable reference for useCallback dependency
+  const stableFilters = useMemo(() => filters, [JSON.stringify(filters)]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const fetchArticles = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await articleService.getArticles(filters);
+      const response = await articleService.getArticles(stableFilters);
       setArticles(response.data);
       setPagination(response.pagination);
     } catch (err) {
@@ -29,7 +32,7 @@ export function useArticles(filters: ArticleFilters = {}): UseArticlesResult {
     } finally {
       setIsLoading(false);
     }
-  }, [JSON.stringify(filters)]);
+  }, [stableFilters]);
 
   useEffect(() => {
     void fetchArticles();

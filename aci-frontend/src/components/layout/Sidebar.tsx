@@ -23,9 +23,12 @@ import {
   Bell,
   BarChart,
   Settings,
+  ClipboardCheck,
+  Mail,
   X,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import type { UserRole } from '@/types/approval';
 
 // ============================================================================
 // Types
@@ -43,6 +46,7 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   requiresAdmin?: boolean;
+  requiresApproval?: boolean;
 }
 
 // ============================================================================
@@ -71,9 +75,21 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Alerts',
   },
   {
+    to: '/approvals',
+    icon: ClipboardCheck,
+    label: 'Approval Queue',
+    requiresApproval: true,
+  },
+  {
     to: '/analytics',
     icon: BarChart,
     label: 'Analytics',
+  },
+  {
+    to: '/newsletter-config',
+    icon: Mail,
+    label: 'Newsletter Config',
+    requiresAdmin: true,
   },
   {
     to: '/admin',
@@ -89,12 +105,40 @@ const NAV_ITEMS: NavItem[] = [
 
 export function Sidebar({ isOpen = false, onClose }: SidebarProps): React.ReactElement {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+
+  // Check if user has approval permissions
+  const hasApprovalPermissions = (): boolean => {
+    if (!user) {
+      return false;
+    }
+
+    const userRole = user.role as UserRole;
+
+    // Admin and super_admin can always see approvals
+    if (userRole === 'admin' || userRole === 'super_admin') {
+      return true;
+    }
+
+    // Check if user can approve any gate
+    const approvalRoles: UserRole[] = [
+      'marketing',
+      'branding',
+      'soc_level_1',
+      'soc_level_3',
+      'ciso',
+    ];
+
+    return approvalRoles.includes(userRole);
+  };
 
   // Filter nav items based on role
   const visibleNavItems = NAV_ITEMS.filter((item) => {
     if (item.requiresAdmin) {
       return isAdmin;
+    }
+    if (item.requiresApproval) {
+      return hasApprovalPermissions();
     }
     return true;
   });

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/google/uuid"
 )
 
 // ParsePagination extracts pagination parameters from request
@@ -95,4 +97,27 @@ func GetClientIP(r *http.Request) string {
 
 	// Fallback to RemoteAddr
 	return r.RemoteAddr
+}
+
+// parseIntQuery parses an integer query parameter with a default value
+func parseIntQuery(r *http.Request, key string, defaultValue int) (int, error) {
+	valueStr := r.URL.Query().Get(key)
+	if valueStr == "" {
+		return defaultValue, nil
+	}
+
+	value, err := strconv.Atoi(valueStr)
+	if err != nil {
+		return 0, fmt.Errorf("invalid %s parameter: %w", key, err)
+	}
+
+	return value, nil
+}
+
+// getUserIDFromContext extracts the user ID from context
+func getUserIDFromContext(ctx context.Context) uuid.UUID {
+	if userID, ok := ctx.Value("user_id").(uuid.UUID); ok {
+		return userID
+	}
+	return uuid.Nil
 }

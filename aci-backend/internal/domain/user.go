@@ -17,7 +17,18 @@ const (
 
 // IsValid checks if the user role is valid
 func (r UserRole) IsValid() error {
-	if r != RoleUser && r != RoleAdmin {
+	validRoles := map[UserRole]bool{
+		RoleUser:       true,
+		RoleAdmin:      true,
+		RoleMarketing:  true,
+		RoleBranding:   true,
+		RoleSocLevel1:  true,
+		RoleSocLevel3:  true,
+		RoleCISO:       true,
+		RoleSuperAdmin: true,
+	}
+
+	if !validRoles[r] {
 		return fmt.Errorf("invalid user role: %s", r)
 	}
 	return nil

@@ -115,11 +115,12 @@ func main() {
 	webhookLogRepo := postgres.NewWebhookLogRepository(db)
 	alertRepo := postgres.NewAlertRepository(db)
 	alertMatchRepo := postgres.NewAlertMatchRepository(db)
+	approvalRepo := postgres.NewApprovalRepository(db)
 
 	// Repositories still using *sql.DB
 	bookmarkRepo := postgres.NewBookmarkRepository(sqlDB)
 	articleReadRepo := postgres.NewArticleReadRepository(sqlDB)
-	_ = postgres.NewAuditLogRepository(sqlDB) // TODO: Wire into AdminService once UserRepository type mismatch is resolved
+	auditLogRepo := postgres.NewAuditLogRepository(sqlDB)
 
 	log.Info().Msg("Repositories initialized")
 
@@ -140,6 +141,7 @@ func main() {
 	searchService := service.NewSearchService(articleRepo)
 	engagementService := service.NewEngagementService(bookmarkRepo, articleReadRepo, articleRepo)
 	enrichmentService := service.NewEnrichmentService(enricher, articleRepo)
+	approvalService := service.NewApprovalService(approvalRepo, auditLogRepo, log.Logger)
 
 	// NOTE: AdminService initialization blocked due to interface mismatch
 	// UserRepository expects domain.User but postgres.UserRepository uses entities.User
@@ -167,6 +169,7 @@ func main() {
 	userHandler := handlers.NewUserHandler(engagementService, userRepo)
 	webhookHandler := handlers.NewWebhookHandler(articleService, enrichmentService, webhookLogRepo, cfg.N8N.WebhookSecret)
 	dashboardHandler := handlers.NewDashboardHandler(articleRepo)
+	approvalHandler := handlers.NewApprovalHandler(approvalService, log.Logger)
 
 	// NOTE: AdminHandler blocked until AdminService interface issue is resolved
 	// adminHandler := handlers.NewAdminHandler(adminService)
@@ -186,6 +189,7 @@ func main() {
 		Admin:     nil, // TODO: Wire AdminHandler once UserRepository type mismatch is resolved
 		Category:  categoryHandler,
 		Dashboard: dashboardHandler,
+		Approval:  approvalHandler,
 	}
 
 	serverConfig := api.Config{

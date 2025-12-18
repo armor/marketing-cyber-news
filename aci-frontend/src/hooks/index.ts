@@ -16,3 +16,83 @@ export { useThreat } from './useThreat';
 export type { UseThreatReturn } from './useThreat';
 export { useToggleBookmark } from './useToggleBookmark';
 export type { UseToggleBookmarkReturn } from './useToggleBookmark';
+
+// Approval workflow hooks
+export { useApprovalQueue } from './useApprovalQueue';
+export type {
+  UseApprovalQueueOptions,
+  UseApprovalQueueReturn,
+} from './useApprovalQueue';
+export { useApprovalHistory } from './useApprovalHistory';
+export type { UseApprovalHistoryReturn } from './useApprovalHistory';
+export {
+  useApproveArticle,
+  useRejectArticle,
+  useReleaseArticle,
+  useResetArticle,
+  useUpdateUserRole,
+} from './useApprovalMutations';
+export { approvalKeys } from './approvalKeys';
+
+// Newsletter configuration hooks
+export { useNewsletterConfigs } from './useNewsletterConfigs';
+export type {
+  UseNewsletterConfigsOptions,
+  UseNewsletterConfigsReturn,
+} from './useNewsletterConfigs';
+export { useNewsletterConfig } from './useNewsletterConfig';
+export type {
+  UseNewsletterConfigOptions,
+  UseNewsletterConfigReturn,
+} from './useNewsletterConfig';
+export {
+  useCreateConfig,
+  useUpdateConfig,
+  useDeleteConfig,
+} from './useNewsletterConfigMutations';
+
+// Newsletter segment hooks
+export { useSegments } from './useSegments';
+export type { UseSegmentsOptions, UseSegmentsReturn } from './useSegments';
+export { useSegment } from './useSegment';
+export type { UseSegmentOptions, UseSegmentReturn } from './useSegment';
+export { useCreateSegment, useUpdateSegment } from './useSegmentMutations';
+
+// Newsletter query keys
+export { newsletterKeys } from './newsletterKeys';
+
+// Content source hooks
+export { useContentSources } from './useContentSources';
+export type {
+  UseContentSourcesOptions,
+  UseContentSourcesReturn,
+} from './useContentSources';
+
+// Content item hooks
+export { useContentItems } from './useContentItems';
+export type {
+  UseContentItemsOptions,
+  UseContentItemsReturn,
+} from './useContentItems';
+
+// Content mutations
+export { useCreateContentSource, useSyncContent } from './useContentMutations';
+
+// Newsletter issue hooks
+export { useIssues } from './useIssues';
+export type { UseIssuesOptions, UseIssuesReturn } from './useIssues';
+export { useIssue } from './useIssue';
+export type { UseIssueOptions, UseIssueReturn } from './useIssue';
+export { useIssuePreview } from './useIssuePreview';
+export type {
+  UseIssuePreviewOptions,
+  UseIssuePreviewReturn,
+} from './useIssuePreview';
+
+// Issue mutations
+export {
+  useGenerateIssue,
+  useApproveIssue,
+  useRejectIssue,
+  useSendIssue,
+} from './useIssueMutations';

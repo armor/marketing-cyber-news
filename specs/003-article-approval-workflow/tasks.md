@@ -64,99 +64,99 @@ Frontend API services MUST match the OpenAPI spec. This is validated at unit tes
 
 ---
 
-## Phase 0: Contract Testing Infrastructure (BLOCKING)
+## Phase 0: Contract Testing Infrastructure (BLOCKING) ✅
 
 **Purpose**: Establish OpenAPI contract testing before any API implementation
 **Why First**: Ensures frontend-backend contract is validated at unit test level
 
 ### Wave 0.1 - Contract Test Infrastructure (Parallel)
 
-- [ ] T000a [P] Create OpenAPI spec parser utility in `aci-frontend/src/test/openapi-parser.ts`
-- [ ] T000b [P] Create contract test helpers in `aci-frontend/src/test/contract-helpers.ts`
-- [ ] T000c [P] Create MSW handler generator from OpenAPI spec in `aci-frontend/src/mocks/openapi-handlers.ts`
+- [x] T000a [P] Create OpenAPI spec parser utility in `aci-frontend/src/test/openapi-parser.ts`
+- [x] T000b [P] Create contract test helpers in `aci-frontend/src/test/contract-helpers.ts`
+- [x] T000c [P] Create MSW handler generator from OpenAPI spec in `aci-frontend/src/mocks/openapi-handlers.ts`
 
 ### Wave 0.2 - Contract Validation Tests (Sequential - depends on 0.1)
 
-- [ ] T000d Create approval API contract tests in `aci-frontend/src/services/api/__tests__/approvals.contract.test.ts`
-- [ ] T000e Validate approval TypeScript types match OpenAPI schemas in `aci-frontend/src/types/__tests__/approval.contract.test.ts`
+- [x] T000d Create approval API contract tests in `aci-frontend/src/services/api/__tests__/approvals.contract.test.ts`
+- [x] T000e Validate approval TypeScript types match OpenAPI schemas in `aci-frontend/src/types/__tests__/approval.contract.test.ts`
 
 ### Wave 0.3 - Integration Test Setup (Parallel)
 
-- [ ] T000f [P] Create frontend-backend integration test runner in `aci-frontend/tests/integration/setup.ts`
-- [ ] T000g [P] Create API response mock factory from OpenAPI examples in `aci-frontend/src/mocks/factories/approval-factory.ts`
+- [x] T000f [P] Create frontend-backend integration test runner in `aci-frontend/tests/integration/setup.ts`
+- [x] T000g [P] Create API response mock factory from OpenAPI examples in `aci-frontend/src/mocks/factories/approval-factory.ts`
 
 ### Post-Wave 0 Quality Gate
 
-- [ ] T000-QA Run quality gate: `npm run lint && npm run test` - must pass with 0 errors
-- [ ] T000-GIT Git commit with `git-manager` agent: "test(contract): add OpenAPI contract testing infrastructure"
+- [x] T000-QA Run quality gate: `npm run lint && npm run test` - must pass with 0 errors
+- [x] T000-GIT Git commit with `git-manager` agent: "test(contract): add OpenAPI contract testing infrastructure"
 
 **Checkpoint**: Contract testing infrastructure ready - all future API changes auto-validated
 
 ---
 
-## Phase 1: Setup (Shared Infrastructure)
+## Phase 1: Setup (Shared Infrastructure) ✅
 
 **Purpose**: Database migration and domain type setup
 **Parallel Agents**: 4 agents can work on T001-T004 simultaneously
 
 ### Wave 1.1 - Migrations & Types (Parallel)
 
-- [ ] T001 [P] Create database migration file `aci-backend/migrations/000007_approval_workflow.up.sql`
-- [ ] T002 [P] Create rollback migration file `aci-backend/migrations/000007_approval_workflow.down.sql`
-- [ ] T003 [P] Create approval domain types in `aci-backend/internal/domain/approval.go`
-- [ ] T004 [P] Create approval TypeScript types in `aci-frontend/src/types/approval.ts`
+- [x] T001 [P] Create database migration file `aci-backend/migrations/000007_approval_workflow.up.sql`
+- [x] T002 [P] Create rollback migration file `aci-backend/migrations/000007_approval_workflow.down.sql`
+- [x] T003 [P] Create approval domain types in `aci-backend/internal/domain/approval.go`
+- [x] T004 [P] Create approval TypeScript types in `aci-frontend/src/types/approval.ts`
 
 ### Wave 1.2 - Migration Execution & Seed Data (Sequential)
 
-- [ ] T005 Run database migration in Kubernetes: `kubectl exec -n aci-backend deploy/postgres -- psql -U aci_user -d aci_db -f /migrations/000007_approval_workflow.up.sql`
-- [ ] T005a [P] Create test user seed script for all approver roles in `aci-backend/scripts/seed_approval_users.sql`
+- [x] T005 Run database migration in Kubernetes: `kubectl exec -n aci-backend deploy/postgres -- psql -U aci_user -d aci_db -f /migrations/000007_approval_workflow.up.sql`
+- [x] T005a [P] Create test user seed script for all approver roles in `aci-backend/scripts/seed_approval_users.sql`
 
 ### Post-Wave 1 Review & Commit
 
-- [ ] T006-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
-- [ ] T006-R1 [US1-7] Code review with `code-reviewer` agent - Wave 1 artifacts
-- [ ] T006-R2 [US1-7] Security review with `security-reviewer` agent - Wave 1 artifacts
-- [ ] T006-GIT Git commit with `git-manager` agent: "feat(approval): add database migrations and domain types for approval workflow"
+- [x] T006-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [x] T006-R1 [US1-7] Code review with `code-reviewer` agent - Wave 1 artifacts
+- [x] T006-R2 [US1-7] Security review with `security-reviewer` agent - Wave 1 artifacts
+- [x] T006-GIT Git commit with `git-manager` agent: "feat(approval): add database migrations and domain types for approval workflow"
 
 **Checkpoint**: Phase 1 complete - Database schema and types ready
 
 ---
 
-## Phase 2: Foundational (Blocking Prerequisites)
+## Phase 2: Foundational (Blocking Prerequisites) ✅
 
 **Purpose**: Core infrastructure that MUST be complete before ANY user story
 **Parallel Agents**: 6 agents can work on T007-T012a simultaneously
 
 ### Wave 2.1 - Backend Repository & Middleware (Parallel)
 
-- [ ] T007 [P] Create approval repository interface in `aci-backend/internal/repository/approval_repository.go`
-- [ ] T008 [P] Implement approval repository in `aci-backend/internal/repository/postgres/approval_repo.go`
-- [ ] T009 [P] Create role authorization middleware in `aci-backend/internal/api/middleware/role_auth.go`
-- [ ] T010 [P] Create approval DTOs in `aci-backend/internal/api/dto/approval_dto.go`
-- [ ] T010a [P] Create unit tests for approval domain types (4-case coverage: happy, fail, null, edge) in `aci-backend/internal/domain/approval_test.go`
+- [x] T007 [P] Create approval repository interface in `aci-backend/internal/repository/approval_repository.go`
+- [x] T008 [P] Implement approval repository in `aci-backend/internal/repository/postgres/approval_repo.go`
+- [x] T009 [P] Create role authorization middleware in `aci-backend/internal/api/middleware/role_auth.go`
+- [x] T010 [P] Create approval DTOs in `aci-backend/internal/api/dto/approval_dto.go`
+- [x] T010a [P] Create unit tests for approval domain types (4-case coverage: happy, fail, null, edge) in `aci-backend/internal/domain/approval_test.go`
 
 ### Wave 2.2 - Approval Service (Sequential - depends on 2.1)
 
-- [ ] T011 Create approval service with business logic in `aci-backend/internal/service/approval_service.go`
+- [x] T011 Create approval service with business logic in `aci-backend/internal/service/approval_service.go`
 
 ### Wave 2.3 - Frontend API & Hooks (Parallel)
 
-- [ ] T012 [P] Create approval API service in `aci-frontend/src/services/api/approvals.ts`
-- [ ] T013 [P] Create approval TanStack Query hooks in `aci-frontend/src/hooks/useApprovalQueue.ts`
-- [ ] T013a [P] Create MSW mock handlers for approval endpoints in `aci-frontend/src/mocks/handlers/approvals.ts`
-- [ ] T013b [P] Ensure branding logos from `aci-frontend/public/branding/logos/` are used on login page and site header
+- [x] T012 [P] Create approval API service in `aci-frontend/src/services/api/approvals.ts`
+- [x] T013 [P] Create approval TanStack Query hooks in `aci-frontend/src/hooks/useApprovalQueue.ts`
+- [x] T013a [P] Create MSW mock handlers for approval endpoints in `aci-frontend/src/mocks/handlers/approvals.ts`
+- [x] T013b [P] Ensure branding logos from `aci-frontend/public/branding/logos/` are used on login page and site header
 
 ### Wave 2.4 - Route Registration (Sequential)
 
-- [ ] T014 Register approval routes in `aci-backend/internal/api/router.go`
+- [x] T014 Register approval routes in `aci-backend/internal/api/router.go`
 
 ### Post-Wave 2 Review & Commit
 
-- [ ] T015-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
-- [ ] T015-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
-- [ ] T015-R1 [US1-7] Code review with `code-reviewer` agent - Wave 2 artifacts
-- [ ] T015-R2 [US1-7] Security review with `security-reviewer` agent - Wave 2 artifacts
-- [ ] T015-GIT Git commit with `git-manager` agent: "feat(approval): add approval repository, service, and frontend hooks"
+- [x] T015-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [x] T015-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
+- [x] T015-R1 [US1-7] Code review with `code-reviewer` agent - Wave 2 artifacts
+- [x] T015-R2 [US1-7] Security review with `security-reviewer` agent - Wave 2 artifacts
+- [x] T015-GIT Git commit with `git-manager` agent: "feat(approval): add approval repository, service, and frontend hooks"
 
 ---
 
@@ -172,7 +172,7 @@ Frontend API services MUST match the OpenAPI spec. This is validated at unit tes
 
 ---
 
-## Phase 3: User Story 1 - Marketing Approval (Priority: P1)
+## Phase 3: User Story 1 - Marketing Approval (Priority: P1) ✅
 
 **Goal**: Marketing team can view queue and approve/reject articles at marketing gate
 **Independent Test**: Login as marketing role, view pending articles, approve one, verify status changes to pending_branding
@@ -180,47 +180,47 @@ Frontend API services MUST match the OpenAPI spec. This is validated at unit tes
 
 ### Wave 3.1 - US1 Backend Handlers (Parallel)
 
-- [ ] T021 [P] [US1] Implement GET /api/v1/approvals/queue handler in `aci-backend/internal/api/handlers/approval_handler.go`
-- [ ] T022 [P] [US1] Implement POST /api/v1/articles/{id}/approve handler in `aci-backend/internal/api/handlers/approval_handler.go`
-- [ ] T023 [P] [US1] Implement POST /api/v1/articles/{id}/reject handler in `aci-backend/internal/api/handlers/approval_handler.go`
+- [x] T021 [P] [US1] Implement GET /api/v1/approvals/queue handler in `aci-backend/internal/api/handlers/approval_handler.go`
+- [x] T022 [P] [US1] Implement POST /api/v1/articles/{id}/approve handler in `aci-backend/internal/api/handlers/approval_handler.go`
+- [x] T023 [P] [US1] Implement POST /api/v1/articles/{id}/reject handler in `aci-backend/internal/api/handlers/approval_handler.go`
 
 ### Wave 3.2 - US1 Backend Logic (Sequential - depends on 3.1)
 
-- [ ] T024 [US1] Add approval queue query to repository with status filter in `aci-backend/internal/repository/postgres/approval_repo.go`
-- [ ] T025 [US1] Implement role-to-gate validation in approval service `aci-backend/internal/service/approval_service.go`
-- [ ] T026 [US1] Add audit logging for approve/reject actions in `aci-backend/internal/service/approval_service.go`
+- [x] T024 [US1] Add approval queue query to repository with status filter in `aci-backend/internal/repository/postgres/approval_repo.go`
+- [x] T025 [US1] Implement role-to-gate validation in approval service `aci-backend/internal/service/approval_service.go`
+- [x] T026 [US1] Add audit logging for approve/reject actions in `aci-backend/internal/service/approval_service.go`
 
 ### Wave 3.3 - US1 Frontend Components (Parallel)
 
-- [ ] T027 [P] [US1] Create ApprovalQueue component in `aci-frontend/src/components/approval/ApprovalQueue.tsx`
-- [ ] T028 [P] [US1] Create ApprovalCard component in `aci-frontend/src/components/approval/ApprovalCard.tsx`
-- [ ] T029 [P] [US1] Create ApproveButton with confirmation dialog in `aci-frontend/src/components/approval/ApproveButton.tsx`
-- [ ] T030 [P] [US1] Create RejectButton with reason modal in `aci-frontend/src/components/approval/RejectButton.tsx`
+- [x] T027 [P] [US1] Create ApprovalQueue component in `aci-frontend/src/components/approval/ApprovalQueue.tsx`
+- [x] T028 [P] [US1] Create ApprovalCard component in `aci-frontend/src/components/approval/ApprovalCard.tsx`
+- [x] T029 [P] [US1] Create ApproveButton with confirmation dialog in `aci-frontend/src/components/approval/ApproveButton.tsx`
+- [x] T030 [P] [US1] Create RejectButton with reason modal in `aci-frontend/src/components/approval/RejectButton.tsx`
 
 ### Wave 3.4 - US1 Page Integration (Sequential - depends on 3.3)
 
-- [ ] T031 [US1] Create ApprovalPage integrating queue and action components in `aci-frontend/src/pages/ApprovalPage.tsx`
-- [ ] T032 [US1] Add /approvals route to App.tsx with role-based protection in `aci-frontend/src/App.tsx`
+- [x] T031 [US1] Create ApprovalPage integrating queue and action components in `aci-frontend/src/pages/ApprovalPage.tsx`
+- [x] T032 [US1] Add /approvals route to App.tsx with role-based protection in `aci-frontend/src/App.tsx`
 
 ### Wave 3.5 - US1 Playwright E2E Tests (Parallel)
 
-- [ ] T033 [P] [US1] Create Playwright test for marketing login and queue display in `aci-frontend/tests/e2e/approval-marketing.spec.ts`
-- [ ] T034 [P] [US1] Create Playwright test for approve action flow in `aci-frontend/tests/e2e/approval-marketing.spec.ts`
-- [ ] T035 [P] [US1] Create Playwright test for reject action with reason in `aci-frontend/tests/e2e/approval-marketing.spec.ts`
+- [x] T033 [P] [US1] Create Playwright test for marketing login and queue display in `aci-frontend/tests/e2e/approval-marketing.spec.ts`
+- [x] T034 [P] [US1] Create Playwright test for approve action flow in `aci-frontend/tests/e2e/approval-marketing.spec.ts`
+- [x] T035 [P] [US1] Create Playwright test for reject action with reason in `aci-frontend/tests/e2e/approval-marketing.spec.ts`
 
 ### Post-Wave 3 Review & Commit
 
-- [ ] T036-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
-- [ ] T036-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
-- [ ] T036-R1 [US1] Code review with `code-reviewer` agent - US1 complete implementation
-- [ ] T036-R2 [US1] Security review with `security-reviewer` agent - US1 complete implementation
-- [ ] T036-GIT Git commit with `git-manager` agent: "feat(approval): implement marketing approval gate (US1)"
+- [x] T036-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [x] T036-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
+- [x] T036-R1 [US1] Code review with `code-reviewer` agent - US1 complete implementation
+- [x] T036-R2 [US1] Security review with `security-reviewer` agent - US1 complete implementation
+- [x] T036-GIT Git commit with `git-manager` agent: "feat(approval): implement marketing approval gate (US1)"
 
 **Checkpoint**: User Story 1 complete - Marketing approval workflow functional
 
 ---
 
-## Phase 4: User Story 2 - Sequential Gate Progression (Priority: P1)
+## Phase 4: User Story 2 - Sequential Gate Progression (Priority: P1) ✅
 
 **Goal**: Articles progress through all 5 gates in sequence: Marketing → Branding → SOC L1 → SOC L3 → CISO
 **Independent Test**: Complete marketing approval, login as branding, approve, verify status changes to pending_soc_l1
@@ -228,34 +228,37 @@ Frontend API services MUST match the OpenAPI spec. This is validated at unit tes
 
 ### Wave 4.1 - US2 Backend (Parallel for state transition, Sequential for validation)
 
-- [ ] T037 [P] [US2] Implement status transition logic in approval service `aci-backend/internal/service/approval_service.go`
-- [ ] T038 [P] [US2] Add gate order validation (prevent skipping gates) in `aci-backend/internal/service/approval_service.go`
-- [ ] T039 [US2] Create article_approvals record on each gate approval in `aci-backend/internal/repository/postgres/approval_repo.go`
+- [x] T037 [P] [US2] Implement status transition logic in approval service `aci-backend/internal/service/approval_service.go`
+- [x] T038 [P] [US2] Add gate order validation (prevent skipping gates) in `aci-backend/internal/service/approval_service.go`
+- [x] T039 [US2] Create article_approvals record on each gate approval in `aci-backend/internal/repository/postgres/approval_repo.go`
 
 ### Wave 4.2 - US2 Frontend (Parallel)
 
-- [ ] T040 [P] [US2] Create ApprovalProgress component (green/yellow/gray gates) in `aci-frontend/src/components/approval/ApprovalProgress.tsx`
-- [ ] T041 [P] [US2] Update ApprovalCard to show progress indicator in `aci-frontend/src/components/approval/ApprovalCard.tsx`
-- [ ] T042 [US2] Update queue hook to filter by user's role gate in `aci-frontend/src/hooks/useApprovalQueue.ts`
+- [x] T040 [P] [US2] Create ApprovalProgress component (green/yellow/gray gates) in `aci-frontend/src/components/approval/ApprovalProgress.tsx`
+- [x] T041 [P] [US2] Update ApprovalCard to show progress indicator in `aci-frontend/src/components/approval/ApprovalCard.tsx`
+- [x] T042 [US2] Update queue hook to filter by user's role gate in `aci-frontend/src/hooks/useApprovalQueue.ts`
 
 ### Wave 4.3 - US2 Playwright E2E Tests (Parallel)
 
-- [ ] T043 [P] [US2] Create Playwright test for full 5-gate progression in `aci-frontend/tests/e2e/approval-progression.spec.ts`
-- [ ] T044 [P] [US2] Create Playwright test for gate skip prevention (403 error) in `aci-frontend/tests/e2e/approval-progression.spec.ts`
+- [x] T043 [P] [US2] Create Playwright test for full 5-gate progression in `aci-frontend/tests/e2e/approval-progression.spec.ts`
+- [x] T044 [P] [US2] Create Playwright test for gate skip prevention (403 error) in `aci-frontend/tests/e2e/approval-progression.spec.ts`
+- [x] T044a [P] [US2] Create Playwright test for queue pagination (page navigation) in `aci-frontend/tests/e2e/approval-queue-features.spec.ts`
+- [x] T044b [P] [US2] Create Playwright test for queue sorting (by date, severity) in `aci-frontend/tests/e2e/approval-queue-features.spec.ts`
+- [x] T044c [P] [US2] Create Playwright test for queue filtering (by category, severity, date range) in `aci-frontend/tests/e2e/approval-queue-features.spec.ts`
 
 ### Post-Wave 4 Review & Commit
 
-- [ ] T045-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
-- [ ] T045-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
-- [ ] T045-R1 [US2] Code review with `code-reviewer` agent - US2 complete implementation
-- [ ] T045-R2 [US2] Security review with `security-reviewer` agent - US2 complete implementation
-- [ ] T045-GIT Git commit with `git-manager` agent: "feat(approval): implement sequential gate progression (US2)"
+- [x] T045-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [x] T045-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
+- [x] T045-R1 [US2] Code review with `code-reviewer` agent - US2 complete implementation
+- [x] T045-R2 [US2] Security review with `security-reviewer` agent - US2 complete implementation
+- [x] T045-GIT Git commit with `git-manager` agent: "feat(approval): implement sequential gate progression (US2)"
 
 **Checkpoint**: User Story 2 complete - Full sequential gate progression working
 
 ---
 
-## Phase 5: User Story 3 - Article Release (Priority: P1)
+## Phase 5: User Story 3 - Article Release (Priority: P1) ✅
 
 **Goal**: Admin/CISO/super_admin can release fully-approved articles for public viewing
 **Independent Test**: Complete all 5 gates, login as admin, click Release, verify article visible to regular users
@@ -263,34 +266,34 @@ Frontend API services MUST match the OpenAPI spec. This is validated at unit tes
 
 ### Wave 5.1 - US3 Backend (Parallel)
 
-- [ ] T046 [P] [US3] Implement POST /api/v1/articles/{id}/release handler in `aci-backend/internal/api/handlers/approval_handler.go`
-- [ ] T047 [P] [US3] Add release validation (must be in 'approved' status) in `aci-backend/internal/service/approval_service.go`
-- [ ] T048 [P] [US3] Update article query to filter by released status for public feed in `aci-backend/internal/repository/postgres/article_repo.go`
+- [x] T046 [P] [US3] Implement POST /api/v1/articles/{id}/release handler in `aci-backend/internal/api/handlers/approval_handler.go`
+- [x] T047 [P] [US3] Add release validation (must be in 'approved' status) in `aci-backend/internal/service/approval_service.go`
+- [x] T048 [P] [US3] Update article query to filter by released status for public feed in `aci-backend/internal/repository/postgres/article_repo.go`
 
 ### Wave 5.2 - US3 Frontend (Parallel then Sequential)
 
-- [ ] T049 [P] [US3] Create ReleaseButton component in `aci-frontend/src/components/approval/ReleaseButton.tsx`
-- [ ] T050 [US3] Add release action to approved articles in ApprovalPage in `aci-frontend/src/pages/ApprovalPage.tsx`
-- [ ] T051 [US3] Update threat list to only show released articles for non-admin users in `aci-frontend/src/pages/ThreatsPage.tsx`
+- [x] T049 [P] [US3] Create ReleaseButton component in `aci-frontend/src/components/approval/ReleaseButton.tsx`
+- [x] T050 [US3] Add release action to approved articles in ApprovalPage in `aci-frontend/src/pages/ApprovalPage.tsx`
+- [x] T051 [US3] Update threat list to only show released articles for non-admin users in `aci-frontend/src/pages/ThreatsPage.tsx`
 
 ### Wave 5.3 - US3 Playwright E2E Tests (Parallel)
 
-- [ ] T052 [P] [US3] Create Playwright test for release action on fully-approved article in `aci-frontend/tests/e2e/approval-release.spec.ts`
-- [ ] T053 [P] [US3] Create Playwright test verifying released article visible to regular user in `aci-frontend/tests/e2e/approval-release.spec.ts`
+- [x] T052 [P] [US3] Create Playwright test for release action on fully-approved article in `aci-frontend/tests/e2e/approval-release.spec.ts`
+- [x] T053 [P] [US3] Create Playwright test verifying released article visible to regular user in `aci-frontend/tests/e2e/approval-release.spec.ts`
 
 ### Post-Wave 5 Review & Commit
 
-- [ ] T054-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
-- [ ] T054-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
-- [ ] T054-R1 [US3] Code review with `code-reviewer` agent - US3 complete implementation
-- [ ] T054-R2 [US3] Security review with `security-reviewer` agent - US3 complete implementation
-- [ ] T054-GIT Git commit with `git-manager` agent: "feat(approval): implement article release (US3) - MVP complete"
+- [x] T054-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [x] T054-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
+- [x] T054-R1 [US3] Code review with `code-reviewer` agent - US3 complete implementation
+- [x] T054-R2 [US3] Security review with `security-reviewer` agent - US3 complete implementation
+- [x] T054-GIT Git commit with `git-manager` agent: "feat(approval): implement article release (US3) - MVP complete"
 
 **Checkpoint**: User Story 3 complete - P1 stories all functional, MVP ready for demo
 
 ---
 
-## Phase 6: User Story 4 - Rejection from Pipeline (Priority: P2)
+## Phase 6: User Story 4 - Rejection from Pipeline (Priority: P2) ✅
 
 **Goal**: Any approver can reject articles with mandatory reason, removing them from all queues
 **Independent Test**: Login as SOC L3, reject an article, verify it disappears from all queues and shows rejection reason
@@ -298,33 +301,33 @@ Frontend API services MUST match the OpenAPI spec. This is validated at unit tes
 
 ### Wave 6.1 - US4 Backend (Parallel)
 
-- [ ] T055 [P] [US4] Implement rejection with mandatory reason validation in `aci-backend/internal/service/approval_service.go`
-- [ ] T056 [P] [US4] Update queue queries to exclude rejected articles in `aci-backend/internal/repository/postgres/approval_repo.go`
-- [ ] T057 [P] [US4] Store rejection metadata (reason, rejector, timestamp) in `aci-backend/internal/repository/postgres/approval_repo.go`
+- [x] T055 [P] [US4] Implement rejection with mandatory reason validation in `aci-backend/internal/service/approval_service.go`
+- [x] T056 [P] [US4] Update queue queries to exclude rejected articles in `aci-backend/internal/repository/postgres/approval_repo.go`
+- [x] T057 [P] [US4] Store rejection metadata (reason, rejector, timestamp) in `aci-backend/internal/repository/postgres/approval_repo.go`
 
 ### Wave 6.2 - US4 Frontend (Parallel)
 
-- [ ] T058 [P] [US4] Update RejectButton to require reason (min 10 chars) in `aci-frontend/src/components/approval/RejectButton.tsx`
-- [ ] T059 [P] [US4] Add rejection details display to article view in `aci-frontend/src/components/approval/ApprovalCard.tsx`
+- [x] T058 [P] [US4] Update RejectButton to require reason (min 10 chars) in `aci-frontend/src/components/approval/RejectButton.tsx`
+- [x] T059 [P] [US4] Add rejection details display to article view in `aci-frontend/src/components/approval/ApprovalCard.tsx`
 
 ### Wave 6.3 - US4 Playwright E2E Tests (Parallel)
 
-- [ ] T060 [P] [US4] Create Playwright test for rejection with reason in `aci-frontend/tests/e2e/approval-rejection.spec.ts`
-- [ ] T061 [P] [US4] Create Playwright test verifying rejected article removed from queues in `aci-frontend/tests/e2e/approval-rejection.spec.ts`
+- [x] T060 [P] [US4] Create Playwright test for rejection with reason in `aci-frontend/tests/e2e/approval-rejection.spec.ts`
+- [x] T061 [P] [US4] Create Playwright test verifying rejected article removed from queues in `aci-frontend/tests/e2e/approval-rejection.spec.ts`
 
 ### Post-Wave 6 Review & Commit
 
-- [ ] T062-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
-- [ ] T062-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
-- [ ] T062-R1 [US4] Code review with `code-reviewer` agent - US4 complete implementation
-- [ ] T062-R2 [US4] Security review with `security-reviewer` agent - US4 complete implementation
-- [ ] T062-GIT Git commit with `git-manager` agent: "feat(approval): implement rejection from pipeline (US4)"
+- [x] T062-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [x] T062-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
+- [x] T062-R1 [US4] Code review with `code-reviewer` agent - US4 complete implementation
+- [x] T062-R2 [US4] Security review with `security-reviewer` agent - US4 complete implementation
+- [x] T062-GIT Git commit with `git-manager` agent: "feat(approval): implement rejection from pipeline (US4)"
 
 **Checkpoint**: User Story 4 complete - Rejection workflow functional
 
 ---
 
-## Phase 7: User Story 5 - Super Admin Override (Priority: P2)
+## Phase 7: User Story 5 - Super Admin Override (Priority: P2) ✅
 
 **Goal**: Super_admin can approve at any gate and has CISO release power
 **Independent Test**: Login as super_admin, view all pending articles across gates, approve through multiple gates sequentially
@@ -332,31 +335,31 @@ Frontend API services MUST match the OpenAPI spec. This is validated at unit tes
 
 ### Wave 7.1 - US5 Backend (Parallel)
 
-- [ ] T063 [P] [US5] Update role authorization to grant super_admin all gate access in `aci-backend/internal/api/middleware/role_auth.go`
-- [ ] T064 [P] [US5] Update queue endpoint to show all gates for admin/super_admin in `aci-backend/internal/api/handlers/approval_handler.go`
+- [x] T063 [P] [US5] Update role authorization to grant super_admin all gate access in `aci-backend/internal/api/middleware/role_auth.go`
+- [x] T064 [P] [US5] Update queue endpoint to show all gates for admin/super_admin in `aci-backend/internal/api/handlers/approval_handler.go`
 
 ### Wave 7.2 - US5 Frontend (Parallel)
 
-- [ ] T065 [P] [US5] Update queue filtering to show all pending articles for super_admin in `aci-frontend/src/hooks/useApprovalQueue.ts`
-- [ ] T066 [P] [US5] Add gate selector for admin/super_admin in ApprovalPage in `aci-frontend/src/pages/ApprovalPage.tsx`
+- [x] T065 [P] [US5] Update queue filtering to show all pending articles for super_admin in `aci-frontend/src/hooks/useApprovalQueue.ts`
+- [x] T066 [P] [US5] Add gate selector for admin/super_admin in ApprovalPage in `aci-frontend/src/pages/ApprovalPage.tsx`
 
 ### Wave 7.3 - US5 Playwright E2E Tests
 
-- [ ] T067 [US5] Create Playwright test for super_admin multi-gate approval in `aci-frontend/tests/e2e/approval-superadmin.spec.ts`
+- [x] T067 [US5] Create Playwright test for super_admin multi-gate approval in `aci-frontend/tests/e2e/approval-superadmin.spec.ts`
 
 ### Post-Wave 7 Review & Commit
 
-- [ ] T068-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
-- [ ] T068-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
-- [ ] T068-R1 [US5] Code review with `code-reviewer` agent - US5 complete implementation
-- [ ] T068-R2 [US5] Security review with `security-reviewer` agent - US5 complete implementation
-- [ ] T068-GIT Git commit with `git-manager` agent: "feat(approval): implement super admin override (US5)"
+- [x] T068-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [x] T068-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
+- [x] T068-R1 [US5] Code review with `code-reviewer` agent - US5 complete implementation
+- [x] T068-R2 [US5] Security review with `security-reviewer` agent - US5 complete implementation
+- [x] T068-GIT Git commit with `git-manager` agent: "feat(approval): implement super admin override (US5)"
 
 **Checkpoint**: User Story 5 complete - Super admin override working
 
 ---
 
-## Phase 8: User Story 6 - Admin Role Management (Priority: P2)
+## Phase 8: User Story 6 - Admin Role Management (Priority: P2) ✅
 
 **Goal**: Admin can assign/change user roles for approval workflow
 **Independent Test**: Login as admin, change user from 'user' to 'marketing', logout, login as that user, verify marketing queue access
@@ -364,32 +367,32 @@ Frontend API services MUST match the OpenAPI spec. This is validated at unit tes
 
 ### Wave 8.1 - US6 Backend (Parallel)
 
-- [ ] T069 [P] [US6] Implement PUT /api/v1/users/{id}/role handler in `aci-backend/internal/api/handlers/admin_handler.go`
-- [ ] T070 [P] [US6] Add admin-only authorization check for role change in `aci-backend/internal/api/middleware/role_auth.go`
-- [ ] T071 [P] [US6] Add audit logging for role changes in `aci-backend/internal/service/user_service.go`
+- [x] T069 [P] [US6] Implement PUT /api/v1/users/{id}/role handler in `aci-backend/internal/api/handlers/admin_handler.go`
+- [x] T070 [P] [US6] Add admin-only authorization check for role change in `aci-backend/internal/api/middleware/role_auth.go`
+- [x] T071 [P] [US6] Add audit logging for role changes in `aci-backend/internal/service/user_service.go`
 
 ### Wave 8.2 - US6 Frontend (Parallel)
 
-- [ ] T072 [P] [US6] Create RoleSelector component in `aci-frontend/src/components/admin/RoleSelector.tsx`
-- [ ] T073 [US6] Add role management section to AdminPage in `aci-frontend/src/pages/AdminPage.tsx`
+- [x] T072 [P] [US6] Create RoleSelector component in `aci-frontend/src/components/admin/RoleSelector.tsx`
+- [x] T073 [US6] Add role management section to AdminPage in `aci-frontend/src/pages/AdminPage.tsx`
 
 ### Wave 8.3 - US6 Playwright E2E Tests
 
-- [ ] T074 [US6] Create Playwright test for role assignment and verification in `aci-frontend/tests/e2e/admin-role-management.spec.ts`
+- [x] T074 [US6] Create Playwright test for role assignment and verification in `aci-frontend/tests/e2e/admin-role-management.spec.ts`
 
 ### Post-Wave 8 Review & Commit
 
-- [ ] T075-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
-- [ ] T075-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
-- [ ] T075-R1 [US6] Code review with `code-reviewer` agent - US6 complete implementation
-- [ ] T075-R2 [US6] Security review with `security-reviewer` agent - US6 complete implementation
-- [ ] T075-GIT Git commit with `git-manager` agent: "feat(approval): implement admin role management (US6)"
+- [x] T075-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [x] T075-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
+- [x] T075-R1 [US6] Code review with `code-reviewer` agent - US6 complete implementation
+- [x] T075-R2 [US6] Security review with `security-reviewer` agent - US6 complete implementation
+- [x] T075-GIT Git commit with `git-manager` agent: "feat(approval): implement admin role management (US6)"
 
 **Checkpoint**: User Story 6 complete - Role management functional
 
 ---
 
-## Phase 9: User Story 7 - Approval Audit Trail (Priority: P3)
+## Phase 9: User Story 7 - Approval Audit Trail (Priority: P3) ✅
 
 **Goal**: View complete approval history for any article with timestamps and approvers
 **Independent Test**: View approved article, open history modal, verify all 5 gate approvals listed with correct approvers
@@ -397,26 +400,26 @@ Frontend API services MUST match the OpenAPI spec. This is validated at unit tes
 
 ### Wave 9.1 - US7 Backend (Parallel)
 
-- [ ] T076 [P] [US7] Implement GET /api/v1/articles/{id}/approval-history handler in `aci-backend/internal/api/handlers/approval_handler.go`
-- [ ] T077 [P] [US7] Create approval history query with approver names in `aci-backend/internal/repository/postgres/approval_repo.go`
+- [x] T076 [P] [US7] Implement GET /api/v1/articles/{id}/approval-history handler in `aci-backend/internal/api/handlers/approval_handler.go`
+- [x] T077 [P] [US7] Create approval history query with approver names in `aci-backend/internal/repository/postgres/approval_repo.go`
 
 ### Wave 9.2 - US7 Frontend (Parallel)
 
-- [ ] T078 [P] [US7] Create ApprovalHistoryModal component in `aci-frontend/src/components/approval/ApprovalHistoryModal.tsx`
-- [ ] T079 [P] [US7] Create useApprovalHistory hook in `aci-frontend/src/hooks/useApprovalHistory.ts`
-- [ ] T080 [US7] Add history button to ApprovalCard in `aci-frontend/src/components/approval/ApprovalCard.tsx`
+- [x] T078 [P] [US7] Create ApprovalHistoryModal component in `aci-frontend/src/components/approval/ApprovalHistoryModal.tsx`
+- [x] T079 [P] [US7] Create useApprovalHistory hook in `aci-frontend/src/hooks/useApprovalHistory.ts`
+- [x] T080 [US7] Add history button to ApprovalCard in `aci-frontend/src/components/approval/ApprovalCard.tsx`
 
 ### Wave 9.3 - US7 Playwright E2E Tests
 
-- [ ] T081 [US7] Create Playwright test for approval history display in `aci-frontend/tests/e2e/approval-history.spec.ts`
+- [x] T081 [US7] Create Playwright test for approval history display in `aci-frontend/tests/e2e/approval-history.spec.ts`
 
 ### Post-Wave 9 Review & Commit
 
-- [ ] T082-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
-- [ ] T082-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
-- [ ] T082-R1 [US7] Code review with `code-reviewer` agent - US7 complete implementation
-- [ ] T082-R2 [US7] Security review with `security-reviewer` agent - US7 complete implementation
-- [ ] T082-GIT Git commit with `git-manager` agent: "feat(approval): implement approval audit trail (US7)"
+- [x] T082-QA **Quality Gate**: Run `npm run lint && npm run test` (frontend) and `go vet ./... && go test ./...` (backend) - must pass
+- [x] T082-CT **Contract Test**: Run `npm run test:contract` - verify API services match OpenAPI spec
+- [x] T082-R1 [US7] Code review with `code-reviewer` agent - US7 complete implementation
+- [x] T082-R2 [US7] Security review with `security-reviewer` agent - US7 complete implementation
+- [x] T082-GIT Git commit with `git-manager` agent: "feat(approval): implement approval audit trail (US7)"
 
 **Checkpoint**: User Story 7 complete - All user stories implemented
 
@@ -477,6 +480,7 @@ Frontend API services MUST match the OpenAPI spec. This is validated at unit tes
 ### Wave 12.2 - Performance & Security (Parallel)
 
 - [ ] T099 [P] Performance verification - <2s queue load, <1s approval action
+- [ ] T099a [P] Load testing - verify 100 concurrent approval operations (SC-006) using k6 or Artillery
 - [ ] T100 [P] Security validation - RBAC enforcement, audit logging verified
 
 ### Wave 12.3 - Final Regression (Sequential)

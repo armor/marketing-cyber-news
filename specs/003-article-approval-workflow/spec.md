@@ -17,7 +17,7 @@ The Article Approval Workflow is a multi-gate content approval system that requi
 4. **SOC Level 3** - Senior security analyst deep review
 5. **CISO** - Chief Information Security Officer final approval
 
-### User Roles (7 Total)
+### User Roles (8 Total)
 
 | Role | Permission Level | Description |
 |------|------------------|-------------|
@@ -159,7 +159,7 @@ A compliance officer wants to view the complete approval history for an article 
 - What happens when an approver is removed from a role mid-approval? Their previous approvals remain valid, but they can no longer approve new articles.
 - What happens when multiple users have the same approver role? Any user with the role can approve - first one wins.
 - What happens when the CISO role is vacant? Super_admin can fulfill CISO approval duties.
-- What happens when an article is modified after partial approval? System should track if content changed and optionally reset to first gate (configurable).
+- What happens when an article is modified after partial approval? **Out of scope for MVP.** Future enhancement: System should track content changes via hash comparison and optionally reset to first gate via admin configuration setting.
 
 ## Requirements *(mandatory)*
 
@@ -175,7 +175,7 @@ A compliance officer wants to view the complete approval history for an article 
 - **FR-007**: System MUST support "Release" action only for fully approved articles (all 5 gates passed)
 
 #### Role-Based Access Control
-- **FR-008**: System MUST support 7 user roles: user, marketing, branding, soc_level_1, soc_level_3, ciso, admin, super_admin
+- **FR-008**: System MUST support 8 user roles: user, marketing, branding, soc_level_1, soc_level_3, ciso, admin, super_admin
 - **FR-009**: System MUST restrict gate approval to users with matching role (marketing role approves marketing gate, etc.)
 - **FR-010**: System MUST grant super_admin same approval powers as ciso
 - **FR-011**: System MUST grant admin full system management capabilities

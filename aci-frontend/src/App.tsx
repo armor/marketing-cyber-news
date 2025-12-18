@@ -39,6 +39,12 @@ const ThreatsPage = lazy(() =>
 const ThreatDetailPage = lazy(() =>
   import('@/pages/ThreatDetailPage').then((module) => ({ default: module.ThreatDetailPage }))
 );
+const ApprovalPage = lazy(() =>
+  import('@/pages/ApprovalPage').then((module) => ({ default: module.ApprovalPage }))
+);
+const NewsletterConfigPage = lazy(() =>
+  import('@/pages/NewsletterConfigPage').then((module) => ({ default: module.NewsletterConfigPage }))
+);
 
 // Placeholder components for pages not yet implemented
 
@@ -194,6 +200,16 @@ function App(): React.ReactElement {
                 }
               />
               <Route
+                path="/approvals"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                    <ApprovalPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/alerts"
                 element={
                   <ProtectedRoute>
@@ -209,6 +225,16 @@ function App(): React.ReactElement {
                   <ProtectedRoute>
                     <MainLayout>
                     <AnalyticsPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/newsletter-config"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <NewsletterConfigPage />
                     </MainLayout>
                   </ProtectedRoute>
                 }

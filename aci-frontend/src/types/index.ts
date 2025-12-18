@@ -59,3 +59,6 @@ export interface ApiResponse<T> {
   success?: boolean;
   message?: string;
 }
+
+// Export all approval workflow types
+export * from './approval';

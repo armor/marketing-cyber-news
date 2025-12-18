@@ -96,7 +96,31 @@ func (s *Server) setupRoutesWithWebSocket(wsHandler WebSocketHandler) {
 				r.Post("/{id}/bookmark", s.handlers.Article.AddBookmark)
 				r.Delete("/{id}/bookmark", s.handlers.Article.RemoveBookmark)
 				r.Post("/{id}/read", s.handlers.Article.MarkRead)
+
+				// Approval workflow routes (requires Approval handler)
+				if s.handlers.Approval != nil {
+					// Approval actions - authentication required, gate access checked in service layer
+					r.Post("/{id}/approve", s.handlers.Approval.Approve)
+					r.Post("/{id}/reject", s.handlers.Approval.Reject)
+
+					// Release requires release permission
+					r.With(middleware.RequireReleaseAccess()).Post("/{id}/release", s.handlers.Approval.Release)
+
+					// Reset requires admin access
+					r.With(middleware.RequireAdminAccess()).Post("/{id}/reset", s.handlers.Approval.Reset)
+
+					// History - anyone authenticated can view
+					r.Get("/{id}/approval-history", s.handlers.Approval.GetHistory)
+				}
 			})
+
+			// Approval queue routes (separate from article routes)
+			if s.handlers.Approval != nil {
+				r.Route("/approvals", func(r chi.Router) {
+					r.Use(middleware.RequireApprovalAccess())
+					r.Get("/queue", s.handlers.Approval.GetQueue)
+				})
+			}
 
 			// Alert routes
 			r.Route("/alerts", func(r chi.Router) {

@@ -9,11 +9,28 @@
 
 /**
  * Available user roles in the system
+ * - user: Basic user access
  * - admin: Full system access
- * - analyst: Read/write access to analytics
- * - viewer: Read-only access
+ * - super_admin: Super admin with all privileges
+ * - marketing: Marketing approval gate
+ * - branding: Branding approval gate
+ * - soc_level_1: SOC Level 1 approval gate
+ * - soc_level_3: SOC Level 3 approval gate
+ * - ciso: CISO final approval gate
+ * - analyst: Read/write access to analytics (legacy)
+ * - viewer: Read-only access (legacy)
  */
-export type UserRole = 'admin' | 'analyst' | 'viewer';
+export type UserRole =
+  | 'user'
+  | 'admin'
+  | 'super_admin'
+  | 'marketing'
+  | 'branding'
+  | 'soc_level_1'
+  | 'soc_level_3'
+  | 'ciso'
+  | 'analyst'
+  | 'viewer';
 
 /**
  * Permission levels derived from roles
@@ -118,7 +135,14 @@ export function hasPermission(
   }
 
   const rolePermissions: Record<UserRole, PermissionLevel[]> = {
+    user: ['read'],
     admin: ['read', 'write', 'admin'],
+    super_admin: ['read', 'write', 'admin'],
+    marketing: ['read', 'write'],
+    branding: ['read', 'write'],
+    soc_level_1: ['read', 'write'],
+    soc_level_3: ['read', 'write'],
+    ciso: ['read', 'write', 'admin'],
     analyst: ['read', 'write'],
     viewer: ['read'],
   };
