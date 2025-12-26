@@ -1,0 +1,353 @@
+{
+  "name": "Newsletter Content Ingestion",
+  "nodes": [
+    {
+      "parameters": {
+        "feedUrl": "={{ $json.feed_url }}",
+        "options": {
+          "includeContent": true
+        }
+      },
+      "id": "rss-feed-trigger",
+      "name": "RSS Feed Trigger",
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "",
+      "notesInFlow": false,
+      "notes": "Polls configured RSS feeds every 4 hours. Reads from multiple sources: Armor blog, security news feeds."
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "title",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "name": "url",
+              "value": "={{ $json.link }}"
+            },
+            {
+              "name": "summary",
+              "value": "={{ $json.description || $json.contentSnippet || '' }}"
+            },
+            {
+              "name": "published_at",
+              "value": "={{ $json.pubDate || $json.isoDate }}"
+            },
+            {
+              "name": "source_id",
+              "value": "={{ $json.source_id || 1 }}"
+            },
+            {
+              "name": "topic_tags",
+              "value": "={{ $json.categories ? $json.categories.join(',') : 'cybersecurity' }}"
+            },
+            {
+              "name": "trust_score",
+              "value": "0.8"
+            },
+            {
+              "name": "is_active",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "transform-rss-item",
+      "name": "Transform to Content Item",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [450, 300],
+      "notesInFlow": false,
+      "notes": "Map RSS fields to content_items database schema. Extract title, url, summary, published_at. Add source_id, topic_tags from feed configuration. Set default trust_score (0.8) and is_active (true)."
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id FROM content_items WHERE url = '{{ $json.url }}'",
+        "options": {}
+      },
+      "id": "check-duplicate",
+      "name": "Check for Duplicate",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [650, 300],
+      "credentials": {
+        "postgres": {
+          "id": "1",
+          "name": "PostgreSQL Newsletter DB"
+        }
+      },
+      "notesInFlow": false,
+      "notes": "Query database to check if content item already exists based on URL. Prevents duplicate ingestion."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "duplicate-check-condition",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "branch-on-existence",
+      "name": "Item Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 300],
+      "notesInFlow": false,
+      "notes": "Branch based on whether item exists. TRUE (isEmpty) = new item -> insert. FALSE = duplicate -> skip."
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "content_items",
+          "mode": "list",
+          "cachedResultName": "content_items"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "={{ $('Transform to Content Item').item.json.title }}",
+            "url": "={{ $('Transform to Content Item').item.json.url }}",
+            "summary": "={{ $('Transform to Content Item').item.json.summary }}",
+            "published_at": "={{ $('Transform to Content Item').item.json.published_at }}",
+            "source_id": "={{ $('Transform to Content Item').item.json.source_id }}",
+            "topic_tags": "={{ $('Transform to Content Item').item.json.topic_tags }}",
+            "trust_score": "={{ $('Transform to Content Item').item.json.trust_score }}",
+            "is_active": "={{ $('Transform to Content Item').item.json.is_active }}",
+            "created_at": "={{ $now }}",
+            "updated_at": "={{ $now }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "published_at",
+              "displayName": "published_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_id",
+              "displayName": "source_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "topic_tags",
+              "displayName": "topic_tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "trust_score",
+              "displayName": "trust_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "is_active",
+              "displayName": "is_active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "insert-new-item",
+      "name": "Insert New Content Item",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [1050, 200],
+      "credentials": {
+        "postgres": {
+          "id": "1",
+          "name": "PostgreSQL Newsletter DB"
+        }
+      },
+      "notesInFlow": false,
+      "notes": "Insert new content item into database with all required fields. Only executes for new (non-duplicate) items."
+    },
+    {
+      "parameters": {},
+      "id": "skip-duplicate",
+      "name": "Skip Duplicate",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1050, 400],
+      "notesInFlow": false,
+      "notes": "No operation - skips duplicate items that already exist in the database."
+    }
+  ],
+  "connections": {
+    "RSS Feed Trigger": {
+      "main": [
+        [
+          {
+            "node": "Transform to Content Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform to Content Item": {
+      "main": [
+        [
+          {
+            "node": "Check for Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Duplicate": {
+      "main": [
+        [
+          {
+            "node": "Item Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item Exists?": {
+      "main": [
+        [
+          {
+            "node": "Insert New Content Item",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "timezone": "America/New_York",
+    "saveExecutionProgress": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "placeholder-instance-id"
+  },
+  "id": "newsletter-content-ingestion",
+  "tags": [
+    {
+      "createdAt": "2025-12-17T00:00:00.000Z",
+      "updatedAt": "2025-12-17T00:00:00.000Z",
+      "id": "1",
+      "name": "newsletter"
+    },
+    {
+      "createdAt": "2025-12-17T00:00:00.000Z",
+      "updatedAt": "2025-12-17T00:00:00.000Z",
+      "id": "2",
+      "name": "content-ingestion"
+    }
+  ]
+}

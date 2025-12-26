@@ -1,0 +1,14 @@
+---
+# Namespace for AI Newsletter Automation System
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: armor-newsletter
+  labels:
+    name: armor-newsletter
+    environment: development
+    app.kubernetes.io/name: armor-newsletter
+    app.kubernetes.io/component: namespace
+    app.kubernetes.io/part-of: armor-platform
+  annotations:
+    description: "AI Newsletter Automation System - Development Environment"

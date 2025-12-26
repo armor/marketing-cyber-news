@@ -1,0 +1,93 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Namespace for all resources
+namespace: armor-newsletter
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize
+  app.kubernetes.io/part-of: armor-platform
+  environment: development
+
+# Common annotations
+commonAnnotations:
+  deployment.kubernetes.io/revision: "1"
+
+# Resources to include in this kustomization
+# Order matters: namespace first, then dependencies, then apps
+resources:
+  # Infrastructure layer
+  - namespace.yaml
+  - secrets.yaml
+  - configmap.yaml
+
+  # Data layer
+  - postgres.yaml
+  - redis.yaml
+
+  # Email mock layer
+  - mailpit.yaml
+
+  # Application layer
+  - backend.yaml
+  - frontend.yaml
+  - n8n.yaml
+
+  # Network layer
+  - ingress.yaml
+
+# ConfigMap generator for n8n workflows
+# Workflows are loaded from JSON files (copied to workflows/ directory)
+configMapGenerator:
+  - name: n8n-workflows
+    files:
+      - newsletter-content-ingestion.json=workflows/newsletter-content-ingestion.json
+      - newsletter-generation.json=workflows/newsletter-generation.json
+      - newsletter-approval.json=workflows/newsletter-approval.json
+      - newsletter-delivery-smtp.json=workflows/newsletter-delivery-smtp.json
+      - engagement-webhook.json=workflows/engagement-webhook.json
+
+# Images to customize
+images:
+  - name: aci-backend
+    newName: aci-backend
+    newTag: latest
+  - name: aci-frontend
+    newName: aci-frontend
+    newTag: latest
+
+---
+# Usage:
+#
+# 1. Build images first (run from project root):
+#
+#    # For minikube:
+#    eval $(minikube docker-env)
+#
+#    # Build backend
+#    docker build -t aci-backend:latest -f aci-backend/deployments/Dockerfile aci-backend/
+#
+#    # Build frontend
+#    docker build -t aci-frontend:latest -f aci-frontend/Dockerfile aci-frontend/
+#
+# 2. Preview manifests:
+#    kubectl kustomize deployments/k8s
+#
+# 3. Apply to cluster:
+#    kubectl apply -k deployments/k8s
+#
+# 4. Check deployment status:
+#    kubectl get all -n armor-newsletter
+#
+# 5. Delete from cluster:
+#    kubectl delete -k deployments/k8s
+#
+# 6. Add to /etc/hosts (for ingress):
+#    echo "$(minikube ip) newsletter.local" | sudo tee -a /etc/hosts
+#
+# 7. Access services:
+#    - Frontend: http://newsletter.local
+#    - Backend API: http://newsletter.local/api
+#    - n8n: http://newsletter.local/n8n or http://$(minikube ip):30567
+#    - Mailpit: http://newsletter.local/mail or http://$(minikube ip):30825

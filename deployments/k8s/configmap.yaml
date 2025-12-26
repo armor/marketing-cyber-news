@@ -1,0 +1,108 @@
+---
+# Application ConfigMap for armor-newsletter backend
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: armor-newsletter
+  labels:
+    app.kubernetes.io/name: aci-backend
+    app.kubernetes.io/component: configuration
+data:
+  # Server configuration
+  SERVER_PORT: "8080"
+  LOG_LEVEL: "info"
+
+  # JWT configuration
+  JWT_ACCESS_TOKEN_EXPIRY: "15m"
+  JWT_REFRESH_TOKEN_EXPIRY: "168h"
+  JWT_PRIVATE_KEY_PATH: "/app/jwt/private.pem"
+  JWT_PUBLIC_KEY_PATH: "/app/jwt/public.pem"
+
+  # Database connection settings
+  DATABASE_HOST: "postgres.armor-newsletter.svc.cluster.local"
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: "armor_newsletter"
+  DATABASE_USER: "newsletter_user"
+  DATABASE_URL: "postgresql://newsletter_user:newsletter_password_dev_only@postgres.armor-newsletter.svc.cluster.local:5432/armor_newsletter?sslmode=disable"
+  DATABASE_MAX_CONNECTIONS: "25"
+  DATABASE_MAX_IDLE_CONNECTIONS: "5"
+  DATABASE_CONNECTION_MAX_LIFETIME: "30m"
+
+  # Redis configuration
+  REDIS_HOST: "redis.armor-newsletter.svc.cluster.local"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+
+  # CORS configuration
+  ENABLE_CORS: "true"
+  CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://newsletter.local,http://127.0.0.1:3000"
+
+  # Feature flags
+  ENABLE_REQUEST_LOGGING: "true"
+
+  # Rate limiting
+  RATE_LIMIT_REQUESTS_PER_MINUTE: "60"
+
+  # Graceful shutdown
+  SHUTDOWN_TIMEOUT: "30"
+
+  # n8n Integration
+  N8N_URL: "http://n8n.armor-newsletter.svc.cluster.local:5678"
+
+  # SMTP Configuration (Mailpit)
+  SMTP_HOST: "mailpit.armor-newsletter.svc.cluster.local"
+  SMTP_PORT: "25"
+  SMTP_FROM: "newsletter@armor.local"
+  SMTP_AUTH_ENABLED: "false"
+
+  # OpenRouter Configuration
+  OPENROUTER_MODEL: "anthropic/claude-3-sonnet"
+  OPENROUTER_BASE_URL: "https://openrouter.ai/api/v1"
+
+---
+# n8n ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: n8n-config
+  namespace: armor-newsletter
+  labels:
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/component: automation
+data:
+  N8N_HOST: "0.0.0.0"
+  N8N_PORT: "5678"
+  N8N_PROTOCOL: "http"
+  GENERIC_TIMEZONE: "America/New_York"
+  TZ: "America/New_York"
+  # Backend webhook URL (internal K8s service)
+  WEBHOOK_URL: "http://aci-backend.armor-newsletter.svc.cluster.local:80/v1/webhooks/n8n"
+  # Disable telemetry
+  N8N_DIAGNOSTICS_ENABLED: "false"
+  N8N_HIRING_BANNER_ENABLED: "false"
+  # Database configuration for n8n (uses same PostgreSQL)
+  DB_TYPE: "postgresdb"
+  DB_POSTGRESDB_HOST: "postgres.armor-newsletter.svc.cluster.local"
+  DB_POSTGRESDB_PORT: "5432"
+  DB_POSTGRESDB_DATABASE: "armor_newsletter"
+  DB_POSTGRESDB_USER: "newsletter_user"
+  # SMTP for n8n workflows (Mailpit)
+  N8N_SMTP_HOST: "mailpit.armor-newsletter.svc.cluster.local"
+  N8N_SMTP_PORT: "25"
+  N8N_SMTP_SSL: "false"
+
+---
+# Frontend ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: armor-newsletter
+  labels:
+    app.kubernetes.io/name: aci-frontend
+    app.kubernetes.io/component: configuration
+data:
+  VITE_API_URL: "http://newsletter.local/api"
+  VITE_ENABLE_MSW: "false"
+  NODE_ENV: "production"

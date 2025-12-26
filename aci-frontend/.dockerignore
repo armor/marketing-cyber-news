@@ -1,0 +1,47 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+build
+
+# Test artifacts
+coverage
+tests/artifacts
+tests/reports
+playwright-report
+test-results
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Config files not needed in container (keep build configs)
+.eslintrc*
+.prettierrc*
+vitest.config.*
+playwright.config.*
+playwright.human.config.*

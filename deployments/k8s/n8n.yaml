@@ -1,0 +1,157 @@
+---
+# n8n Workflow Automation Deployment
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: n8n-data
+  namespace: armor-newsletter
+  labels:
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/component: automation
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n
+  namespace: armor-newsletter
+  labels:
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/component: automation
+    app.kubernetes.io/part-of: armor-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: n8n
+      app.kubernetes.io/component: automation
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: n8n
+        app.kubernetes.io/component: automation
+        app.kubernetes.io/part-of: armor-platform
+    spec:
+      initContainers:
+        # Wait for PostgreSQL to be ready
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z postgres.armor-newsletter.svc.cluster.local 5432; do
+                echo "Waiting for PostgreSQL..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready!"
+      containers:
+        - name: n8n
+          image: n8nio/n8n:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 5678
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: n8n-config
+          env:
+            # Database password
+            - name: DB_POSTGRESDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_PASSWORD
+            # Webhook secret
+            - name: N8N_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: N8N_WEBHOOK_SECRET
+            # OpenRouter API key for AI nodes
+            - name: OPENROUTER_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: OPENROUTER_API_KEY
+          volumeMounts:
+            - name: n8n-data
+              mountPath: /home/node/.n8n
+            - name: workflows
+              mountPath: /home/node/.n8n/workflows-import
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 5678
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 5678
+            initialDelaySeconds: 30
+            periodSeconds: 20
+      volumes:
+        - name: n8n-data
+          persistentVolumeClaim:
+            claimName: n8n-data
+        - name: workflows
+          configMap:
+            name: n8n-workflows
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: n8n
+  namespace: armor-newsletter
+  labels:
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/component: automation
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 5678
+      targetPort: 5678
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/component: automation
+
+---
+# NodePort service for external access to n8n UI
+apiVersion: v1
+kind: Service
+metadata:
+  name: n8n-external
+  namespace: armor-newsletter
+  labels:
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/component: automation
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 5678
+      targetPort: 5678
+      nodePort: 30567
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/component: automation
