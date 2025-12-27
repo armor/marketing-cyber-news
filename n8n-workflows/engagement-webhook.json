@@ -1,0 +1,550 @@
+{
+  "name": "Newsletter Engagement Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "newsletter/engagement",
+        "httpMethod": "POST",
+        "responseMode": "onReceived",
+        "responseCode": 200,
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Engagement Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 480],
+      "webhookId": "placeholder-engagement-webhook-id",
+      "notes": "Receives engagement events from HubSpot and Mailchimp ESPs. Supports: EMAIL_OPEN, EMAIL_CLICK, EMAIL_BOUNCE, EMAIL_UNSUBSCRIBE, SPAM_REPORT (HubSpot) and open, click, hard_bounce, soft_bounce, unsub, abuse (Mailchimp)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = items[0].json;\nconst headers = items[0].headers || {};\n\n// Normalize event from both HubSpot and Mailchimp formats\nlet normalized = {\n  event_type: '',\n  contact_email: '',\n  campaign_id: '',\n  url: null,\n  user_agent: headers['user-agent'] || '',\n  ip_address: headers['x-forwarded-for'] || headers['x-real-ip'] || '',\n  occurred_at: new Date().toISOString()\n};\n\n// HubSpot format detection\nif (item.eventType) {\n  // HubSpot event\n  const eventTypeMap = {\n    'EMAIL_OPEN': 'opened',\n    'EMAIL_CLICK': 'clicked',\n    'EMAIL_BOUNCE': 'bounced',\n    'EMAIL_UNSUBSCRIBE': 'unsubscribed',\n    'SPAM_REPORT': 'complained'\n  };\n  \n  normalized.event_type = eventTypeMap[item.eventType] || 'opened';\n  normalized.contact_email = item.recipientEmail;\n  normalized.campaign_id = item.emailId || '';\n  normalized.url = item.url || null;\n  normalized.occurred_at = item.timestamp ? new Date(item.timestamp).toISOString() : normalized.occurred_at;\n}\n// Mailchimp format detection\nelse if (item.type && item.data) {\n  // Mailchimp event\n  const eventTypeMap = {\n    'open': 'opened',\n    'click': 'clicked',\n    'hard_bounce': 'bounced',\n    'soft_bounce': 'bounced',\n    'unsub': 'unsubscribed',\n    'abuse': 'complained'\n  };\n  \n  normalized.event_type = eventTypeMap[item.type] || 'opened';\n  normalized.contact_email = item.data.email;\n  normalized.campaign_id = item.data.campaign_id || '';\n  normalized.url = item.data.url || null;\n  normalized.occurred_at = item.fired_at ? new Date(item.fired_at).toISOString() : normalized.occurred_at;\n}\nelse {\n  throw new Error('Unknown event format. Expected HubSpot or Mailchimp webhook payload.');\n}\n\n// Validate required fields\nif (!normalized.event_type || !normalized.contact_email) {\n  throw new Error('Missing required fields: event_type or contact_email');\n}\n\nreturn [{ json: normalized }];"
+      },
+      "id": "normalize-event",
+      "name": "Normalize Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 480],
+      "notes": "Converts both HubSpot and Mailchimp webhook formats to unified structure with event_type, contact_email, campaign_id, url, user_agent, ip_address, occurred_at"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT ni.id as issue_id, c.id as contact_id\nFROM newsletter_issues ni\nLEFT JOIN contacts c ON c.email = '{{ $json.contact_email }}'\nWHERE ni.esp_campaign_id = '{{ $json.campaign_id }}'\nLIMIT 1",
+        "options": {}
+      },
+      "id": "find-issue-contact",
+      "name": "Find Issue & Contact",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [640, 480],
+      "credentials": {
+        "postgres": {
+          "id": "placeholder-postgres-credentials",
+          "name": "PostgreSQL"
+        }
+      },
+      "notes": "Looks up newsletter issue by esp_campaign_id and contact by email. Returns issue_id and contact_id for event insertion.",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-issue",
+              "leftValue": "={{ $json.issue_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "has-contact",
+              "leftValue": "={{ $json.contact_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "validate-lookup",
+      "name": "Validate Lookup",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [840, 480],
+      "notes": "Ensures both issue_id and contact_id were found before proceeding. Drops events for unknown issues/contacts."
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = items[0].json;\nconst normalized = items[0].binary?.normalized?.data || $node['Normalize Event'].json;\n\n// Merge lookup results with normalized event data\nconst merged = {\n  ...normalized,\n  issue_id: item.issue_id,\n  contact_id: item.contact_id\n};\n\nreturn [{ json: merged }];"
+      },
+      "id": "merge-data",
+      "name": "Merge Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1040, 380],
+      "notes": "Combines normalized event data with issue_id and contact_id from database lookup"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO engagement_events (\n  contact_id,\n  issue_id,\n  event_type,\n  url,\n  event_timestamp,\n  ip_address,\n  user_agent,\n  created_at\n) VALUES (\n  '{{ $json.contact_id }}',\n  '{{ $json.issue_id }}',\n  '{{ $json.event_type }}',\n  {{ $json.url ? \"'\" + $json.url + \"'\" : \"NULL\" }},\n  '{{ $json.occurred_at }}',\n  {{ $json.ip_address ? \"'\" + $json.ip_address + \"'\" : \"NULL\" }},\n  {{ $json.user_agent ? \"'\" + $json.user_agent.replace(/'/g, \"''\") + \"'\" : \"NULL\" }},\n  NOW()\n)\nRETURNING id, event_type, contact_id, issue_id",
+        "options": {}
+      },
+      "id": "insert-engagement",
+      "name": "Insert Engagement Event",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1240, 380],
+      "credentials": {
+        "postgres": {
+          "id": "placeholder-postgres-credentials",
+          "name": "PostgreSQL"
+        }
+      },
+      "notes": "Inserts engagement event record with contact_id, issue_id, event_type, url, timestamp, ip, user_agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "opened-condition",
+                    "leftValue": "={{ $json.event_type }}",
+                    "rightValue": "opened",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "opened"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "clicked-condition",
+                    "leftValue": "={{ $json.event_type }}",
+                    "rightValue": "clicked",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "clicked"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "bounced-condition",
+                    "leftValue": "={{ $json.event_type }}",
+                    "rightValue": "bounced",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "bounced"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "unsubscribed-condition",
+                    "leftValue": "={{ $json.event_type }}",
+                    "rightValue": "unsubscribed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "unsubscribed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "complained-condition",
+                    "leftValue": "={{ $json.event_type }}",
+                    "rightValue": "complained",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "complained"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "event-type-switch",
+      "name": "Event Type Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [1440, 380],
+      "notes": "Routes to specific update logic based on event type: opened, clicked, bounced, unsubscribed, complained"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=-- Update issue open metrics\nUPDATE newsletter_issues\nSET \n  total_opens = total_opens + 1,\n  total_unique_opens = (\n    SELECT COUNT(DISTINCT contact_id)\n    FROM engagement_events\n    WHERE issue_id = '{{ $json.issue_id }}' AND event_type = 'opened'\n  ),\n  updated_at = NOW()\nWHERE id = '{{ $json.issue_id }}'\nRETURNING id, total_opens, total_unique_opens",
+        "options": {}
+      },
+      "id": "update-open-metrics",
+      "name": "Update Open Metrics",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1640, 180],
+      "credentials": {
+        "postgres": {
+          "id": "placeholder-postgres-credentials",
+          "name": "PostgreSQL"
+        }
+      },
+      "notes": "Increments total_opens and recalculates total_unique_opens for the newsletter issue"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=-- Update issue click metrics\nUPDATE newsletter_issues\nSET \n  total_clicks = total_clicks + 1,\n  total_unique_clicks = (\n    SELECT COUNT(DISTINCT contact_id)\n    FROM engagement_events\n    WHERE issue_id = '{{ $json.issue_id }}' AND event_type = 'clicked'\n  ),\n  updated_at = NOW()\nWHERE id = '{{ $json.issue_id }}'\nRETURNING id, total_clicks, total_unique_clicks",
+        "options": {}
+      },
+      "id": "update-click-metrics",
+      "name": "Update Click Metrics",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1640, 300],
+      "credentials": {
+        "postgres": {
+          "id": "placeholder-postgres-credentials",
+          "name": "PostgreSQL"
+        }
+      },
+      "notes": "Increments total_clicks and recalculates total_unique_clicks for the newsletter issue"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=-- Mark contact as bounced\nUPDATE contacts\nSET \n  bounce_count = bounce_count + 1,\n  updated_at = NOW()\nWHERE id = '{{ $json.contact_id }}'\nRETURNING id, email, bounce_count",
+        "options": {}
+      },
+      "id": "update-bounce-status",
+      "name": "Update Bounce Status",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1640, 420],
+      "credentials": {
+        "postgres": {
+          "id": "placeholder-postgres-credentials",
+          "name": "PostgreSQL"
+        }
+      },
+      "notes": "Increments bounce_count for the contact. Suppression handled by separate process if bounce_count exceeds threshold."
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=-- Mark contact as unsubscribed\nUPDATE contacts\nSET \n  is_subscribed = false,\n  suppressed_at = NOW(),\n  updated_at = NOW()\nWHERE id = '{{ $json.contact_id }}'\nRETURNING id, email, is_subscribed, suppressed_at",
+        "options": {}
+      },
+      "id": "update-unsubscribe-status",
+      "name": "Update Unsubscribe Status",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1640, 540],
+      "credentials": {
+        "postgres": {
+          "id": "placeholder-postgres-credentials",
+          "name": "PostgreSQL"
+        }
+      },
+      "notes": "Sets is_subscribed=false and suppressed_at timestamp for unsubscribed contacts"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=-- Mark contact as spam complainant\nUPDATE contacts\nSET \n  is_subscribed = false,\n  spam_complaint_at = NOW(),\n  suppressed_at = NOW(),\n  updated_at = NOW()\nWHERE id = '{{ $json.contact_id }}'\nRETURNING id, email, is_subscribed, spam_complaint_at, suppressed_at",
+        "options": {}
+      },
+      "id": "update-spam-complaint",
+      "name": "Update Spam Complaint",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1640, 660],
+      "credentials": {
+        "postgres": {
+          "id": "placeholder-postgres-credentials",
+          "name": "PostgreSQL"
+        }
+      },
+      "notes": "Sets is_subscribed=false, spam_complaint_at, and suppressed_at for contacts marking email as spam"
+    },
+    {
+      "parameters": {},
+      "id": "no-op-success",
+      "name": "Success",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1840, 380],
+      "notes": "All metric updates complete successfully"
+    },
+    {
+      "parameters": {},
+      "id": "no-op-skip",
+      "name": "Skip - Not Found",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1040, 580],
+      "notes": "Event skipped because issue or contact was not found in database"
+    }
+  ],
+  "connections": {
+    "Engagement Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Event": {
+      "main": [
+        [
+          {
+            "node": "Find Issue & Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Issue & Contact": {
+      "main": [
+        [
+          {
+            "node": "Validate Lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Lookup": {
+      "main": [
+        [
+          {
+            "node": "Merge Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip - Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Data": {
+      "main": [
+        [
+          {
+            "node": "Insert Engagement Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Engagement Event": {
+      "main": [
+        [
+          {
+            "node": "Event Type Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Event Type Switch": {
+      "main": [
+        [
+          {
+            "node": "Update Open Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Click Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Bounce Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Unsubscribe Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Spam Complaint",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Open Metrics": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Click Metrics": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Bounce Status": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Unsubscribe Status": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Spam Complaint": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-12-20T12:00:00.000Z",
+      "updatedAt": "2025-12-20T12:00:00.000Z",
+      "id": "newsletter-engagement",
+      "name": "newsletter-engagement"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-12-20T12:00:00.000Z",
+  "versionId": "1"
+}

@@ -1,0 +1,342 @@
+{
+  "name": "Newsletter Approval",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "newsletter/approval",
+        "httpMethod": "POST",
+        "responseMode": "onReceived",
+        "responseCode": 202,
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Approval Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 380],
+      "webhookId": "placeholder-approval-webhook-id",
+      "notes": "Receives approval actions from Admin UI. Expected payload: { issueId, action: 'approve'|'reject', userId, notes?, reason? }"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = items[0].json;\n\n// Validate required fields\nif (!item.issueId || !item.action || !item.userId) {\n  throw new Error('Missing required fields: issueId, action, userId');\n}\n\nif (!['approve', 'reject'].includes(item.action)) {\n  throw new Error('Invalid action. Must be \"approve\" or \"reject\"');\n}\n\n// For rejection, ensure reason is provided\nif (item.action === 'reject' && !item.reason) {\n  throw new Error('Rejection reason is required for reject action');\n}\n\nreturn items;"
+      },
+      "id": "validate-input",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 380],
+      "notes": "Validates webhook payload has required fields and correct action type"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "approve-condition",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "approve",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "approve"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "reject-condition",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "reject",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "reject"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "action-switch",
+      "name": "Action Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [640, 380],
+      "notes": "Routes to approval or rejection flow based on action"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE newsletter_issues SET status = 'approved', approved_by = '{{ $json.userId }}', approved_at = NOW(), updated_at = NOW() WHERE id = '{{ $json.issueId }}' RETURNING id, configuration_id, segment_id, subject_lines, selected_subject_line, preheader, html_content, scheduled_for",
+        "options": {}
+      },
+      "id": "approve-issue",
+      "name": "Approve Issue",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [840, 280],
+      "credentials": {
+        "postgres": {
+          "id": "placeholder-postgres-creds",
+          "name": "PostgreSQL - Newsletter DB"
+        }
+      },
+      "notes": "Updates issue status to approved and records approver"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE newsletter_issues SET status = 'rejected', rejection_reason = '{{ $json.reason }}', updated_at = NOW() WHERE id = '{{ $json.issueId }}' RETURNING id, configuration_id, segment_id, rejection_reason",
+        "options": {}
+      },
+      "id": "reject-issue",
+      "name": "Reject Issue",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [840, 480],
+      "credentials": {
+        "postgres": {
+          "id": "placeholder-postgres-creds",
+          "name": "PostgreSQL - Newsletter DB"
+        }
+      },
+      "notes": "Updates issue status to rejected and records rejection reason"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO audit_logs (action, entity_type, entity_id, user_id, changes, created_at) VALUES ('newsletter_approved', 'newsletter_issue', '{{ $json.id }}', '{{ $('Approval Webhook Trigger').item.json.userId }}', jsonb_build_object('notes', '{{ $('Approval Webhook Trigger').item.json.notes ?? '' }}', 'approved_at', NOW()::text), NOW())",
+        "options": {}
+      },
+      "id": "log-approval-audit",
+      "name": "Log Approval Audit",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1040, 280],
+      "credentials": {
+        "postgres": {
+          "id": "placeholder-postgres-creds",
+          "name": "PostgreSQL - Newsletter DB"
+        }
+      },
+      "notes": "Creates audit log entry for approval action"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO audit_logs (action, entity_type, entity_id, user_id, changes, created_at) VALUES ('newsletter_rejected', 'newsletter_issue', '{{ $json.id }}', '{{ $('Approval Webhook Trigger').item.json.userId }}', jsonb_build_object('reason', '{{ $json.rejection_reason }}', 'notes', '{{ $('Approval Webhook Trigger').item.json.notes ?? '' }}'), NOW())",
+        "options": {}
+      },
+      "id": "log-rejection-audit",
+      "name": "Log Rejection Audit",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1040, 480],
+      "credentials": {
+        "postgres": {
+          "id": "placeholder-postgres-creds",
+          "name": "PostgreSQL - Newsletter DB"
+        }
+      },
+      "notes": "Creates audit log entry for rejection action"
+    },
+    {
+      "parameters": {
+        "workflowId": "={{ $env.DELIVERY_WORKFLOW_ID }}",
+        "options": {
+          "waitForCompletion": false
+        }
+      },
+      "id": "trigger-delivery",
+      "name": "Trigger Newsletter Delivery",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [1240, 280],
+      "notes": "Triggers newsletter delivery workflow for approved issue (async). Requires env var DELIVERY_WORKFLOW_ID"
+    },
+    {
+      "parameters": {},
+      "id": "merge-outputs",
+      "name": "Merge Outputs",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [1440, 380],
+      "notes": "Merges approval and rejection flows for final response"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = items[0].json;\nconst webhookData = $('Approval Webhook Trigger').item.json;\n\nreturn [{\n  json: {\n    success: true,\n    action: webhookData.action,\n    issueId: item.id,\n    status: webhookData.action === 'approve' ? 'approved' : 'rejected',\n    message: webhookData.action === 'approve' \n      ? 'Newsletter approved and queued for delivery'\n      : `Newsletter rejected: ${item.rejection_reason}`,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1640, 380],
+      "notes": "Formats success response for webhook caller"
+    }
+  ],
+  "connections": {
+    "Approval Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Action Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Action Switch": {
+      "main": [
+        [
+          {
+            "node": "Approve Issue",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve Issue": {
+      "main": [
+        [
+          {
+            "node": "Log Approval Audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject Issue": {
+      "main": [
+        [
+          {
+            "node": "Log Rejection Audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Approval Audit": {
+      "main": [
+        [
+          {
+            "node": "Trigger Newsletter Delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Rejection Audit": {
+      "main": [
+        [
+          {
+            "node": "Merge Outputs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Trigger Newsletter Delivery": {
+      "main": [
+        [
+          {
+            "node": "Merge Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Outputs": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "placeholder-error-workflow-id"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-12-20T00:00:00.000Z",
+      "updatedAt": "2025-12-20T00:00:00.000Z",
+      "id": "newsletter",
+      "name": "newsletter"
+    },
+    {
+      "createdAt": "2025-12-20T00:00:00.000Z",
+      "updatedAt": "2025-12-20T00:00:00.000Z",
+      "id": "approval",
+      "name": "approval"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-12-20T00:00:00.000Z",
+  "versionId": "placeholder-version-id",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "placeholder-instance-id"
+  }
+}

@@ -1,0 +1,556 @@
+{
+  "name": "Newsletter Delivery - Mailchimp",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "newsletter/delivery/mailchimp",
+        "httpMethod": "POST",
+        "responseMode": "onReceived",
+        "responseCode": 202,
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 380],
+      "webhookId": "placeholder-mailchimp-delivery-webhook-id",
+      "notes": "Triggered by delivery service. Expected payload: { issue_id, issue_number, configuration_id, segment_id, subject_line, preheader?, intro_template?, blocks[], contacts[], scheduled_for?, send_immediately }"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = items[0].json;\n\n// Validate required fields\nif (!item.issue_id || !item.configuration_id || !item.subject_line) {\n  throw new Error('Missing required fields: issue_id, configuration_id, subject_line');\n}\n\nif (!item.blocks || !Array.isArray(item.blocks) || item.blocks.length === 0) {\n  throw new Error('At least one content block is required');\n}\n\nif (!item.contacts || !Array.isArray(item.contacts) || item.contacts.length === 0) {\n  throw new Error('At least one contact is required');\n}\n\n// Validate contacts have email addresses\nconst invalidContacts = item.contacts.filter(c => !c.email);\nif (invalidContacts.length > 0) {\n  throw new Error('All contacts must have email addresses');\n}\n\nreturn items;"
+      },
+      "id": "validate-input",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 380],
+      "notes": "Validates webhook payload has required fields and correct structure"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT \n  nc.id,\n  nc.name,\n  nc.esp_provider,\n  nc.from_name,\n  nc.from_email,\n  nc.reply_to_email,\n  nc.brand_color_primary,\n  nc.brand_color_secondary,\n  nc.logo_url,\n  nc.footer_text,\n  nc.mailchimp_list_id\nFROM newsletter_configurations nc\nWHERE nc.id = '{{ $json.configuration_id }}'\nLIMIT 1",
+        "options": {}
+      },
+      "id": "fetch-configuration",
+      "name": "Postgres: Fetch Configuration",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [640, 380],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-newsletter-db",
+          "name": "PostgreSQL - Newsletter DB"
+        }
+      },
+      "notes": "Retrieves newsletter configuration for branding and Mailchimp list ID"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get input data\nconst webhookData = items[0].json;\nconst config = $node[\"Postgres: Fetch Configuration\"].json;\n\n// Build HTML email from blocks\nconst brandPrimary = config.brand_color_primary || '#1a73e8';\nconst brandSecondary = config.brand_color_secondary || '#34a853';\nconst logoUrl = config.logo_url || '';\nconst footerText = config.footer_text || '';\n\n// Email header\nlet html = `\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>${webhookData.subject_line}</title>\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }\n    .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }\n    .header { background-color: ${brandPrimary}; padding: 30px 20px; text-align: center; }\n    .header img { max-width: 200px; height: auto; }\n    .content { padding: 30px 20px; }\n    .block { margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #e0e0e0; }\n    .block:last-child { border-bottom: none; }\n    .block-title { font-size: 20px; font-weight: 600; color: ${brandPrimary}; margin-bottom: 10px; }\n    .block-summary { font-size: 14px; color: #666; margin-bottom: 15px; }\n    .block-cta { display: inline-block; padding: 12px 24px; background-color: ${brandSecondary}; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: 500; }\n    .footer { background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666; }\n    .footer a { color: ${brandPrimary}; text-decoration: none; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      ${logoUrl ? `<img src=\"${logoUrl}\" alt=\"${config.name}\">` : `<h1 style=\"color: #ffffff; margin: 0;\">${config.name}</h1>`}\n    </div>\n    <div class=\"content\">\n`;\n\n// Add intro template if provided\nif (webhookData.intro_template) {\n  html += `      <div style=\"margin-bottom: 30px; font-size: 16px;\">${webhookData.intro_template}</div>\\n`;\n}\n\n// Add content blocks\nfor (const block of webhookData.blocks) {\n  html += `      <div class=\"block\">\\n`;\n  \n  if (block.title) {\n    html += `        <h2 class=\"block-title\">${block.title}</h2>\\n`;\n  }\n  \n  if (block.summary) {\n    html += `        <p class=\"block-summary\">${block.summary}</p>\\n`;\n  }\n  \n  if (block.cta_text && block.cta_url) {\n    html += `        <a href=\"${block.cta_url}\" class=\"block-cta\">${block.cta_text}</a>\\n`;\n  }\n  \n  html += `      </div>\\n`;\n}\n\n// Email footer\nhtml += `\n    </div>\n    <div class=\"footer\">\n      ${footerText}\n      <br><br>\n      <a href=\"*|UNSUB|*\">Unsubscribe</a> | <a href=\"*|UPDATE_PROFILE|*\">Update Preferences</a>\n    </div>\n  </div>\n</body>\n</html>\n`;\n\n// Return email data\nreturn [{\n  json: {\n    issue_id: webhookData.issue_id,\n    issue_number: webhookData.issue_number,\n    subject_line: webhookData.subject_line,\n    preheader: webhookData.preheader || '',\n    from_name: config.from_name,\n    from_email: config.from_email,\n    reply_to_email: config.reply_to_email,\n    html_content: html,\n    contacts: webhookData.contacts,\n    mailchimp_list_id: config.mailchimp_list_id,\n    scheduled_for: webhookData.scheduled_for,\n    send_immediately: webhookData.send_immediately\n  }\n}];"
+      },
+      "id": "build-email-html",
+      "name": "Code: Build Email HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [840, 380],
+      "notes": "Compiles content blocks into branded HTML email with Mailchimp merge tags"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MAILCHIMP_API_URL }}/3.0/campaigns",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mailchimpApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"type\": \"regular\",\n  \"recipients\": {\n    \"list_id\": \"{{ $json.mailchimp_list_id }}\"\n  },\n  \"settings\": {\n    \"subject_line\": \"{{ $json.subject_line }}\",\n    \"preview_text\": \"{{ $json.preheader }}\",\n    \"title\": \"Newsletter Issue #{{ $json.issue_number }}\",\n    \"from_name\": \"{{ $json.from_name }}\",\n    \"reply_to\": \"{{ $json.reply_to_email }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "mailchimp-create-campaign",
+      "name": "Mailchimp: Create Campaign",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1040, 380],
+      "credentials": {
+        "mailchimpApi": {
+          "id": "mailchimp-api-credentials",
+          "name": "Mailchimp API"
+        }
+      },
+      "notes": "Creates a regular email campaign in Mailchimp"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $env.MAILCHIMP_API_URL }}/3.0/campaigns/{{ $json.id }}/content",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mailchimpApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"html\": \"{{ $node[\"Code: Build Email HTML\"].json.html_content }}\"\n}",
+        "options": {}
+      },
+      "id": "mailchimp-set-content",
+      "name": "Mailchimp: Set Content",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1240, 380],
+      "credentials": {
+        "mailchimpApi": {
+          "id": "mailchimp-api-credentials",
+          "name": "Mailchimp API"
+        }
+      },
+      "notes": "Sets HTML content for the campaign"
+    },
+    {
+      "parameters": {
+        "jsCode": "const campaignId = $json.id;\nconst sendImmediately = $node[\"Code: Build Email HTML\"].json.send_immediately;\nconst scheduledFor = $node[\"Code: Build Email HTML\"].json.scheduled_for;\n\nreturn [{\n  json: {\n    campaign_id: campaignId,\n    send_immediately: sendImmediately,\n    scheduled_for: scheduledFor\n  }\n}];"
+      },
+      "id": "check-schedule",
+      "name": "Code: Check Schedule",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1440, 380],
+      "notes": "Determines if campaign should be sent immediately or scheduled"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "send-immediate-condition",
+                    "leftValue": "={{ $json.send_immediately }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "send_now"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "schedule-condition",
+                    "leftValue": "={{ $json.send_immediately }}",
+                    "rightValue": false,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "schedule"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "schedule-switch",
+      "name": "Schedule Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [1640, 380],
+      "notes": "Routes to immediate send or scheduled send based on send_immediately flag"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MAILCHIMP_API_URL }}/3.0/campaigns/{{ $json.campaign_id }}/actions/send",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mailchimpApi",
+        "options": {}
+      },
+      "id": "mailchimp-send-now",
+      "name": "Mailchimp: Send Now",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1840, 280],
+      "credentials": {
+        "mailchimpApi": {
+          "id": "mailchimp-api-credentials",
+          "name": "Mailchimp API"
+        }
+      },
+      "notes": "Sends the campaign immediately"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MAILCHIMP_API_URL }}/3.0/campaigns/{{ $json.campaign_id }}/actions/schedule",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mailchimpApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"schedule_time\": \"{{ $json.scheduled_for }}\"\n}",
+        "options": {}
+      },
+      "id": "mailchimp-schedule",
+      "name": "Mailchimp: Schedule Send",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1840, 480],
+      "credentials": {
+        "mailchimpApi": {
+          "id": "mailchimp-api-credentials",
+          "name": "Mailchimp API"
+        }
+      },
+      "notes": "Schedules the campaign for later delivery"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize output from both paths\nconst emailData = $node[\"Code: Build Email HTML\"].json;\nconst campaignData = $node[\"Code: Check Schedule\"].json;\n\nreturn [{\n  json: {\n    campaign_id: campaignData.campaign_id,\n    issue_id: emailData.issue_id,\n    send_immediately: campaignData.send_immediately,\n    scheduled_for: campaignData.scheduled_for\n  }\n}];"
+      },
+      "id": "merge-paths",
+      "name": "Code: Merge Paths",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2040, 380],
+      "notes": "Merges send_now and schedule paths back together"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE newsletter_issues \nSET \n  status = CASE \n    WHEN '{{ $json.send_immediately }}' = 'true' THEN 'sent'::issue_status\n    ELSE 'scheduled'::issue_status\n  END,\n  sent_at = CASE \n    WHEN '{{ $json.send_immediately }}' = 'true' THEN NOW()\n    ELSE NULL\n  END,\n  esp_campaign_id = '{{ $json.campaign_id }}',\n  updated_at = NOW()\nWHERE id = '{{ $json.issue_id }}'\nRETURNING id, status, sent_at, esp_campaign_id",
+        "options": {}
+      },
+      "id": "update-issue-status",
+      "name": "Postgres: Update Issue Status",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [2240, 380],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-newsletter-db",
+          "name": "PostgreSQL - Newsletter DB"
+        }
+      },
+      "notes": "Updates newsletter issue status to sent or scheduled and stores Mailchimp campaign ID"
+    },
+    {
+      "parameters": {
+        "jsCode": "const issueData = $node[\"Code: Build Email HTML\"].json;\nconst mergedData = $node[\"Code: Merge Paths\"].json;\nconst dbUpdate = $json;\n\nreturn [{\n  json: {\n    success: true,\n    issue_id: issueData.issue_id,\n    status: dbUpdate.status,\n    esp_provider: 'mailchimp',\n    esp_campaign_id: dbUpdate.esp_campaign_id,\n    scheduled_for: mergedData.scheduled_for,\n    sent_at: dbUpdate.sent_at,\n    recipient_count: issueData.contacts.length\n  }\n}];"
+      },
+      "id": "prepare-callback",
+      "name": "Code: Prepare Callback Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2440, 380],
+      "notes": "Prepares delivery confirmation response for backend callback"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BACKEND_WEBHOOK_URL }}/api/v1/delivery/callback",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "issue_id",
+              "value": "={{ $json.issue_id }}"
+            },
+            {
+              "name": "success",
+              "value": "={{ $json.success }}"
+            },
+            {
+              "name": "status",
+              "value": "={{ $json.status }}"
+            },
+            {
+              "name": "esp_provider",
+              "value": "={{ $json.esp_provider }}"
+            },
+            {
+              "name": "esp_campaign_id",
+              "value": "={{ $json.esp_campaign_id }}"
+            },
+            {
+              "name": "recipient_count",
+              "value": "={{ $json.recipient_count }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "id": "callback-backend",
+      "name": "HTTP: Notify Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2640, 380],
+      "notes": "Sends delivery confirmation callback to backend API"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log error details\nconst error = $input.first().json.error;\nconst issueId = $node[\"Code: Build Email HTML\"]?.json?.issue_id;\n\nconsole.error('Mailchimp delivery failed:', error);\n\nif (issueId) {\n  return [{\n    json: {\n      issue_id: issueId,\n      error_message: error.message || 'Unknown error',\n      error_details: error\n    }\n  }];\n}\n\nthrow new Error('Critical failure - unable to process error');"
+      },
+      "id": "handle-error",
+      "name": "Code: Handle Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2240, 580],
+      "notes": "Handles and logs delivery errors"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE newsletter_issues \nSET \n  status = 'failed'::issue_status,\n  updated_at = NOW()\nWHERE id = '{{ $json.issue_id }}'\nRETURNING id, status",
+        "options": {}
+      },
+      "id": "update-failed-status",
+      "name": "Postgres: Update Failed Status",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [2440, 580],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-newsletter-db",
+          "name": "PostgreSQL - Newsletter DB"
+        }
+      },
+      "notes": "Updates newsletter issue status to failed on error"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BACKEND_WEBHOOK_URL }}/api/v1/delivery/callback",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "issue_id",
+              "value": "={{ $node[\"Code: Handle Error\"].json.issue_id }}"
+            },
+            {
+              "name": "success",
+              "value": "false"
+            },
+            {
+              "name": "error",
+              "value": "={{ $node[\"Code: Handle Error\"].json.error_message }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "id": "callback-error",
+      "name": "HTTP: Notify Backend Error",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2640, 580],
+      "notes": "Sends error notification to backend API"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Postgres: Fetch Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres: Fetch Configuration": {
+      "main": [
+        [
+          {
+            "node": "Code: Build Email HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build Email HTML": {
+      "main": [
+        [
+          {
+            "node": "Mailchimp: Create Campaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mailchimp: Create Campaign": {
+      "main": [
+        [
+          {
+            "node": "Mailchimp: Set Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mailchimp: Set Content": {
+      "main": [
+        [
+          {
+            "node": "Code: Check Schedule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Check Schedule": {
+      "main": [
+        [
+          {
+            "node": "Schedule Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Switch": {
+      "main": [
+        [
+          {
+            "node": "Mailchimp: Send Now",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mailchimp: Schedule Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mailchimp: Send Now": {
+      "main": [
+        [
+          {
+            "node": "Code: Merge Paths",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mailchimp: Schedule Send": {
+      "main": [
+        [
+          {
+            "node": "Code: Merge Paths",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Merge Paths": {
+      "main": [
+        [
+          {
+            "node": "Postgres: Update Issue Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres: Update Issue Status": {
+      "main": [
+        [
+          {
+            "node": "Code: Prepare Callback Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Prepare Callback Response": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Notify Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Handle Error": {
+      "main": [
+        [
+          {
+            "node": "Postgres: Update Failed Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres: Update Failed Status": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Notify Backend Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-12-20T00:00:00.000Z",
+  "versionId": "1"
+}

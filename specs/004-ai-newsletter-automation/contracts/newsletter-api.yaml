@@ -1,0 +1,1672 @@
+openapi: 3.0.3
+info:
+  title: Newsletter Automation API
+  description: |
+    API for the AI-Powered Newsletter Automation System.
+    Provides endpoints for newsletter configuration, content management,
+    generation, approval, delivery, and analytics.
+  version: 1.0.0
+  contact:
+    name: Armor Engineering
+    email: engineering@armor.com
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development
+  - url: https://api.armor.com/api/v1
+    description: Production
+
+tags:
+  - name: Configuration
+    description: Newsletter configuration management
+  - name: Segments
+    description: Audience segment management
+  - name: Content
+    description: Content source and item management
+  - name: Issues
+    description: Newsletter issue generation and management
+  - name: Analytics
+    description: Engagement analytics and reporting
+
+paths:
+  # ============================================
+  # CONFIGURATION ENDPOINTS
+  # ============================================
+  /newsletter/configs:
+    get:
+      tags: [Configuration]
+      summary: List newsletter configurations
+      operationId: listConfigurations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: segment_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by segment
+        - name: is_active
+          in: query
+          schema:
+            type: boolean
+          description: Filter by active status
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: List of configurations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigurationListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Configuration]
+      summary: Create newsletter configuration
+      operationId: createConfiguration
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConfigurationRequest'
+      responses:
+        '201':
+          description: Configuration created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Configuration'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /newsletter/configs/{id}:
+    get:
+      tags: [Configuration]
+      summary: Get configuration by ID
+      operationId: getConfiguration
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Configuration details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Configuration'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Configuration]
+      summary: Update configuration
+      operationId: updateConfiguration
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateConfigurationRequest'
+      responses:
+        '200':
+          description: Configuration updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Configuration'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Configuration]
+      summary: Delete configuration
+      operationId: deleteConfiguration
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Configuration deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================
+  # SEGMENT ENDPOINTS
+  # ============================================
+  /newsletter/segments:
+    get:
+      tags: [Segments]
+      summary: List segments
+      operationId: listSegments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: is_active
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of segments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SegmentListResponse'
+
+    post:
+      tags: [Segments]
+      summary: Create segment
+      operationId: createSegment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSegmentRequest'
+      responses:
+        '201':
+          description: Segment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Segment'
+
+  /newsletter/segments/{id}:
+    get:
+      tags: [Segments]
+      summary: Get segment by ID
+      operationId: getSegment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Segment details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Segment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Segments]
+      summary: Update segment
+      operationId: updateSegment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSegmentRequest'
+      responses:
+        '200':
+          description: Segment updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Segment'
+
+  /newsletter/segments/{id}/contacts:
+    get:
+      tags: [Segments]
+      summary: Get contacts in segment
+      operationId: getSegmentContacts
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Contacts in segment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactListResponse'
+
+  # ============================================
+  # CONTENT ENDPOINTS
+  # ============================================
+  /newsletter/content/sources:
+    get:
+      tags: [Content]
+      summary: List content sources
+      operationId: listContentSources
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: is_active
+          in: query
+          schema:
+            type: boolean
+        - name: source_type
+          in: query
+          schema:
+            type: string
+            enum: [rss, api, manual]
+      responses:
+        '200':
+          description: List of content sources
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentSourceListResponse'
+
+    post:
+      tags: [Content]
+      summary: Create content source
+      operationId: createContentSource
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateContentSourceRequest'
+      responses:
+        '201':
+          description: Content source created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentSource'
+
+  /newsletter/content/items:
+    get:
+      tags: [Content]
+      summary: Search content items
+      operationId: searchContentItems
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          description: Search query
+        - name: source_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: content_type
+          in: query
+          schema:
+            type: string
+            enum: [blog, news, case_study, webinar, product_update, event]
+        - name: topic_tags
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+        - name: framework_tags
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Content items matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentItemListResponse'
+
+  /newsletter/content/sync:
+    post:
+      tags: [Content]
+      summary: Trigger content sync
+      operationId: syncContent
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                source_id:
+                  type: string
+                  format: uuid
+                  description: Sync specific source (optional, syncs all if omitted)
+      responses:
+        '202':
+          description: Sync initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  job_id:
+                    type: string
+                    format: uuid
+
+  # ============================================
+  # NEWSLETTER ISSUE ENDPOINTS
+  # ============================================
+  /newsletter/issues:
+    get:
+      tags: [Issues]
+      summary: List newsletter issues
+      operationId: listIssues
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: configuration_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: segment_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, pending_approval, approved, scheduled, sent, failed]
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of newsletter issues
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueListResponse'
+
+  /newsletter/issues/generate:
+    post:
+      tags: [Issues]
+      summary: Generate new newsletter issue
+      operationId: generateIssue
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateIssueRequest'
+      responses:
+        '202':
+          description: Generation initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateIssueResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /newsletter/issues/{id}:
+    get:
+      tags: [Issues]
+      summary: Get issue by ID
+      operationId: getIssue
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Issue details with blocks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Issue'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /newsletter/issues/{id}/preview:
+    get:
+      tags: [Issues]
+      summary: Preview issue with personalization
+      operationId: previewIssue
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: contact_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Preview for specific contact (uses sample if omitted)
+      responses:
+        '200':
+          description: Rendered newsletter preview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssuePreview'
+
+  /newsletter/issues/{id}/approve:
+    post:
+      tags: [Issues]
+      summary: Approve newsletter issue
+      operationId: approveIssue
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notes:
+                  type: string
+                  description: Optional approval notes
+      responses:
+        '200':
+          description: Issue approved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Issue'
+        '400':
+          description: Cannot approve (wrong status)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /newsletter/issues/{id}/reject:
+    post:
+      tags: [Issues]
+      summary: Reject newsletter issue
+      operationId: rejectIssue
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  minLength: 10
+                  description: Rejection reason (minimum 10 characters)
+      responses:
+        '200':
+          description: Issue rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Issue'
+
+  /newsletter/issues/{id}/send:
+    post:
+      tags: [Issues]
+      summary: Send newsletter issue
+      operationId: sendIssue
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scheduled_for:
+                  type: string
+                  format: date-time
+                  description: Schedule for later (sends immediately if omitted)
+      responses:
+        '202':
+          description: Send initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Issue'
+
+  # ============================================
+  # ANALYTICS ENDPOINTS
+  # ============================================
+  /newsletter/analytics/overview:
+    get:
+      tags: [Analytics]
+      summary: Get analytics dashboard overview
+      operationId: getAnalyticsOverview
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Analytics overview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsOverview'
+
+  /newsletter/analytics/segments/{id}:
+    get:
+      tags: [Analytics]
+      summary: Get segment-specific analytics
+      operationId: getSegmentAnalytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Segment analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SegmentAnalytics'
+
+  /newsletter/analytics/tests:
+    get:
+      tags: [Analytics]
+      summary: Get A/B test results
+      operationId: getTestResults
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: issue_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: test_type
+          in: query
+          schema:
+            type: string
+            enum: [subject_line, hero_topic, cta_framing, send_time]
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: A/B test results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestResultsResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    # ============================================
+    # COMMON SCHEMAS
+    # ============================================
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total:
+          type: integer
+        total_pages:
+          type: integer
+
+    # ============================================
+    # CONFIGURATION SCHEMAS
+    # ============================================
+    Configuration:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        segment_id:
+          type: string
+          format: uuid
+        cadence:
+          type: string
+          enum: [weekly, bi-weekly, monthly]
+        send_day_of_week:
+          type: integer
+          minimum: 0
+          maximum: 6
+        send_time_utc:
+          type: string
+          format: time
+        timezone:
+          type: string
+        max_blocks:
+          type: integer
+        education_ratio_min:
+          type: number
+        content_freshness_days:
+          type: integer
+        hero_topic_priority:
+          type: string
+        framework_focus:
+          type: string
+        subject_line_style:
+          type: string
+          enum: [pain_first, opportunity_first, visionary]
+        max_metaphors:
+          type: integer
+        banned_phrases:
+          type: array
+          items:
+            type: string
+        approval_tier:
+          type: string
+          enum: [tier1, tier2]
+        risk_level:
+          type: string
+          enum: [standard, high, experimental]
+        ai_provider:
+          type: string
+        ai_model:
+          type: string
+        prompt_version:
+          type: integer
+        is_active:
+          type: boolean
+        created_by:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateConfigurationRequest:
+      type: object
+      required: [name, cadence]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        segment_id:
+          type: string
+          format: uuid
+        cadence:
+          type: string
+          enum: [weekly, bi-weekly, monthly]
+        send_day_of_week:
+          type: integer
+          minimum: 0
+          maximum: 6
+        send_time_utc:
+          type: string
+          format: time
+        timezone:
+          type: string
+          default: America/New_York
+        max_blocks:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 6
+        education_ratio_min:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0.60
+        content_freshness_days:
+          type: integer
+          default: 45
+        hero_topic_priority:
+          type: string
+        framework_focus:
+          type: string
+        subject_line_style:
+          type: string
+          enum: [pain_first, opportunity_first, visionary]
+        max_metaphors:
+          type: integer
+          default: 2
+        banned_phrases:
+          type: array
+          items:
+            type: string
+        approval_tier:
+          type: string
+          enum: [tier1, tier2]
+          default: tier1
+        risk_level:
+          type: string
+          enum: [standard, high, experimental]
+          default: standard
+
+    UpdateConfigurationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        cadence:
+          type: string
+          enum: [weekly, bi-weekly, monthly]
+        send_day_of_week:
+          type: integer
+        send_time_utc:
+          type: string
+        timezone:
+          type: string
+        max_blocks:
+          type: integer
+        education_ratio_min:
+          type: number
+        content_freshness_days:
+          type: integer
+        hero_topic_priority:
+          type: string
+        framework_focus:
+          type: string
+        subject_line_style:
+          type: string
+          enum: [pain_first, opportunity_first, visionary]
+        max_metaphors:
+          type: integer
+        banned_phrases:
+          type: array
+          items:
+            type: string
+        approval_tier:
+          type: string
+          enum: [tier1, tier2]
+        risk_level:
+          type: string
+          enum: [standard, high, experimental]
+        is_active:
+          type: boolean
+
+    ConfigurationListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Configuration'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    # ============================================
+    # SEGMENT SCHEMAS
+    # ============================================
+    Segment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        role_cluster:
+          type: string
+        industries:
+          type: array
+          items:
+            type: string
+        regions:
+          type: array
+          items:
+            type: string
+        company_size_bands:
+          type: array
+          items:
+            type: string
+        compliance_frameworks:
+          type: array
+          items:
+            type: string
+        partner_tags:
+          type: array
+          items:
+            type: string
+        min_engagement_score:
+          type: number
+        topic_interests:
+          type: array
+          items:
+            type: string
+        exclude_unsubscribed:
+          type: boolean
+        exclude_bounced:
+          type: boolean
+        exclude_high_touch:
+          type: boolean
+        max_newsletters_per_30_days:
+          type: integer
+        contact_count:
+          type: integer
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateSegmentRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        role_cluster:
+          type: string
+        industries:
+          type: array
+          items:
+            type: string
+        regions:
+          type: array
+          items:
+            type: string
+        company_size_bands:
+          type: array
+          items:
+            type: string
+        compliance_frameworks:
+          type: array
+          items:
+            type: string
+        partner_tags:
+          type: array
+          items:
+            type: string
+        min_engagement_score:
+          type: number
+        topic_interests:
+          type: array
+          items:
+            type: string
+        max_newsletters_per_30_days:
+          type: integer
+          default: 4
+
+    UpdateSegmentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        role_cluster:
+          type: string
+        industries:
+          type: array
+          items:
+            type: string
+        regions:
+          type: array
+          items:
+            type: string
+        company_size_bands:
+          type: array
+          items:
+            type: string
+        compliance_frameworks:
+          type: array
+          items:
+            type: string
+        partner_tags:
+          type: array
+          items:
+            type: string
+        min_engagement_score:
+          type: number
+        topic_interests:
+          type: array
+          items:
+            type: string
+        max_newsletters_per_30_days:
+          type: integer
+        is_active:
+          type: boolean
+
+    SegmentListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Segment'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    # ============================================
+    # CONTACT SCHEMAS
+    # ============================================
+    Contact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        company:
+          type: string
+        job_title:
+          type: string
+        role_category:
+          type: string
+        industry:
+          type: string
+        region:
+          type: string
+        primary_framework:
+          type: string
+        engagement_score:
+          type: number
+        is_subscribed:
+          type: boolean
+
+    ContactListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contact'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    # ============================================
+    # CONTENT SCHEMAS
+    # ============================================
+    ContentSource:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        source_type:
+          type: string
+          enum: [rss, api, manual]
+        feed_url:
+          type: string
+        trust_score:
+          type: number
+        freshness_days:
+          type: integer
+        is_active:
+          type: boolean
+        is_internal:
+          type: boolean
+        last_polled_at:
+          type: string
+          format: date-time
+        error_count:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    CreateContentSourceRequest:
+      type: object
+      required: [name, source_type]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        source_type:
+          type: string
+          enum: [rss, api, manual]
+        feed_url:
+          type: string
+        api_config:
+          type: object
+        default_content_type:
+          type: string
+        default_topic_tags:
+          type: array
+          items:
+            type: string
+        default_framework_tags:
+          type: array
+          items:
+            type: string
+        trust_score:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0.80
+        freshness_days:
+          type: integer
+          default: 45
+        is_internal:
+          type: boolean
+          default: false
+
+    ContentSourceListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentSource'
+
+    ContentItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        source_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        url:
+          type: string
+        summary:
+          type: string
+        content_type:
+          type: string
+        topic_tags:
+          type: array
+          items:
+            type: string
+        framework_tags:
+          type: array
+          items:
+            type: string
+        publish_date:
+          type: string
+          format: date-time
+        trust_score:
+          type: number
+        historical_ctr:
+          type: number
+        is_active:
+          type: boolean
+
+    ContentItemListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentItem'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    # ============================================
+    # ISSUE SCHEMAS
+    # ============================================
+    Issue:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        configuration_id:
+          type: string
+          format: uuid
+        segment_id:
+          type: string
+          format: uuid
+        issue_number:
+          type: integer
+        issue_date:
+          type: string
+          format: date
+        subject_lines:
+          type: array
+          items:
+            type: string
+        selected_subject_line:
+          type: string
+        preheader:
+          type: string
+        intro_template:
+          type: string
+        status:
+          type: string
+          enum: [draft, pending_approval, approved, scheduled, sent, failed]
+        approved_by:
+          type: string
+          format: uuid
+        approved_at:
+          type: string
+          format: date-time
+        rejection_reason:
+          type: string
+        scheduled_for:
+          type: string
+          format: date-time
+        sent_at:
+          type: string
+          format: date-time
+        total_recipients:
+          type: integer
+        total_delivered:
+          type: integer
+        total_opens:
+          type: integer
+        total_clicks:
+          type: integer
+        blocks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Block'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Block:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        block_type:
+          type: string
+          enum: [hero, news, content, events, spotlight]
+        position:
+          type: integer
+        title:
+          type: string
+        teaser:
+          type: string
+        cta_label:
+          type: string
+        cta_url:
+          type: string
+        is_promotional:
+          type: boolean
+        topic_tags:
+          type: array
+          items:
+            type: string
+        clicks:
+          type: integer
+        content_item:
+          $ref: '#/components/schemas/ContentItem'
+
+    GenerateIssueRequest:
+      type: object
+      required: [configuration_id]
+      properties:
+        configuration_id:
+          type: string
+          format: uuid
+        issue_date:
+          type: string
+          format: date
+          description: Defaults to today if not specified
+
+    GenerateIssueResponse:
+      type: object
+      properties:
+        issue_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        message:
+          type: string
+
+    IssuePreview:
+      type: object
+      properties:
+        issue:
+          $ref: '#/components/schemas/Issue'
+        rendered_html:
+          type: string
+          description: Fully rendered HTML with personalization
+        personalization_context:
+          type: object
+          description: Contact data used for personalization
+
+    IssueListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Issue'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    # ============================================
+    # ANALYTICS SCHEMAS
+    # ============================================
+    AnalyticsOverview:
+      type: object
+      properties:
+        period:
+          type: object
+          properties:
+            from:
+              type: string
+              format: date
+            to:
+              type: string
+              format: date
+        totals:
+          type: object
+          properties:
+            newsletters_sent:
+              type: integer
+            total_recipients:
+              type: integer
+            total_opens:
+              type: integer
+            total_clicks:
+              type: integer
+            total_unsubscribes:
+              type: integer
+        rates:
+          type: object
+          properties:
+            open_rate:
+              type: number
+            click_rate:
+              type: number
+            click_to_open_rate:
+              type: number
+            unsubscribe_rate:
+              type: number
+            bounce_rate:
+              type: number
+        targets:
+          type: object
+          properties:
+            open_rate_target:
+              type: number
+            click_rate_target:
+              type: number
+            open_rate_vs_target:
+              type: number
+            click_rate_vs_target:
+              type: number
+        top_performing:
+          type: object
+          properties:
+            segments:
+              type: array
+              items:
+                type: object
+                properties:
+                  segment_id:
+                    type: string
+                  segment_name:
+                    type: string
+                  open_rate:
+                    type: number
+            topics:
+              type: array
+              items:
+                type: object
+                properties:
+                  topic:
+                    type: string
+                  click_rate:
+                    type: number
+            content_types:
+              type: array
+              items:
+                type: object
+                properties:
+                  content_type:
+                    type: string
+                  click_rate:
+                    type: number
+
+    SegmentAnalytics:
+      type: object
+      properties:
+        segment_id:
+          type: string
+          format: uuid
+        segment_name:
+          type: string
+        period:
+          type: object
+          properties:
+            from:
+              type: string
+              format: date
+            to:
+              type: string
+              format: date
+        totals:
+          type: object
+          properties:
+            newsletters_sent:
+              type: integer
+            recipients:
+              type: integer
+            opens:
+              type: integer
+            clicks:
+              type: integer
+        rates:
+          type: object
+          properties:
+            open_rate:
+              type: number
+            click_rate:
+              type: number
+            click_to_open_rate:
+              type: number
+        trending:
+          type: object
+          properties:
+            open_rate_trend:
+              type: number
+              description: Percentage change from previous period
+            click_rate_trend:
+              type: number
+        top_content:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              clicks:
+                type: integer
+              click_rate:
+                type: number
+
+    TestResultsResponse:
+      type: object
+      properties:
+        tests:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              issue_id:
+                type: string
+                format: uuid
+              test_type:
+                type: string
+              variants:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    variant_name:
+                      type: string
+                    variant_value:
+                      type: string
+                    assigned_contacts:
+                      type: integer
+                    opens:
+                      type: integer
+                    clicks:
+                      type: integer
+                    open_rate:
+                      type: number
+                    click_rate:
+                      type: number
+                    is_winner:
+                      type: boolean
+                    statistical_significance:
+                      type: number
+              winner_declared_at:
+                type: string
+                format: date-time

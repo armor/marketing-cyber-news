@@ -1,0 +1,853 @@
+{
+  "name": "Newsletter Generation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        300
+      ],
+      "notes": "Daily trigger at 9 AM for automated newsletter generation"
+    },
+    {
+      "parameters": {
+        "path": "newsletter/generate",
+        "httpMethod": "POST",
+        "responseMode": "onReceived",
+        "responseCode": 202,
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Manual Trigger (Webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        480
+      ],
+      "webhookId": "placeholder-webhook-id",
+      "notes": "Manual trigger from Admin UI for on-demand generation"
+    },
+    {
+      "parameters": {},
+      "id": "merge-triggers",
+      "name": "Merge Triggers",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        440,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM newsletter_configurations WHERE is_active = true AND next_send_date <= NOW()",
+        "options": {}
+      },
+      "id": "get-active-configs",
+      "name": "Get Active Configurations",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        640,
+        380
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "placeholder-postgres-creds",
+          "name": "PostgreSQL - Newsletter DB"
+        }
+      },
+      "notes": "PHASE 2: Fetch configurations due for send"
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-configs",
+      "name": "Split Configurations",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        840,
+        380
+      ],
+      "notes": "PHASE 3: Process each configuration individually"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT ci.* FROM content_items ci WHERE ci.topic_tags && ARRAY[{{ $json.segment_focus_topics }}]::text[] AND ci.publish_date > NOW() - INTERVAL '{{ $json.freshness_threshold }} days' AND ci.trust_score >= {{ $json.min_trust_score }} ORDER BY ci.relevance_score DESC LIMIT {{ $json.max_content_blocks }}",
+        "options": {}
+      },
+      "id": "select-content",
+      "name": "Select Content for Segment",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        1040,
+        380
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "placeholder-postgres-creds",
+          "name": "PostgreSQL - Newsletter DB"
+        }
+      },
+      "notes": "PHASE 3: Get content matching segment criteria (topic, freshness, trust score)"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4-turbo-preview",
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 500
+        },
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a cybersecurity newsletter writer. Brand voice: {{ $json.brand_voice_rules }}. Generate 3 subject line variants (max 60 chars each) for this newsletter segment targeting {{ $json.segment_name }}. Content summary: {{ $json.content_summary }}"
+            }
+          ]
+        }
+      },
+      "id": "generate-subject-lines",
+      "name": "Generate Subject Lines",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1240,
+        300
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "placeholder-openrouter-creds",
+          "name": "OpenRouter API"
+        }
+      },
+      "notes": "PHASE 4: AI Generation - Subject lines (2-3 variants)"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4-turbo-preview",
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 200
+        },
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Generate a compelling preheader text (60-90 chars) for this cybersecurity newsletter. Subject: {{ $json.selected_subject_line }}. Target audience: {{ $json.segment_name }}"
+            }
+          ]
+        }
+      },
+      "id": "generate-preheader",
+      "name": "Generate Preheader",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1240,
+        460
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "placeholder-openrouter-creds",
+          "name": "OpenRouter API"
+        }
+      },
+      "notes": "PHASE 4: AI Generation - Preheader (60-90 chars)"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4-turbo-preview",
+        "options": {
+          "temperature": 0.8,
+          "maxTokens": 300
+        },
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Write a personalized newsletter intro (2-3 sentences) for {{ $json.segment_name }}. Tone: {{ $json.brand_voice_rules }}. Context: {{ $json.segment_interests }}"
+            }
+          ]
+        }
+      },
+      "id": "generate-intro",
+      "name": "Generate Intro Paragraph",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1240,
+        620
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "placeholder-openrouter-creds",
+          "name": "OpenRouter API"
+        }
+      },
+      "notes": "PHASE 4: AI Generation - Personalized intro"
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-content-blocks",
+      "name": "Split Content Blocks",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1440,
+        380
+      ],
+      "notes": "Loop through each content block for teaser generation"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4-turbo-preview",
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 150
+        },
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Write a compelling teaser (30-60 words) for this article. Title: {{ $json.content_title }}. Summary: {{ $json.content_summary }}. CTA: Drive clicks to read full article."
+            }
+          ]
+        }
+      },
+      "id": "generate-block-teaser",
+      "name": "Generate Content Block Teaser",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1640,
+        380
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "placeholder-openrouter-creds",
+          "name": "OpenRouter API"
+        }
+      },
+      "notes": "PHASE 4: AI Generation - Block teasers (loop)"
+    },
+    {
+      "parameters": {},
+      "id": "aggregate-blocks",
+      "name": "Aggregate Content Blocks",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        380
+      ],
+      "notes": "Combine all generated teasers back into single item"
+    },
+    {
+      "parameters": {
+        "url": "=http://localhost:8080/api/v1/newsletter/validate-brand-voice",
+        "method": "POST",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "subject_line",
+              "value": "={{ $json.selected_subject_line }}"
+            },
+            {
+              "name": "preheader",
+              "value": "={{ $json.preheader }}"
+            },
+            {
+              "name": "intro",
+              "value": "={{ $json.intro_paragraph }}"
+            },
+            {
+              "name": "blocks",
+              "value": "={{ $json.content_blocks }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "validate-brand-voice",
+      "name": "Validate Brand Voice",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2040,
+        380
+      ],
+      "notes": "PHASE 5: Call backend for brand voice validation"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.validation_result.is_valid }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "check-validation",
+      "name": "Check Validation Result",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2240,
+        380
+      ],
+      "notes": "Branch on validation result"
+    },
+    {
+      "parameters": {
+        "jsCode": "// PHASE 6: Create A/B Test Variants\nconst items = $input.all();\n\nreturn items.map(item => {\n  const subjectLines = item.json.subject_line_variants || [];\n  \n  // Validation: Ensure we have at least 2 variants\n  if (subjectLines.length < 2) {\n    console.warn(\"Insufficient subject line variants. Falling back to single variant.\");\n    const fallbackSubject = subjectLines[0] || item.json.selected_subject_line || \"Newsletter Update\";\n    return {\n      json: {\n        ...item.json,\n        has_ab_test: false,\n        fallback_reason: \"Less than 2 subject line variants available\",\n        variant_a: {\n          variant_id: \"A\",\n          subject_line: fallbackSubject,\n          test_type: \"none\",\n          is_control: true\n        },\n        variant_b: null\n      }\n    };\n  }\n  \n  // Use first two variants\n  const variantA = subjectLines[0];\n  const variantB = subjectLines[1];\n  \n  return {\n    json: {\n      ...item.json,\n      has_ab_test: true,\n      variant_a: {\n        variant_id: \"A\",\n        subject_line: variantA,\n        test_type: \"subject_line\",\n        is_control: true\n      },\n      variant_b: {\n        variant_id: \"B\",\n        subject_line: variantB,\n        test_type: \"subject_line\",\n        is_control: false\n      },\n      ab_test_config: {\n        test_name: `Subject Line Test - ${item.json.segment_name || \"Default\"}`,\n        test_start_date: new Date().toISOString(),\n        split_percentage: 50,\n        winner_criteria: \"open_rate\",\n        min_sample_size: 100\n      }\n    }\n  };\n});"
+      },
+      "id": "create-ab-variants",
+      "name": "Create A/B Test Variants",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2440,
+        300
+      ],
+      "notes": "PHASE 6: Create A/B test variants with control and test groups",
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=-- Only insert if A/B test is enabled\n{{ $json.has_ab_test ? \n  \"INSERT INTO test_variants (issue_id, variant_id, subject_line, test_type, is_control, created_at) VALUES (\n    \" + $json.issue_id + \", \\\"\" + $json.variant_a.variant_id + \"\\\", \\\"\" + $json.variant_a.subject_line.replace(/\"/g, \"\\\\\\\"\" ) + \"\\\", \\\"\" + $json.variant_a.test_type + \"\\\", \" + $json.variant_a.is_control + \", NOW()),\n    (\" + $json.issue_id + \", \\\"\" + $json.variant_b.variant_id + \"\\\", \\\"\" + $json.variant_b.subject_line.replace(/\"/g, \"\\\\\\\"\" ) + \"\\\", \\\"\" + $json.variant_b.test_type + \"\\\", \" + $json.variant_b.is_control + \", NOW())\n  RETURNING *\" \n  : \"SELECT \\\"No A/B test variants to save\\\" as message\"\n}}",
+        "options": {}
+      },
+      "id": "save-test-variants",
+      "name": "Save Test Variants to DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        2640,
+        460
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "placeholder-postgres-creds",
+          "name": "PostgreSQL - Newsletter DB"
+        }
+      },
+      "notes": "PHASE 6: Store variant definitions in database",
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// PHASE 6: Assign Contacts to Variants (Deterministic)\nconst items = $input.all();\n\n// Simple deterministic hash function\nfunction hashString(str) {\n  let hash = 0;\n  for (let i = 0; i < str.length; i++) {\n    const char = str.charCodeAt(i);\n    hash = ((hash << 5) - hash) + char;\n    hash = hash & hash; // Convert to 32bit integer\n  }\n  return Math.abs(hash);\n}\n\nreturn items.map(item => {\n  const contacts = item.json.segment_contacts || [];\n  const issueId = item.json.issue_id;\n  const hasABTest = item.json.has_ab_test !== false; // Default true unless explicitly false\n  \n  // Handle empty contact list\n  if (contacts.length === 0) {\n    console.warn(\"No contacts available for variant assignment\");\n    return {\n      json: {\n        ...item.json,\n        has_ab_test: false,\n        contact_assignments: [],\n        variant_a_count: 0,\n        variant_b_count: 0,\n        assignment_error: \"No contacts to assign\"\n      }\n    };\n  }\n  \n  // If A/B test disabled, assign all to variant A\n  if (!hasABTest) {\n    const assignments = contacts.map(contact => ({\n      contact_id: contact.id,\n      email: contact.email,\n      variant_id: \"A\",\n      subject_line: item.json.variant_a.subject_line,\n      assigned_at: new Date().toISOString(),\n      first_name: contact.first_name,\n      preferences: contact.preferences\n    }));\n    \n    return {\n      json: {\n        ...item.json,\n        contact_assignments: assignments,\n        variant_a_count: assignments.length,\n        variant_b_count: 0,\n        split_ratio: \"100/0\"\n      }\n    };\n  }\n  \n  // Deterministic 50/50 assignment using hash\n  const assignments = contacts.map(contact => {\n    const hashInput = `${contact.id}-${issueId}`;\n    const hash = hashString(hashInput);\n    const assignedVariant = hash % 2 === 0 ? \"A\" : \"B\";\n    const variantConfig = assignedVariant === \"A\" ? item.json.variant_a : item.json.variant_b;\n    \n    return {\n      contact_id: contact.id,\n      email: contact.email,\n      variant_id: assignedVariant,\n      subject_line: variantConfig.subject_line,\n      assigned_at: new Date().toISOString(),\n      first_name: contact.first_name,\n      preferences: contact.preferences\n    };\n  });\n  \n  const variantACount = assignments.filter(a => a.variant_id === \"A\").length;\n  const variantBCount = assignments.filter(a => a.variant_id === \"B\").length;\n  const totalCount = assignments.length;\n  \n  console.log(`Variant Assignment: A=${variantACount}, B=${variantBCount}, Total=${totalCount}`);\n  \n  return {\n    json: {\n      ...item.json,\n      contact_assignments: assignments,\n      variant_a_count: variantACount,\n      variant_b_count: variantBCount,\n      split_ratio: `${Math.round(variantACount/totalCount*100)}/${Math.round(variantBCount/totalCount*100)}`,\n      assignment_stats: {\n        total_contacts: totalCount,\n        variant_a_contacts: variantACount,\n        variant_b_contacts: variantBCount,\n        assignment_method: \"deterministic_hash\"\n      }\n    }\n  };\n});"
+      },
+      "id": "assign-contacts-to-variants",
+      "name": "Assign Contacts to Variants",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        620
+      ],
+      "credentials": {},
+      "notes": "PHASE 6: Random 50/50 assignment of contacts to variants",
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO newsletter_issues (config_id, segment_id, subject_line, preheader, intro_html, blocks_json, status, scheduled_send_date, has_ab_test, created_at) VALUES ({{ $json.config_id }}, {{ $json.segment_id }}, '{{ $json.variant_a.subject_line }}', '{{ $json.preheader }}', '{{ $json.intro_html }}', '{{ JSON.stringify($json.content_blocks) }}', CASE WHEN {{ $json.approval_tier }} = 2 THEN 'pending_approval' ELSE 'ready_to_send' END, {{ $json.scheduled_send_date }}, true, NOW()) RETURNING id as issue_id",
+        "options": {}
+      },
+      "id": "save-newsletter-issue",
+      "name": "Save Newsletter Issue",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        2840,
+        300
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "placeholder-postgres-creds",
+          "name": "PostgreSQL - Newsletter DB"
+        }
+      },
+      "notes": "PHASE 7: Save issue to database with A/B test flag"
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "number": [
+                  {
+                    "value1": "={{ $json.approval_tier }}",
+                    "value2": 1
+                  }
+                ]
+              },
+              "outputKey": "tier1_auto_send"
+            },
+            {
+              "conditions": {
+                "number": [
+                  {
+                    "value1": "={{ $json.approval_tier }}",
+                    "value2": 2
+                  }
+                ]
+              },
+              "outputKey": "tier2_approval_required"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "route-by-tier",
+      "name": "Route by Approval Tier",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        3040,
+        300
+      ],
+      "notes": "PHASE 7: Route based on configuration approval tier"
+    },
+    {
+      "parameters": {},
+      "id": "send-immediately",
+      "name": "Send Immediately (Tier 1)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3240,
+        200
+      ],
+      "notes": "Tier 1: Auto-send to delivery workflow with variant assignments"
+    },
+    {
+      "parameters": {},
+      "id": "wait-for-approval",
+      "name": "Wait for Approval (Tier 2)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3240,
+        400
+      ],
+      "notes": "Tier 2: Status = pending_approval, variant data ready for approval"
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "seconds"
+      },
+      "id": "retry-delay",
+      "name": "Retry Delay",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2240,
+        560
+      ],
+      "notes": "Wait before retrying failed validation (max 2 attempts)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Increment retry counter\nconst item = $input.first();\nconst retryCount = item.json.retry_count || 0;\n\nif (retryCount >= 2) {\n  // Max retries reached, flag for manual review\n  return [{\n    json: {\n      ...item.json,\n      status: 'validation_failed',\n      requires_manual_review: true\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    ...item.json,\n    retry_count: retryCount + 1\n  }\n}];"
+      },
+      "id": "check-retry-count",
+      "name": "Check Retry Count",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2040,
+        560
+      ],
+      "notes": "Track retry attempts (max 2)"
+    },
+    {
+      "parameters": {
+        "content": "## PHASE 1: Trigger\n- Daily schedule at 9 AM\n- Manual webhook from UI\n- Merge both triggers"
+      },
+      "id": "sticky-note-phase1",
+      "name": "PHASE 1: Trigger (Schedule/Manual)",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        160,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## PHASE 2: Config Fetch\n- Get active configurations\n- Filter by next_send_date"
+      },
+      "id": "sticky-note-phase2",
+      "name": "PHASE 2: Configuration Fetch",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        580,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## PHASE 3: Content Selection\n- Process each config\n- Select content by segment\n- Filter by topic, freshness, trust"
+      },
+      "id": "sticky-note-phase3",
+      "name": "PHASE 3: Content Selection",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        960,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## PHASE 4: AI Generation\n- Subject lines (3 variants)\n- Preheader (60-90 chars)\n- Intro paragraph\n- Content block teasers"
+      },
+      "id": "sticky-note-phase4",
+      "name": "PHASE 4: AI Generation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## PHASE 5: Validation\n- Call backend API\n- Check brand voice rules\n- Retry if invalid (max 2)"
+      },
+      "id": "sticky-note-phase5",
+      "name": "PHASE 5: Brand Voice Validation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2040,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## PHASE 6: A/B Testing\n- Create variant definitions (A/B)\n- Save variants to database\n- Assign contacts randomly (50/50)\n- Track variant_id for analytics\n- Store assignment timestamps"
+      },
+      "id": "sticky-note-phase6",
+      "name": "PHASE 6: A/B Test Assignment",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## PHASE 7: Save & Route\n- Save to database\n- Route by approval tier\n- Tier 1: Auto-send\n- Tier 2: Pending approval"
+      },
+      "id": "sticky-note-phase7",
+      "name": "PHASE 7: Save & Route",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2760,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger (Webhook)": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Triggers": {
+      "main": [
+        [
+          {
+            "node": "Get Active Configurations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Active Configurations": {
+      "main": [
+        [
+          {
+            "node": "Split Configurations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Configurations": {
+      "main": [
+        [
+          {
+            "node": "Select Content for Segment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Content for Segment": {
+      "main": [
+        [
+          {
+            "node": "Generate Subject Lines",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Preheader",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Intro Paragraph",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Intro Paragraph": {
+      "main": [
+        [
+          {
+            "node": "Split Content Blocks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Content Blocks": {
+      "main": [
+        [
+          {
+            "node": "Generate Content Block Teaser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Content Block Teaser": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Content Blocks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Content Blocks": {
+      "main": [
+        [
+          {
+            "node": "Validate Brand Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Brand Voice": {
+      "main": [
+        [
+          {
+            "node": "Check Validation Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Validation Result": {
+      "main": [
+        [
+          {
+            "node": "Create A/B Test Variants",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Retry Count",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Retry Count": {
+      "main": [
+        [
+          {
+            "node": "Retry Delay",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry Delay": {
+      "main": [
+        [
+          {
+            "node": "Generate Subject Lines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create A/B Test Variants": {
+      "main": [
+        [
+          {
+            "node": "Save Newsletter Issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Newsletter Issue": {
+      "main": [
+        [
+          {
+            "node": "Save Test Variants to DB",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Assign Contacts to Variants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Test Variants to DB": {
+      "main": [
+        [
+          {
+            "node": "Route by Approval Tier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assign Contacts to Variants": {
+      "main": [
+        [
+          {
+            "node": "Route by Approval Tier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Approval Tier": {
+      "main": [
+        [
+          {
+            "node": "Send Immediately (Tier 1)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait for Approval (Tier 2)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "newsletter",
+      "id": "1"
+    },
+    {
+      "name": "ai-generation",
+      "id": "2"
+    },
+    {
+      "name": "cybersecurity",
+      "id": "3"
+    }
+  ],
+  "triggerCount": 2,
+  "updatedAt": "2025-12-17T00:00:00.000Z",
+  "versionId": "1.0.0"
+}
