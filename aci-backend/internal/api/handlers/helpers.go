@@ -121,3 +121,45 @@ func getUserIDFromContext(ctx context.Context) uuid.UUID {
 	}
 	return uuid.Nil
 }
+
+// getTenantID extracts tenant ID from context
+// Supports both uuid.UUID and string types for flexibility
+func getTenantID(ctx context.Context) (uuid.UUID, error) {
+	if id, ok := ctx.Value("tenant_id").(uuid.UUID); ok {
+		return id, nil
+	}
+
+	// Try string format
+	if idStr, ok := ctx.Value("tenant_id").(string); ok {
+		return uuid.Parse(idStr)
+	}
+
+	return uuid.Nil, fmt.Errorf("tenant_id not found in context")
+}
+
+// truncateString truncates a string to maxLen characters, preferring word boundaries
+// If the string is longer than maxLen, it finds the last space before maxLen and truncates there
+func truncateString(s string, maxLen int) string {
+	if len(s) <= maxLen {
+		return s
+	}
+
+	if maxLen <= 3 {
+		return s[:maxLen]
+	}
+
+	truncated := s[:maxLen]
+	lastSpace := -1
+	for i := len(truncated) - 1; i >= 0; i-- {
+		if truncated[i] == ' ' {
+			lastSpace = i
+			break
+		}
+	}
+
+	if lastSpace > 0 {
+		return truncated[:lastSpace] + "..."
+	}
+
+	return truncated + "..."
+}

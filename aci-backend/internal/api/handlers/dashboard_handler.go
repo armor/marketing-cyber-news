@@ -227,24 +227,3 @@ func (h *DashboardHandler) calculateSummary(ctx context.Context, articles []*dom
 	return summary
 }
 
-// truncateString truncates a string to the specified length
-func truncateString(s string, maxLen int) string {
-	if len(s) <= maxLen {
-		return s
-	}
-
-	truncated := s[:maxLen]
-	lastSpace := -1
-	for i := len(truncated) - 1; i >= 0; i-- {
-		if truncated[i] == ' ' {
-			lastSpace = i
-			break
-		}
-	}
-
-	if lastSpace > 0 {
-		return truncated[:lastSpace] + "..."
-	}
-
-	return truncated + "..."
-}

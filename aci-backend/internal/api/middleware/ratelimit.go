@@ -24,3 +24,16 @@ func GlobalRateLimiter() func(http.Handler) http.Handler {
 func StrictRateLimiter() func(http.Handler) http.Handler {
 	return httprate.LimitByIP(3, 1*time.Minute)
 }
+
+// WebhookRateLimiter returns rate limiter for webhook endpoints
+// HIGH-004: Limits to 200 requests per minute per IP to allow burst traffic
+// from ESPs (HubSpot, Mailchimp, SendGrid) while preventing abuse
+func WebhookRateLimiter() func(http.Handler) http.Handler {
+	return httprate.LimitByIP(200, 1*time.Minute)
+}
+
+// N8NWebhookRateLimiter returns rate limiter for n8n webhook endpoints
+// HIGH-004: Limits to 30 requests per minute per IP for n8n automation webhooks
+func N8NWebhookRateLimiter() func(http.Handler) http.Handler {
+	return httprate.LimitByIP(30, 1*time.Minute)
+}
