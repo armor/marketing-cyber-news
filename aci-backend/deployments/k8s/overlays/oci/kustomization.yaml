@@ -1,0 +1,54 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference base configuration
+resources:
+  - ../../base
+
+# Override namespace for OCI deployment
+namespace: armor-newsletter
+
+# Common labels for OCI environment
+commonLabels:
+  environment: production
+  platform: oci
+
+# Images - will be overridden by CI/CD
+images:
+  - name: aci-backend
+    newName: us-ashburn-1.ocir.io/NAMESPACE/aci-backend
+    newTag: latest
+  - name: aci-frontend
+    newName: us-ashburn-1.ocir.io/NAMESPACE/aci-frontend
+    newTag: latest
+
+# Patches for OCI-specific configuration
+patches:
+  # Add OCIR pull secret to deployments
+  - target:
+      kind: Deployment
+    patch: |-
+      - op: add
+        path: /spec/template/spec/imagePullSecrets
+        value:
+          - name: ocir-secret
+
+  # Update ingress for OCI Load Balancer
+  - target:
+      kind: Ingress
+      name: aci-backend-ingress
+    patch: |-
+      - op: add
+        path: /metadata/annotations/kubernetes.io~1ingress.class
+        value: "oci"
+      - op: add
+        path: /metadata/annotations/oci.oraclecloud.com~1load-balancer-type
+        value: "lb"
+
+# ConfigMap patches for OCI environment
+configMapGenerator:
+  - name: aci-backend-config
+    behavior: merge
+    literals:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
