@@ -21,17 +21,44 @@ export function Dashboard(): React.JSX.Element {
       case 'articles':
         return (
           <div>
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">Latest Cyber Intelligence</h2>
-              <p className="text-gray-400">Stay informed about the latest cybersecurity threats and vulnerabilities</p>
+            <div style={{ marginBottom: 'var(--spacing-8)' }}>
+              <h2
+                className="font-bold"
+                style={{
+                  fontSize: 'var(--typography-font-size-2xl)',
+                  color: 'var(--color-text-primary)',
+                  marginBottom: 'var(--spacing-2)',
+                }}
+              >
+                Latest Cyber Intelligence
+              </h2>
+              <p style={{ color: 'var(--color-text-muted)' }}>
+                Stay informed about the latest cybersecurity threats and vulnerabilities
+              </p>
             </div>
             {isLoading && (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+              <div className="text-center" style={{ padding: 'var(--spacing-12) 0' }}>
+                <div
+                  className="animate-spin mx-auto"
+                  style={{
+                    width: 'var(--spacing-12)',
+                    height: 'var(--spacing-12)',
+                    borderRadius: 'var(--border-radius-full)',
+                    borderWidth: 'var(--border-width-medium)',
+                    borderColor: 'var(--color-border-default)',
+                    borderTopColor: 'var(--color-brand-primary)',
+                  }}
+                ></div>
               </div>
             )}
             {error && (
-              <div className="text-center py-12 text-red-400">
+              <div
+                className="text-center"
+                style={{
+                  padding: 'var(--spacing-12) 0',
+                  color: 'var(--color-semantic-error)',
+                }}
+              >
                 Error loading articles: {error}
               </div>
             )}

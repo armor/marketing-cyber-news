@@ -14,6 +14,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Tailwind v4 theme configuration with responsive breakpoints */
+@theme {
+  /* Responsive breakpoints */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -31,6 +41,15 @@
 
 .animate-slide-in {
   animation: slide-in var(--motion-duration-normal) var(--motion-easing-out);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Custom scrollbar - Fortified Horizon Theme */
@@ -191,6 +210,19 @@
     @apply border-border outline-ring/50;
   }
 
+  /* Reset anchor styles to inherit parent colors (important for sidebar links) */
+  a {
+    color: inherit;
+    text-decoration: inherit;
+  }
+
+  /* Reset list styles for sidebar menus */
+  ul, ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
   /* Apply Fortified Horizon page gradient background */
   body {
     font-family: var(--typography-font-family-body);
@@ -290,4 +322,93 @@
   font-weight: var(--typography-font-weight-bold);
   line-height: var(--typography-line-height-tight);
   letter-spacing: var(--typography-letter-spacing-tight);
+}
+
+/* ---------------------------------------------------------------
+   NATIVE DATE INPUT - Fortified Horizon Theme Styling
+   Style native HTML date inputs to match our design system
+   --------------------------------------------------------------- */
+
+/* Base date input styling */
+input[type="date"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: var(--color-bg-elevated);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--border-radius-md);
+  color: var(--color-text-primary);
+  font-family: var(--typography-font-family-body);
+  font-size: var(--typography-font-size-sm);
+  padding: var(--spacing-2) var(--spacing-3);
+  cursor: pointer;
+  transition: all var(--motion-duration-fast) var(--motion-easing-default);
+}
+
+input[type="date"]:hover {
+  border-color: var(--color-border-focus);
+}
+
+input[type="date"]:focus {
+  outline: none;
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-primary) 25%, transparent);
+}
+
+input[type="date"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* WebKit calendar picker icon styling */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0) saturate(100%);
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity var(--motion-duration-fast) var(--motion-easing-default);
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1);
+  opacity: 0.7;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Inner text styling for date parts */
+input[type="date"]::-webkit-datetime-edit {
+  color: var(--color-text-primary);
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  color: var(--color-text-primary);
+}
+
+input[type="date"]::-webkit-datetime-edit-text {
+  color: var(--color-text-muted);
+  padding: 0 2px;
+}
+
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+  color: var(--color-text-primary);
+}
+
+/* Placeholder styling when no date is selected */
+input[type="date"]:not(:valid)::-webkit-datetime-edit {
+  color: var(--color-text-muted);
+}
+
+/* Firefox-specific styling */
+@-moz-document url-prefix() {
+  input[type="date"] {
+    color-scheme: light;
+  }
+
+  .dark input[type="date"] {
+    color-scheme: dark;
+  }
 }

@@ -37,7 +37,16 @@ interface QueueParams {
 }
 
 /**
+ * Backend API response wrapper type
+ * All backend responses are wrapped in { data: T }
+ */
+interface ApiResponseWrapper<T> {
+  readonly data: T;
+}
+
+/**
  * Fetch approval queue for current user's role
+ * Note: Backend wraps response in { data: {...} }, so we unwrap it
  */
 export async function fetchApprovalQueue(
   params?: QueueParams
@@ -53,10 +62,13 @@ export async function fetchApprovalQueue(
   if (params?.dateFrom) queryParams.date_from = params.dateFrom;
   if (params?.dateTo) queryParams.date_to = params.dateTo;
 
-  return apiClient.get<ApprovalQueueResponse>(
+  const response = await apiClient.get<ApiResponseWrapper<ApprovalQueueResponse>>(
     `${API_PREFIX}/approvals/queue`,
     queryParams
   );
+
+  // Unwrap the backend's { data: {...} } envelope
+  return response.data;
 }
 
 /**

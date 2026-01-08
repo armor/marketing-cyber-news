@@ -96,3 +96,11 @@ export {
   useRejectIssue,
   useSendIssue,
 } from './useIssueMutations';
+
+// Marketing campaign hooks
+export { useCampaigns } from './useCampaigns';
+export { useCampaign, useCampaignStats } from './useCampaign';
+export { useCampaignMutations } from './useCampaignMutations';
+
+// Marketing query keys
+export { marketingKeys } from './marketingKeys';

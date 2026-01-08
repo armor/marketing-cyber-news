@@ -1,8 +1,17 @@
+/**
+ * Bookmarks Page - Fortified Horizon Theme
+ *
+ * User's saved articles for later reading.
+ * Uses CSS custom properties for all styling values.
+ */
 import { useState, useEffect } from 'react';
 import React from 'react';
 import type { Article } from '../types';
 import { userService } from '../services/userService';
 import { ArticleCard } from '../components/ArticleCard';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface BookmarksProps {
   readonly onArticleClick?: (article: Article) => void;
@@ -36,34 +45,76 @@ export function Bookmarks({ onArticleClick }: BookmarksProps): React.ReactElemen
 
   return (
     <div>
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-white mb-2">🔖 Your Bookmarks</h2>
-        <p className="text-gray-400">Articles you have saved for later reading</p>
+      <div style={{ marginBottom: 'var(--spacing-8)' }}>
+        <h2
+          className="font-bold"
+          style={{
+            fontSize: 'var(--typography-font-size-2xl)',
+            color: 'var(--color-text-primary)',
+            marginBottom: 'var(--spacing-2)',
+          }}
+        >
+          Your Bookmarks
+        </h2>
+        <p style={{ color: 'var(--color-text-muted)' }}>
+          Articles you have saved for later reading
+        </p>
       </div>
 
       {isLoading && (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <div className="flex justify-center" style={{ padding: 'var(--spacing-12) 0' }}>
+          <LoadingSpinner size="lg" label="Loading bookmarks..." />
         </div>
       )}
 
       {error && !isLoading && (
-        <div className="bg-red-500/20 border border-red-500 text-red-400 px-4 py-3 rounded">
+        <div
+          style={{
+            background: 'var(--gradient-badge-critical)',
+            border: '1px solid var(--color-semantic-error)',
+            color: 'var(--color-semantic-error)',
+            padding: 'var(--spacing-3) var(--spacing-4)',
+            borderRadius: 'var(--border-radius-md)',
+          }}
+        >
           {error}
         </div>
       )}
 
       {!isLoading && !error && articles.length === 0 && (
-        <div className="text-center py-12 bg-gray-800 rounded-lg">
-          <p className="text-4xl mb-4">🔖</p>
-          <p className="text-lg text-gray-300">No bookmarks yet</p>
-          <p className="text-sm text-gray-500 mt-2">Save articles to read later by clicking the bookmark icon</p>
-        </div>
+        <Card
+          className="text-center"
+          style={{ padding: 'var(--spacing-12)' }}
+        >
+          <p style={{ fontSize: 'var(--typography-font-size-4xl)', marginBottom: 'var(--spacing-4)' }}>
+            📚
+          </p>
+          <p
+            style={{
+              fontSize: 'var(--typography-font-size-lg)',
+              color: 'var(--color-text-secondary)',
+            }}
+          >
+            No bookmarks yet
+          </p>
+          <p
+            style={{
+              fontSize: 'var(--typography-font-size-sm)',
+              color: 'var(--color-text-muted)',
+              marginTop: 'var(--spacing-2)',
+            }}
+          >
+            Save articles to read later by clicking the bookmark icon
+          </p>
+        </Card>
       )}
 
       {!isLoading && !error && articles.length > 0 && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+            style={{ gap: 'var(--spacing-6)' }}
+          >
             {articles.map((article) => (
               <ArticleCard
                 key={article.id}
@@ -74,24 +125,27 @@ export function Bookmarks({ onArticleClick }: BookmarksProps): React.ReactElemen
           </div>
 
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-4 mt-8">
-              <button
+            <div
+              className="flex justify-center items-center"
+              style={{ gap: 'var(--spacing-4)', marginTop: 'var(--spacing-8)' }}
+            >
+              <Button
+                variant="outline"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2 bg-gray-700 text-white rounded disabled:opacity-50"
               >
                 Previous
-              </button>
-              <span className="text-gray-400">
+              </Button>
+              <span style={{ color: 'var(--color-text-muted)' }}>
                 Page {currentPage} of {totalPages}
               </span>
-              <button
+              <Button
+                variant="outline"
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-gray-700 text-white rounded disabled:opacity-50"
               >
                 Next
-              </button>
+              </Button>
             </div>
           )}
         </>

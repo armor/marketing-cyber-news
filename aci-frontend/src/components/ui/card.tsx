@@ -79,7 +79,7 @@ const CardDescription = React.forwardRef<
       fontSize: 'var(--typography-font-size-sm)',
       fontFamily: 'var(--typography-font-family-sans)',
       lineHeight: 'var(--typography-line-height-normal)',
-      color: 'var(--color-text-muted)',
+      color: 'var(--color-text-secondary)',
       ...style,
     }}
     {...props}

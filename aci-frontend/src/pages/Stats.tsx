@@ -1,5 +1,13 @@
+/**
+ * Stats Page - Fortified Horizon Theme
+ *
+ * User's cybersecurity learning statistics.
+ * Uses CSS custom properties for all styling values.
+ */
 import { useState, useEffect } from 'react';
 import { userService, type UserStats } from '../services/userService';
+import { Card } from '@/components/ui/card';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export function Stats() {
   const [stats, setStats] = useState<UserStats | null>(null);
@@ -36,121 +44,257 @@ export function Stats() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-white mb-2">📊 Your Statistics</h2>
-        <p className="text-gray-400">Track your cybersecurity learning progress</p>
+      <div style={{ marginBottom: 'var(--spacing-8)' }}>
+        <h2
+          className="font-bold"
+          style={{
+            fontSize: 'var(--typography-font-size-2xl)',
+            color: 'var(--color-text-primary)',
+            marginBottom: 'var(--spacing-2)',
+          }}
+        >
+          Your Statistics
+        </h2>
+        <p style={{ color: 'var(--color-text-muted)' }}>
+          Track your cybersecurity learning progress
+        </p>
       </div>
 
       {/* Loading State */}
       {isLoading && (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <div className="flex justify-center" style={{ padding: 'var(--spacing-12) 0' }}>
+          <LoadingSpinner size="lg" label="Loading stats..." />
         </div>
       )}
 
       {/* Error State */}
       {error && !isLoading && (
-        <div className="bg-red-500/20 border border-red-500 text-red-400 px-4 py-3 rounded">
+        <div
+          style={{
+            background: 'var(--gradient-badge-critical)',
+            border: '1px solid var(--color-semantic-error)',
+            color: 'var(--color-semantic-error)',
+            padding: 'var(--spacing-3) var(--spacing-4)',
+            borderRadius: 'var(--border-radius-md)',
+          }}
+        >
           {error}
         </div>
       )}
 
       {/* Stats Grid */}
       {!isLoading && !error && stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          style={{ gap: 'var(--spacing-6)' }}
+        >
           {/* Total Articles Read */}
-          <div className="bg-gray-800 rounded-xl p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl">📰</span>
+          <Card style={{ padding: 'var(--spacing-6)' }}>
+            <div className="flex items-center" style={{ gap: 'var(--spacing-4)' }}>
+              <div
+                className="flex items-center justify-center"
+                style={{
+                  width: 'var(--spacing-12)',
+                  height: 'var(--spacing-12)',
+                  borderRadius: 'var(--border-radius-full)',
+                  background: 'var(--gradient-component)',
+                }}
+              >
+                <span style={{ fontSize: 'var(--typography-font-size-2xl)' }}>📰</span>
               </div>
               <div>
-                <p className="text-3xl font-bold text-white">{stats.total_articles_read}</p>
-                <p className="text-gray-400">Articles Read</p>
+                <p
+                  className="font-bold"
+                  style={{
+                    fontSize: 'var(--typography-font-size-3xl)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                >
+                  {stats.total_articles_read}
+                </p>
+                <p style={{ color: 'var(--color-text-muted)' }}>Articles Read</p>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Total Reading Time */}
-          <div className="bg-gray-800 rounded-xl p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl">⏱️</span>
+          <Card style={{ padding: 'var(--spacing-6)' }}>
+            <div className="flex items-center" style={{ gap: 'var(--spacing-4)' }}>
+              <div
+                className="flex items-center justify-center"
+                style={{
+                  width: 'var(--spacing-12)',
+                  height: 'var(--spacing-12)',
+                  borderRadius: 'var(--border-radius-full)',
+                  background: 'var(--gradient-component)',
+                }}
+              >
+                <span style={{ fontSize: 'var(--typography-font-size-2xl)' }}>⏱️</span>
               </div>
               <div>
-                <p className="text-3xl font-bold text-white">
+                <p
+                  className="font-bold"
+                  style={{
+                    fontSize: 'var(--typography-font-size-3xl)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                >
                   {formatReadingTime(stats.total_reading_time_seconds)}
                 </p>
-                <p className="text-gray-400">Total Reading Time</p>
+                <p style={{ color: 'var(--color-text-muted)' }}>Total Reading Time</p>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Bookmarks */}
-          <div className="bg-gray-800 rounded-xl p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl">🔖</span>
+          <Card style={{ padding: 'var(--spacing-6)' }}>
+            <div className="flex items-center" style={{ gap: 'var(--spacing-4)' }}>
+              <div
+                className="flex items-center justify-center"
+                style={{
+                  width: 'var(--spacing-12)',
+                  height: 'var(--spacing-12)',
+                  borderRadius: 'var(--border-radius-full)',
+                  background: 'var(--gradient-component)',
+                }}
+              >
+                <span style={{ fontSize: 'var(--typography-font-size-2xl)' }}>🔖</span>
               </div>
               <div>
-                <p className="text-3xl font-bold text-white">{stats.total_bookmarks}</p>
-                <p className="text-gray-400">Saved Bookmarks</p>
+                <p
+                  className="font-bold"
+                  style={{
+                    fontSize: 'var(--typography-font-size-3xl)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                >
+                  {stats.total_bookmarks}
+                </p>
+                <p style={{ color: 'var(--color-text-muted)' }}>Saved Bookmarks</p>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Reading Streak */}
-          <div className="bg-gray-800 rounded-xl p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl">🔥</span>
+          <Card style={{ padding: 'var(--spacing-6)' }}>
+            <div className="flex items-center" style={{ gap: 'var(--spacing-4)' }}>
+              <div
+                className="flex items-center justify-center"
+                style={{
+                  width: 'var(--spacing-12)',
+                  height: 'var(--spacing-12)',
+                  borderRadius: 'var(--border-radius-full)',
+                  background: 'var(--gradient-component)',
+                }}
+              >
+                <span style={{ fontSize: 'var(--typography-font-size-2xl)' }}>🔥</span>
               </div>
               <div>
-                <p className="text-3xl font-bold text-white">{stats.reading_streak_days}</p>
-                <p className="text-gray-400">Day Streak</p>
+                <p
+                  className="font-bold"
+                  style={{
+                    fontSize: 'var(--typography-font-size-3xl)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                >
+                  {stats.reading_streak_days}
+                </p>
+                <p style={{ color: 'var(--color-text-muted)' }}>Day Streak</p>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* This Week */}
-          <div className="bg-gray-800 rounded-xl p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl">📅</span>
+          <Card style={{ padding: 'var(--spacing-6)' }}>
+            <div className="flex items-center" style={{ gap: 'var(--spacing-4)' }}>
+              <div
+                className="flex items-center justify-center"
+                style={{
+                  width: 'var(--spacing-12)',
+                  height: 'var(--spacing-12)',
+                  borderRadius: 'var(--border-radius-full)',
+                  background: 'var(--gradient-component)',
+                }}
+              >
+                <span style={{ fontSize: 'var(--typography-font-size-2xl)' }}>📅</span>
               </div>
               <div>
-                <p className="text-3xl font-bold text-white">{stats.articles_read_this_week}</p>
-                <p className="text-gray-400">Read This Week</p>
+                <p
+                  className="font-bold"
+                  style={{
+                    fontSize: 'var(--typography-font-size-3xl)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                >
+                  {stats.articles_read_this_week}
+                </p>
+                <p style={{ color: 'var(--color-text-muted)' }}>Read This Week</p>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Favorite Category */}
           {stats.favorite_category && (
-            <div className="bg-gray-800 rounded-xl p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
-                  <span className="text-2xl">⭐</span>
+            <Card style={{ padding: 'var(--spacing-6)' }}>
+              <div className="flex items-center" style={{ gap: 'var(--spacing-4)' }}>
+                <div
+                  className="flex items-center justify-center"
+                  style={{
+                    width: 'var(--spacing-12)',
+                    height: 'var(--spacing-12)',
+                    borderRadius: 'var(--border-radius-full)',
+                    background: 'var(--gradient-component)',
+                  }}
+                >
+                  <span style={{ fontSize: 'var(--typography-font-size-2xl)' }}>⭐</span>
                 </div>
                 <div>
-                  <p className="text-xl font-bold text-white">{stats.favorite_category.name}</p>
-                  <p className="text-gray-400">
+                  <p
+                    className="font-bold"
+                    style={{
+                      fontSize: 'var(--typography-font-size-xl)',
+                      color: 'var(--color-text-primary)',
+                    }}
+                  >
+                    {stats.favorite_category.name}
+                  </p>
+                  <p style={{ color: 'var(--color-text-muted)' }}>
                     Favorite Category ({stats.favorite_category.count} articles)
                   </p>
                 </div>
               </div>
-            </div>
+            </Card>
           )}
         </div>
       )}
 
       {/* Empty State */}
       {!isLoading && !error && !stats && (
-        <div className="text-center py-12 bg-gray-800 rounded-lg">
-          <p className="text-4xl mb-4">📊</p>
-          <p className="text-lg text-gray-300">No stats available yet</p>
-          <p className="text-sm text-gray-500 mt-2">Start reading articles to build your statistics</p>
-        </div>
+        <Card
+          className="text-center"
+          style={{ padding: 'var(--spacing-12)' }}
+        >
+          <p style={{ fontSize: 'var(--typography-font-size-4xl)', marginBottom: 'var(--spacing-4)' }}>
+            📊
+          </p>
+          <p
+            style={{
+              fontSize: 'var(--typography-font-size-lg)',
+              color: 'var(--color-text-secondary)',
+            }}
+          >
+            No stats available yet
+          </p>
+          <p
+            style={{
+              fontSize: 'var(--typography-font-size-sm)',
+              color: 'var(--color-text-secondary)',
+              marginTop: 'var(--spacing-2)',
+            }}
+          >
+            Start reading articles to build your statistics
+          </p>
+        </Card>
       )}
     </div>
   );

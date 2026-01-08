@@ -52,6 +52,10 @@ const SEVERITY_CONFIG: Record<Severity, { label: string; colorVar: string }> = {
     label: 'Low',
     colorVar: colors.severity.low,
   },
+  informational: {
+    label: 'Informational',
+    colorVar: colors.semantic.info,
+  },
 };
 
 /**

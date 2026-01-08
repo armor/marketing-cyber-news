@@ -28,5 +28,10 @@ export default defineConfig({
     env: {
       VITE_ENABLE_MSW: 'true',
     },
+    // Allow per-file environment override via @vitest-environment comment
+    environmentMatchGlobs: [
+      ['src/test/contract-*.{ts,tsx}', 'node'],
+      ['src/test/openapi-*.{ts,tsx}', 'node'],
+    ],
   },
 });

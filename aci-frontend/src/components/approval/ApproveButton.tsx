@@ -65,7 +65,7 @@ export function ApproveButton({
   onError,
   disabled = false,
   size = 'default',
-}: ApproveButtonProps): JSX.Element {
+}: ApproveButtonProps): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);
   const [notes, setNotes] = useState('');
 
@@ -130,11 +130,8 @@ export function ApproveButton({
         onClick={handleOpen}
         disabled={disabled || isPending}
         size={size}
-        variant="default"
-        style={{
-          background: 'var(--color-success)',
-          color: 'var(--color-text-on-primary)',
-        }}
+        variant="success"
+        data-testid="approve-button"
       >
         {isPending ? (
           <Loader2
@@ -257,10 +254,7 @@ export function ApproveButton({
               type="button"
               onClick={handleConfirmClick}
               disabled={isPending}
-              style={{
-                background: 'var(--color-success)',
-                color: 'var(--color-text-on-primary)',
-              }}
+              variant="success"
             >
               {isPending && (
                 <Loader2

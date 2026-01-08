@@ -1,20 +1,23 @@
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils';
 
-function Skeleton({
-  className,
-  style,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+/**
+ * Skeleton Component - Fortified Horizon Theme
+ *
+ * Uses CSS custom properties for all styling values.
+ */
+function Skeleton({ className, style, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
-      className={cn("animate-pulse bg-primary/10", className)}
+      data-slot="skeleton"
+      className={cn('animate-pulse', className)}
       style={{
         borderRadius: 'var(--border-radius-md)',
+        background: 'var(--gradient-component)',
         ...style,
       }}
       {...props}
     />
-  )
+  );
 }
 
-export { Skeleton }
+export { Skeleton };

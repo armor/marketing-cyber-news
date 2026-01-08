@@ -1,5 +1,5 @@
-export { Header } from './Header';
-export { Layout } from './Layout';
+// Note: Header and Layout components are now in /components/layout/
+// Use MainLayout from '@/components/layout/MainLayout' for the app shell
 export { CategoryFilter } from './CategoryFilter';
 export { SeverityFilter } from './SeverityFilter';
 export { SearchBar } from './SearchBar';

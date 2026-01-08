@@ -99,7 +99,7 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
               <span
                 style={{
                   fontSize: 'var(--typography-font-size-xs)',
-                  color: 'var(--color-text-muted)',
+                  color: 'var(--color-text-secondary)',
                   display: 'block',
                 }}
               >
@@ -154,7 +154,7 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
                 className="hidden sm:block"
                 style={{
                   fontSize: 'var(--typography-font-size-xs)',
-                  color: 'var(--color-text-muted)',
+                  color: 'var(--color-text-secondary)',
                 }}
               >
                 {wsStatus === 'connected' ? 'Live' : wsStatus}
@@ -176,7 +176,7 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
                 <p
                   style={{
                     fontSize: 'var(--typography-font-size-xs)',
-                    color: 'var(--color-text-muted)',
+                    color: 'var(--color-text-secondary)',
                   }}
                 >
                   {user?.email}

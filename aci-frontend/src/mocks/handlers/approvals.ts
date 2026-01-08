@@ -131,6 +131,77 @@ function checkErrorSimulation(url: URL): ReturnType<typeof HttpResponse.json> | 
 
 export const approvalHandlers = [
   /**
+   * GET /v1/articles/:articleId
+   * Get single article by ID for approval detail page
+   */
+  http.get('*/v1/articles/:articleId', async ({ params, request }) => {
+    await delay(200);
+
+    const { articleId } = params;
+    const url = new URL(request.url);
+
+    // Skip if this is a sub-resource like /approve, /reject, etc.
+    if (url.pathname.includes('/approve') ||
+        url.pathname.includes('/reject') ||
+        url.pathname.includes('/release') ||
+        url.pathname.includes('/reset') ||
+        url.pathname.includes('/approval-history')) {
+      return;
+    }
+
+    if (typeof articleId !== 'string') {
+      return HttpResponse.json(
+        {
+          error: {
+            code: 'INVALID_ID',
+            message: 'Article ID must be a string',
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    // Check for error simulation
+    const errorResponse = checkErrorSimulation(url);
+    if (errorResponse) {
+      return errorResponse;
+    }
+
+    const state = getArticleState(articleId);
+
+    // Create mock article response
+    const article = createMockApprovalQueueResponse(1, {
+      userRole: 'marketing',
+      targetGate: 'marketing',
+    }).data[0];
+
+    // Override with actual state
+    const articleWithState = {
+      ...article,
+      id: articleId,
+      approvalStatus: state.status,
+      rejected: state.rejected,
+      approvalProgress: {
+        completedGates: state.completedGates,
+        currentGate: state.status.startsWith('pending_')
+          ? state.status.replace('pending_', '') as ApprovalGate
+          : null,
+        pendingGates: ['marketing', 'branding', 'soc_l1', 'soc_l3', 'ciso'].filter(
+          g => !state.completedGates.includes(g as ApprovalGate) &&
+               g !== state.status.replace('pending_', '')
+        ) as ApprovalGate[],
+        totalGates: 5,
+        completedCount: state.completedGates.length,
+      },
+    };
+
+    return HttpResponse.json({
+      success: true,
+      data: articleWithState,
+    });
+  }),
+
+  /**
    * GET /v1/approvals/queue
    * Get approval queue for current user's role
    *
@@ -164,19 +235,8 @@ export const approvalHandlers = [
       ? Math.min(MAX_PAGE_SIZE, Math.max(1, parseInt(pageSizeParam, 10)))
       : DEFAULT_PAGE_SIZE;
 
-    // Parse filter parameters (currently unused but kept for future API enhancement)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const sortBy = url.searchParams.get('sort_by') || 'created_at';
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const sortOrder = url.searchParams.get('sort_order') || 'desc';
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const categoryId = url.searchParams.get('category_id') || undefined;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const severity = url.searchParams.get('severity') || undefined;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const dateFrom = url.searchParams.get('date_from') || undefined;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const dateTo = url.searchParams.get('date_to') || undefined;
+    // Note: Filter parameters (sort_by, sort_order, category_id, severity, date_from, date_to)
+    // are available via url.searchParams but currently unused in mock - kept for future API enhancement
 
     // Mock: Create queue response for marketing role by default
     const queueResponse: ApprovalQueueResponse = createMockApprovalQueueResponse(15, {
@@ -186,7 +246,8 @@ export const approvalHandlers = [
       pageSize,
     });
 
-    return HttpResponse.json(queueResponse);
+    // Wrap response in { data: {...} } envelope to match real backend
+    return HttpResponse.json({ data: queueResponse });
   }),
 
   /**

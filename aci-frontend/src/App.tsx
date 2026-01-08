@@ -8,6 +8,7 @@
 import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'sonner';
 import { AuthProvider } from '@/stores/AuthContext';
 import { queryClient } from '@/services/api/queryClient';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
@@ -42,8 +43,61 @@ const ThreatDetailPage = lazy(() =>
 const ApprovalPage = lazy(() =>
   import('@/pages/ApprovalPage').then((module) => ({ default: module.ApprovalPage }))
 );
+const ArticleDetailPage = lazy(() =>
+  import('@/pages/ArticleDetailPage').then((module) => ({ default: module.ArticleDetailPage }))
+);
 const NewsletterConfigPage = lazy(() =>
   import('@/pages/NewsletterConfigPage').then((module) => ({ default: module.NewsletterConfigPage }))
+);
+const NewsletterPreviewPage = lazy(() =>
+  import('@/pages/NewsletterPreviewPage').then((module) => ({ default: module.NewsletterPreviewPage }))
+);
+const NewsletterEditPage = lazy(() =>
+  import('@/pages/NewsletterEditPage').then((module) => ({ default: module.NewsletterEditPage }))
+);
+const NewsletterAnalyticsPage = lazy(() =>
+  import('@/pages/NewsletterAnalyticsPage').then((module) => ({ default: module.NewsletterAnalyticsPage }))
+);
+const NewsletterApprovalPage = lazy(() =>
+  import('@/pages/NewsletterApprovalPage').then((module) => ({ default: module.NewsletterApprovalPage }))
+);
+const NewsletterContentPage = lazy(() =>
+  import('@/pages/NewsletterContentPage').then((module) => ({ default: module.NewsletterContentPage }))
+);
+const CalendarPage = lazy(() =>
+  import('@/pages/CalendarPage').then((module) => ({ default: module.CalendarPage }))
+);
+const CampaignListPage = lazy(() =>
+  import('@/pages/CampaignListPage').then((module) => ({ default: module.CampaignListPage }))
+);
+const CampaignBuilderPage = lazy(() =>
+  import('@/pages/CampaignBuilderPage').then((module) => ({ default: module.CampaignBuilderPage }))
+);
+const CampaignDetailPage = lazy(() =>
+  import('@/pages/CampaignDetailPage').then((module) => ({ default: module.CampaignDetailPage }))
+);
+const ChannelsPage = lazy(() =>
+  import('@/pages/ChannelsPage').then((module) => ({ default: module.ChannelsPage }))
+);
+const ContentStudioPage = lazy(() =>
+  import('@/pages/ContentStudioPage').then((module) => ({ default: module.ContentStudioPage }))
+);
+const BrandCenterPage = lazy(() => import('@/pages/BrandCenterPage'));
+const MarketingAnalyticsPage = lazy(() =>
+  import('@/pages/MarketingAnalyticsPage').then((module) => ({ default: module.MarketingAnalyticsPage }))
+);
+const CompetitorMonitorPage = lazy(() =>
+  import('@/pages/CompetitorMonitorPage').then((module) => ({ default: module.CompetitorMonitorPage }))
+);
+const AnalyticsPage = lazy(() =>
+  Promise.resolve({
+    default: () => (
+      <div className="p-8">
+        <h1 className="text-2xl font-bold">Analytics</h1>
+        <p className="mt-4 text-[var(--color-text-muted)]">Threat analytics coming soon...</p>
+      </div>
+    ),
+  })
 );
 
 // Placeholder components for pages not yet implemented
@@ -54,17 +108,6 @@ const AlertsPage = lazy(() =>
       <div className="p-8">
         <h1 className="text-2xl font-bold">Alerts</h1>
         <p className="mt-4 text-[var(--color-text-muted)]">Alerts page coming soon...</p>
-      </div>
-    ),
-  })
-);
-
-const AnalyticsPage = lazy(() =>
-  Promise.resolve({
-    default: () => (
-      <div className="p-8">
-        <h1 className="text-2xl font-bold">Analytics</h1>
-        <p className="mt-4 text-[var(--color-text-muted)]">Analytics page coming soon...</p>
       </div>
     ),
   })
@@ -210,6 +253,16 @@ function App(): React.ReactElement {
                 }
               />
               <Route
+                path="/articles/:id"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <ArticleDetailPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/alerts"
                 element={
                   <ProtectedRoute>
@@ -229,12 +282,174 @@ function App(): React.ReactElement {
                   </ProtectedRoute>
                 }
               />
+              {/* Newsletter Routes */}
+              <Route path="/newsletter" element={<Navigate to="/newsletter/configs" replace />} />
               <Route
-                path="/newsletter-config"
+                path="/newsletter/configs"
                 element={
                   <ProtectedRoute>
                     <MainLayout>
                       <NewsletterConfigPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/newsletter/preview"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <NewsletterPreviewPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/newsletter/preview/:id"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <NewsletterPreviewPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/newsletter/edit/:id"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <NewsletterEditPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/newsletter/approval"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <NewsletterApprovalPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/newsletter/analytics"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <NewsletterAnalyticsPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/newsletter/content"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <NewsletterContentPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/calendar"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <CalendarPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              {/* Legacy newsletter routes - redirect to new paths */}
+              <Route path="/newsletter-analytics" element={<Navigate to="/newsletter/analytics" replace />} />
+              <Route path="/newsletter-config" element={<Navigate to="/newsletter/configs" replace />} />
+              <Route path="/newsletters/preview/:id" element={<Navigate to="/newsletter/preview/:id" replace />} />
+              {/* Campaign Routes */}
+              <Route
+                path="/campaigns"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <CampaignListPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/campaigns/new"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <CampaignBuilderPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/campaigns/:id"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <CampaignDetailPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              {/* Channel Routes */}
+              <Route
+                path="/channels"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <ChannelsPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              {/* Content Studio Route */}
+              <Route
+                path="/content-studio"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <ContentStudioPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              {/* Brand Center Route */}
+              <Route
+                path="/brand-center"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <BrandCenterPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              {/* Marketing Analytics Route */}
+              <Route
+                path="/marketing/analytics"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <MarketingAnalyticsPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              {/* Competitor Monitoring Route */}
+              <Route
+                path="/campaigns/:campaignId/competitors"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <CompetitorMonitorPage />
                     </MainLayout>
                   </ProtectedRoute>
                 }
@@ -255,6 +470,16 @@ function App(): React.ReactElement {
             </Routes>
           </Suspense>
         </BrowserRouter>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              border: '1px solid var(--color-border)',
+            },
+          }}
+        />
       </AuthProvider>
     </QueryClientProvider>
   );

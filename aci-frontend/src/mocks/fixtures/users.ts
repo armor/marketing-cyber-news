@@ -17,12 +17,23 @@ const DEFAULT_PREFERENCES: UserPreferences = {
 } as const;
 
 // ============================================================================
-// Mock Users
+// Mock Users - All 8 Test Accounts
 // ============================================================================
+
+export const mockSuperAdminUser: User = {
+  id: 'superadmin-001',
+  email: 'superadmin@test.com',
+  name: 'Super Admin',
+  role: 'super_admin',
+  avatarUrl: null,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  lastLoginAt: new Date().toISOString(),
+  preferences: DEFAULT_PREFERENCES,
+} as const;
 
 export const mockAdminUser: User = {
   id: 'admin-001',
-  email: 'admin@nexus.local',
+  email: 'admin@test.com',
   name: 'Admin User',
   role: 'admin',
   avatarUrl: null,
@@ -31,13 +42,35 @@ export const mockAdminUser: User = {
   preferences: DEFAULT_PREFERENCES,
 } as const;
 
-export const mockAnalystUser: User = {
-  id: 'analyst-001',
-  email: 'analyst@nexus.local',
-  name: 'Analyst User',
-  role: 'analyst',
+export const mockMarketingUser: User = {
+  id: 'marketing-001',
+  email: 'marketing@test.com',
+  name: 'Marketing User',
+  role: 'marketing',
   avatarUrl: null,
   createdAt: '2024-01-15T00:00:00.000Z',
+  lastLoginAt: new Date().toISOString(),
+  preferences: DEFAULT_PREFERENCES,
+} as const;
+
+export const mockBrandingUser: User = {
+  id: 'branding-001',
+  email: 'branding@test.com',
+  name: 'Branding User',
+  role: 'branding',
+  avatarUrl: null,
+  createdAt: '2024-01-15T00:00:00.000Z',
+  lastLoginAt: new Date().toISOString(),
+  preferences: DEFAULT_PREFERENCES,
+} as const;
+
+export const mockSoc1User: User = {
+  id: 'soc1-001',
+  email: 'soc1@test.com',
+  name: 'SOC Level 1',
+  role: 'soc_level_1',
+  avatarUrl: null,
+  createdAt: '2024-02-01T00:00:00.000Z',
   lastLoginAt: new Date().toISOString(),
   preferences: {
     ...DEFAULT_PREFERENCES,
@@ -45,9 +78,34 @@ export const mockAnalystUser: User = {
   },
 } as const;
 
+export const mockSoc3User: User = {
+  id: 'soc3-001',
+  email: 'soc3@test.com',
+  name: 'SOC Level 3',
+  role: 'soc_level_3',
+  avatarUrl: null,
+  createdAt: '2024-02-01T00:00:00.000Z',
+  lastLoginAt: new Date().toISOString(),
+  preferences: {
+    ...DEFAULT_PREFERENCES,
+    dashboardLayout: 'compact',
+  },
+} as const;
+
+export const mockCisoUser: User = {
+  id: 'ciso-001',
+  email: 'ciso@test.com',
+  name: 'CISO',
+  role: 'ciso',
+  avatarUrl: null,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  lastLoginAt: new Date().toISOString(),
+  preferences: DEFAULT_PREFERENCES,
+} as const;
+
 export const mockViewerUser: User = {
   id: 'viewer-001',
-  email: 'viewer@nexus.local',
+  email: 'test@example.com',
   name: 'Viewer User',
   role: 'viewer',
   avatarUrl: null,
@@ -60,18 +118,31 @@ export const mockViewerUser: User = {
   },
 } as const;
 
+// Legacy exports for backward compatibility
+export const mockAnalystUser: User = mockSoc1User;
+
 // ============================================================================
 // User Map for Lookup
 // ============================================================================
 
 export const mockUsersByEmail: Record<string, User> = {
+  [mockSuperAdminUser.email]: mockSuperAdminUser,
   [mockAdminUser.email]: mockAdminUser,
-  [mockAnalystUser.email]: mockAnalystUser,
+  [mockMarketingUser.email]: mockMarketingUser,
+  [mockBrandingUser.email]: mockBrandingUser,
+  [mockSoc1User.email]: mockSoc1User,
+  [mockSoc3User.email]: mockSoc3User,
+  [mockCisoUser.email]: mockCisoUser,
   [mockViewerUser.email]: mockViewerUser,
 } as const;
 
 export const mockUsersById: Record<string, User> = {
+  [mockSuperAdminUser.id]: mockSuperAdminUser,
   [mockAdminUser.id]: mockAdminUser,
-  [mockAnalystUser.id]: mockAnalystUser,
+  [mockMarketingUser.id]: mockMarketingUser,
+  [mockBrandingUser.id]: mockBrandingUser,
+  [mockSoc1User.id]: mockSoc1User,
+  [mockSoc3User.id]: mockSoc3User,
+  [mockCisoUser.id]: mockCisoUser,
   [mockViewerUser.id]: mockViewerUser,
 } as const;

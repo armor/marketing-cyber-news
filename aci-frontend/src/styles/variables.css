@@ -92,8 +92,8 @@
      COLORS - Text (mapped to Fortified Horizon)
      --------------------------------------------------------------- */
   --color-text-primary: var(--color-iron);
-  --color-text-secondary: var(--color-slate);
-  --color-text-muted: var(--color-ash);
+  --color-text-secondary: var(--color-steel);
+  --color-text-muted: var(--color-slate);
 
   /* ---------------------------------------------------------------
      COLORS - Borders (mapped to Fortified Horizon)
@@ -372,7 +372,7 @@
      --------------------------------------------------------------- */
   --typography-color-primary: #303030;
   --typography-color-secondary: #000000;
-  --typography-color-muted: #757575;
+  --typography-color-muted: #484848;
 
   /* ---------------------------------------------------------------
      TYPOGRAPHY - Semantic Styles (H1, H2, Paragraph, etc.)
@@ -425,7 +425,7 @@
   --typography-overline-line-height: var(--typography-line-height-normal);
   --typography-overline-letter-spacing: var(--typography-letter-spacing-caps);
   --typography-overline-text-transform: uppercase;
-  --typography-overline-color: var(--typography-color-muted);
+  --typography-overline-color: #484848;
 
   /* ---------------------------------------------------------------
      SPACING - Base Scale (4px/0.25rem grid)

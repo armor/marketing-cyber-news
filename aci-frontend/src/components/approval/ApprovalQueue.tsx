@@ -94,7 +94,7 @@ interface ApprovalCardProps {
  * Individual article card in the approval queue
  * Displays title, summary, severity, category, timestamps
  */
-function ApprovalCard({ article, onSelect }: ApprovalCardProps): JSX.Element {
+function ApprovalCard({ article, onSelect }: ApprovalCardProps): React.ReactElement {
   const handleClick = (): void => {
     onSelect?.(article.id);
   };
@@ -247,7 +247,7 @@ function ApprovalCard({ article, onSelect }: ApprovalCardProps): JSX.Element {
               <span
                 style={{
                   fontSize: 'var(--typography-font-size-xs)',
-                  color: 'var(--color-text-muted)',
+                  color: 'var(--color-text-secondary)',
                   fontStyle: 'italic',
                 }}
               >
@@ -261,7 +261,7 @@ function ApprovalCard({ article, onSelect }: ApprovalCardProps): JSX.Element {
             className="flex items-center gap-[var(--spacing-gap-sm)]"
             style={{
               fontSize: 'var(--typography-font-size-xs)',
-              color: 'var(--color-text-muted)',
+              color: 'var(--color-text-secondary)',
             }}
           >
             <span
@@ -290,7 +290,7 @@ function ApprovalCard({ article, onSelect }: ApprovalCardProps): JSX.Element {
 // Loading Skeleton
 // ============================================================================
 
-function ApprovalCardSkeleton(): JSX.Element {
+function ApprovalCardSkeleton(): React.ReactElement {
   return (
     <Card
       style={{
@@ -330,7 +330,7 @@ function ApprovalCardSkeleton(): JSX.Element {
  */
 export function ApprovalQueue({
   onArticleSelect,
-}: ApprovalQueueProps): JSX.Element {
+}: ApprovalQueueProps): React.ReactElement {
   const { user } = useAuth();
 
   // State for filters and pagination
@@ -344,7 +344,7 @@ export function ApprovalQueue({
     undefined
   );
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Reserved for future category filtering feature
-  const [categoryFilter, setCategoryFilter] = useState<string | undefined>(
+  const [_categoryFilter, _setCategoryFilter] = useState<string | undefined>(
     undefined
   );
 
@@ -355,7 +355,7 @@ export function ApprovalQueue({
     sortBy,
     sortOrder,
     severity: severityFilter,
-    categoryId: categoryFilter,
+    categoryId: _categoryFilter,
   });
 
   // Reset to page 1 when filters change
@@ -393,7 +393,7 @@ export function ApprovalQueue({
 
   // Active filter count for badge
   const activeFilterCount =
-    (severityFilter ? 1 : 0) + (categoryFilter ? 1 : 0);
+    (severityFilter ? 1 : 0) + (_categoryFilter ? 1 : 0);
 
   // Determine if filters resulted in no results
   const hasActiveFilters = activeFilterCount > 0;
@@ -465,7 +465,7 @@ export function ApprovalQueue({
               style={{
                 width: 'var(--spacing-4)',
                 height: 'var(--spacing-4)',
-                color: 'var(--color-text-muted)',
+                color: 'var(--color-text-secondary)',
               }}
             />
             <span

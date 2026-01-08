@@ -150,7 +150,7 @@ function SeverityBadge({
   severity,
 }: {
   readonly severity: ArticleForApproval['severity'];
-}): JSX.Element {
+}): React.ReactElement {
   const color = getSeverityColor(severity);
   const label = SEVERITY_LABELS[severity];
 
@@ -180,7 +180,7 @@ function CategoryBadge({
   category,
 }: {
   readonly category: ArticleForApproval['category'];
-}): JSX.Element {
+}): React.ReactElement {
   const categoryColor = category.color || colors.brand.primary;
 
   return (
@@ -216,7 +216,7 @@ export function ApprovalCard({
   isApproving = false,
   isRejecting = false,
   className,
-}: ApprovalCardProps): JSX.Element {
+}: ApprovalCardProps): React.ReactElement {
   const relativeTime = formatRelativeTime(article.createdAt);
   const cveTags = truncateTags(article.cves, MAX_VISIBLE_TAGS);
   const vendorTags = truncateTags(article.vendors, MAX_VISIBLE_TAGS);
@@ -457,16 +457,16 @@ export function ApprovalCard({
             aria-busy={isApproving}
             data-testid="approve-button"
             style={{
-              backgroundColor: colors.status.success,
-              color: colors.text.inverse,
+              backgroundColor: colors.semantic.success,
+              color: 'white',
             }}
             onMouseEnter={(e): void => {
               if (!isActionInProgress) {
-                e.currentTarget.style.backgroundColor = `color-mix(in srgb, ${colors.status.success} 85%, black)`;
+                e.currentTarget.style.backgroundColor = `color-mix(in srgb, ${colors.semantic.success} 85%, black)`;
               }
             }}
             onMouseLeave={(e): void => {
-              e.currentTarget.style.backgroundColor = colors.status.success;
+              e.currentTarget.style.backgroundColor = colors.semantic.success;
             }}
           >
             {isApproving ? (

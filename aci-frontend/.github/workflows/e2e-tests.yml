@@ -1,0 +1,189 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'playwright.config.ts'
+      - 'package.json'
+      - '.github/workflows/e2e-tests.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'playwright.config.ts'
+      - 'package.json'
+      - '.github/workflows/e2e-tests.yml'
+  workflow_dispatch:
+    inputs:
+      test_filter:
+        description: 'Test filter (e.g., approval, login)'
+        required: false
+        default: ''
+
+env:
+  CI: true
+  NODE_VERSION: '20'
+
+jobs:
+  e2e-tests:
+    name: Playwright E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run E2E tests
+        run: |
+          if [ -n "${{ github.event.inputs.test_filter }}" ]; then
+            npx playwright test --grep "${{ github.event.inputs.test_filter }}"
+          else
+            npx playwright test
+          fi
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: |
+            tests/reports/playwright-html/
+            tests/reports/playwright-results.json
+          retention-days: 30
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-artifacts
+          path: tests/artifacts/
+          retention-days: 7
+
+  smoke-tests:
+    name: Smoke Tests (Quick)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run smoke tests
+        run: npx playwright test --grep "@smoke" --reporter=list
+
+  approval-workflow-tests:
+    name: Approval Workflow Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: smoke-tests
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run approval workflow tests
+        run: npx playwright test --grep "approval" --reporter=list
+
+      - name: Upload approval test artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: approval-test-artifacts
+          path: tests/artifacts/
+          retention-days: 7
+
+  sidebar-ui-tests:
+    name: Sidebar UI Regression Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: e2e-tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run sidebar UI tests
+        run: npx playwright test tests/e2e/sidebar-mvpblocks.spec.ts --reporter=list,json
+
+      - name: Upload sidebar test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sidebar-test-report
+          path: tests/reports/playwright-results.json
+          retention-days: 14
+
+      - name: Upload sidebar test artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: sidebar-test-artifacts
+          path: tests/artifacts/
+          retention-days: 7

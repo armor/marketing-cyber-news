@@ -9,6 +9,9 @@ import { threatsHandlers } from './threats';
 import { bookmarkHandlers } from './bookmarks';
 import { adminHandlers } from './admin';
 import { approvalHandlers } from './approvals';
+import { newsletterHandlers } from './newsletter';
+import { channelHandlers } from './channels';
+import { marketingHandlers } from './marketing';
 
 export const handlers = [
   ...authHandlers,
@@ -17,4 +20,7 @@ export const handlers = [
   ...bookmarkHandlers,
   ...adminHandlers,
   ...approvalHandlers,
+  ...newsletterHandlers,
+  ...channelHandlers,
+  ...marketingHandlers,
 ];

@@ -2,12 +2,7 @@
  * MainLayout Component
  *
  * Main wrapper component that combines Header, Sidebar, and Footer for NEXUS dashboard.
- * Manages responsive layout with collapsible sidebar on mobile.
- *
- * DESIGN TOKEN COMPLIANCE:
- * - All colors use Tailwind classes referencing CSS custom properties
- * - All spacing uses token-based spacing scale
- * - Zero hardcoded hex/px values
+ * Uses MVPBlocks SidebarProvider for collapsible sidebar state management.
  *
  * @example
  * ```tsx
@@ -17,10 +12,12 @@
  * ```
  */
 
-import { useState, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { Header } from './Header';
-import { Sidebar } from './Sidebar';
+import { AppSidebar } from './AppSidebar';
 import { Footer } from './Footer';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
+import { Separator } from '@/components/ui/separator';
 
 // ============================================================================
 // Types
@@ -36,55 +33,40 @@ interface MainLayoutProps {
 // ============================================================================
 
 export function MainLayout({ children }: MainLayoutProps): React.ReactElement {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  /**
-   * Toggle sidebar (used by mobile hamburger menu)
-   */
-  const handleMenuToggle = (): void => {
-    setSidebarOpen((prev) => !prev);
-  };
-
-  /**
-   * Close sidebar (used when clicking outside or nav item)
-   */
-  const handleSidebarClose = (): void => {
-    setSidebarOpen(false);
-  };
-
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Fixed header at top */}
-      <Header onMenuToggle={handleMenuToggle} />
-
-      {/* Main content wrapper with sidebar */}
-      <div className="flex flex-1" style={{ paddingTop: 'var(--layout-header-height)' }}>
-        {/* Sidebar - hidden on mobile unless toggled */}
-        <Sidebar isOpen={sidebarOpen} onClose={handleSidebarClose} />
-
-        {/* Main content area with scrolling */}
-        <main
-          className="flex-1 flex flex-col lg:ml-64 transition-all"
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        {/* Header with sidebar trigger */}
+        <header
+          className="flex shrink-0 items-center"
           style={{
-            minHeight: 'calc(100vh - var(--layout-header-height))',
-            transitionDuration: 'var(--motion-duration-normal)',
+            height: 'var(--spacing-16)',
+            gap: 'var(--spacing-2)',
+            borderBottom: '1px solid var(--color-border-default)',
+            paddingLeft: 'var(--spacing-4)',
+            paddingRight: 'var(--spacing-4)',
+            background: 'var(--gradient-panel-header)',
           }}
-          role="main"
         >
-          {/* Page content with padding using design tokens */}
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <Header />
+        </header>
+
+        {/* Main content area */}
+        <main className="flex-1 flex flex-col" role="main">
           <div
             className="flex-1 overflow-y-auto"
             style={{
-              padding: 'var(--spacing-layout-page)'
+              padding: 'var(--spacing-layout-page)',
             }}
           >
             {children}
           </div>
-
-          {/* Footer at bottom of content */}
           <Footer />
         </main>
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

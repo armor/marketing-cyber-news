@@ -38,7 +38,6 @@ export interface RejectButtonProps {
   readonly onError?: (error: Error) => void;
   readonly disabled?: boolean;
   readonly size?: 'sm' | 'default' | 'lg';
-  readonly variant?: 'default' | 'outline' | 'ghost';
 }
 
 // ============================================================================
@@ -52,8 +51,7 @@ export function RejectButton({
   onError,
   disabled = false,
   size = 'default',
-  variant = 'outline',
-}: RejectButtonProps): JSX.Element {
+}: RejectButtonProps): React.ReactElement {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [reason, setReason] = useState('');
   const [showValidationError, setShowValidationError] = useState(false);
@@ -148,12 +146,8 @@ export function RejectButton({
         onClick={handleOpenModal}
         disabled={disabled}
         size={size}
-        variant={variant}
-        style={{
-          borderColor: 'var(--color-status-error)',
-          color: 'var(--color-status-error)',
-        }}
-        className="hover:bg-destructive hover:text-destructive-foreground"
+        variant="destructive"
+        data-testid="reject-button"
       >
         <X style={{ width: 'var(--spacing-4)', height: 'var(--spacing-4)' }} />
         Reject
@@ -333,11 +327,7 @@ export function RejectButton({
               <Button
                 type="submit"
                 disabled={isPending || !isReasonValid || isOverLimit}
-                style={{
-                  backgroundColor: 'var(--color-status-error)',
-                  color: 'white',
-                }}
-                className="hover:opacity-90"
+                variant="destructive"
               >
                 {isPending ? (
                   <>

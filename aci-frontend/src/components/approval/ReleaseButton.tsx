@@ -69,7 +69,7 @@ export function ReleaseButton({
   onError,
   disabled = false,
   size = 'default',
-}: ReleaseButtonProps): JSX.Element {
+}: ReleaseButtonProps): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);
 
   const { mutate: releaseArticle, isPending } = useReleaseArticle();
@@ -109,20 +109,13 @@ export function ReleaseButton({
     );
   }, [articleId, articleTitle, releaseArticle, handleClose, onSuccess, onError]);
 
-  const renderButton = (): JSX.Element => (
+  const renderButton = (): React.ReactElement => (
     <Button
       onClick={handleOpen}
       disabled={isButtonDisabled}
       size={size}
-      variant="default"
-      style={{
-        background: isButtonDisabled
-          ? 'var(--color-bg-disabled)'
-          : 'var(--color-primary)',
-        color: isButtonDisabled
-          ? 'var(--color-text-disabled)'
-          : 'var(--color-text-on-primary)',
-      }}
+      variant="primary"
+      data-testid="release-button"
     >
       {isPending ? (
         <Loader2
@@ -257,10 +250,7 @@ export function ReleaseButton({
                 type="button"
                 onClick={handleConfirm}
                 disabled={isPending}
-                style={{
-                  background: 'var(--color-primary)',
-                  color: 'var(--color-text-on-primary)',
-                }}
+                variant="primary"
               >
                 {isPending && (
                   <Loader2

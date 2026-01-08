@@ -6,7 +6,7 @@
 /**
  * Severity levels for threats and CVEs
  */
-export type Severity = 'critical' | 'high' | 'medium' | 'low';
+export type Severity = 'critical' | 'high' | 'medium' | 'low' | 'informational';
 
 /**
  * Threat categorization taxonomy

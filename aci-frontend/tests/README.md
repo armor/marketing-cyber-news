@@ -56,6 +56,12 @@ npm test
 
 # Run unit tests with coverage
 npm run test:coverage
+
+# Run sidebar UI tests only
+npm run test:e2e:sidebar
+
+# Run sidebar tests in CI mode
+npm run test:e2e:sidebar:ci
 ```
 
 ## E2E Test Features
@@ -80,10 +86,88 @@ The E2E test suite covers:
    - Check dashboard widgets
    - Monitor API calls
 
-4. **Other Pages**
+4. **Sidebar UI Tests** (38 tests)
+   - MVPBlocks component integration
+   - Role-based navigation visibility
+   - Responsive design (desktop/mobile)
+   - User menu interactions
+   - Authentication flow
+
+5. **Newsletter Config Tests** (23 tests)
+   - Configuration page loading
+   - API response transformation
+   - Button actions (Generate, Edit, Clone, Delete)
+   - Toast notifications
+   - Segment selection and creation
+   - Form validation
+
+6. **Other Pages**
    - Admin page
    - Bookmarks page
    - Home page
+
+### Newsletter Config Regression Tests
+
+The `newsletter-configs-regression.spec.ts` test suite provides comprehensive coverage of the newsletter configuration page:
+
+**Test Categories (23 tests total):**
+- Page Loading & API: Console errors, API transformation, data display
+- Loading States: Spinner display, empty state handling
+- Navigation: Sidebar navigation, config row actions
+- Button Actions: Generate, Edit, Clone, Delete dialogs
+- Toast Notifications: Success/error toasts, styling
+- Segment Selection: Dropdown display, segment creation, validation
+
+**Running Newsletter Config Tests:**
+```bash
+# Run all 23 newsletter config regression tests
+npx playwright test tests/e2e/newsletter-configs-regression.spec.ts
+
+# Run with visible browser for debugging
+npx playwright test tests/e2e/newsletter-configs-regression.spec.ts --headed
+
+# Run specific test by name
+npx playwright test tests/e2e/newsletter-configs-regression.spec.ts -g "Edit form shows segment dropdown"
+```
+
+### Sidebar UI Regression Tests
+
+The `sidebar-mvpblocks.spec.ts` test suite provides comprehensive coverage of the MVPBlocks sidebar component integration:
+
+**Test Categories (38 tests total):**
+- Basic Sidebar Structure: Validates sidebar primitives and data-slot attributes
+- Sidebar Header: Logo, branding, navigation links
+- Role-Based Navigation: Tests visibility for admin, marketing, SOC, CISO roles
+- User Footer: User info display and logout functionality
+- Sidebar Interactions: Expand/collapse, rail, tooltips
+- Responsive Design: Desktop vs mobile viewport behavior
+- Authentication Flow: Login, role display, logout
+
+**Running Sidebar Tests:**
+```bash
+# Quick run - all 38 sidebar tests
+npm run test:e2e:sidebar
+
+# CI/CD mode with JSON output
+npm run test:e2e:sidebar:ci
+
+# With visible browser for debugging
+npx playwright test tests/e2e/sidebar-mvpblocks.spec.ts --headed
+
+# Single test by name
+npx playwright test tests/e2e/sidebar-mvpblocks.spec.ts -g "should render sidebar with data-slot"
+```
+
+**Key Selectors Used:**
+```typescript
+// MVPBlocks data-slot attributes
+'[data-slot="sidebar"]'
+'[data-slot="sidebar-header"]'
+'[data-slot="sidebar-content"]'
+'[data-slot="sidebar-footer"]'
+'[data-slot="sidebar-menu-button"]'
+'[data-slot="sidebar-rail"]'
+```
 
 ### Console Monitoring
 
@@ -379,6 +463,8 @@ When adding new tests:
 
 ---
 
-**Last Updated:** 2025-12-15
+**Last Updated:** 2025-12-22
 **Test Framework:** Playwright 1.x + Vitest 4.x
 **Node Version:** 18+
+**Sidebar Tests:** 38 tests (sidebar-mvpblocks.spec.ts)
+**Newsletter Config Tests:** 23 tests (newsletter-configs-regression.spec.ts)

@@ -36,7 +36,7 @@ export function Footer(): React.ReactElement {
       role="contentinfo"
     >
       <div className="flex items-center justify-center">
-        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
           NEXUS by Armor &copy; {currentYear}
         </p>
       </div>

@@ -12,6 +12,7 @@ import { mockUsersByEmail, mockAdminUser } from '../fixtures/users';
 // ============================================================================
 
 let currentUserId: string | null = null;
+let currentUserData: typeof mockAdminUser | null = null;
 
 // ============================================================================
 // Auth Handlers
@@ -71,8 +72,9 @@ export const authHandlers = [
       };
     }
 
-    // Set mock session
+    // Set mock session - store the full user data for /me endpoints
     currentUserId = user.id;
+    currentUserData = user;
 
     // Return response with JWT tokens (mock tokens for development)
     return HttpResponse.json({
@@ -135,8 +137,9 @@ export const authHandlers = [
       },
     };
 
-    // Set mock session
+    // Set mock session - store the full user data for /me endpoints
     currentUserId = newUser.id;
+    currentUserData = newUser;
 
     // Return response with JWT tokens (mock tokens for development)
     return HttpResponse.json({
@@ -159,6 +162,7 @@ export const authHandlers = [
 
     // Clear mock session
     currentUserId = null;
+    currentUserData = null;
 
     return HttpResponse.json(
       { message: 'Logout successful' },
@@ -177,7 +181,7 @@ export const authHandlers = [
   http.get('*/v1/auth/me', async () => {
     await delay(75);
 
-    if (!currentUserId) {
+    if (!currentUserId || !currentUserData) {
       return HttpResponse.json(
         {
           success: false,
@@ -187,10 +191,10 @@ export const authHandlers = [
       );
     }
 
-    // For mock purposes, return admin user if session exists
+    // Return the actual logged-in user data
     return HttpResponse.json({
       success: true,
-      data: mockAdminUser,
+      data: currentUserData,
     });
   }),
 
@@ -213,10 +217,10 @@ export const authHandlers = [
       );
     }
 
-    // For mock purposes, return admin user if token exists
+    // Return the actual logged-in user data (or default to mockAdminUser if not set)
     return HttpResponse.json({
       success: true,
-      data: mockAdminUser,
+      data: currentUserData || mockAdminUser,
     });
   }),
 ];

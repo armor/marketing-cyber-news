@@ -81,7 +81,7 @@ function GateIcon({
 }: {
   readonly status: GateState['status'];
   readonly isRejected: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   const baseClasses = 'transition-colors duration-200';
 
   if (isRejected && status === 'current') {
@@ -138,7 +138,7 @@ function CompactProgress({
 }: {
   readonly progress: ApprovalProgress;
   readonly isRejected?: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   const percentage = getProgressPercentage(progress);
   const statusText = `${progress.completedCount}/${progress.totalGates} gates`;
 
@@ -178,7 +178,7 @@ function FullProgress({
   readonly progress: ApprovalProgress;
   readonly showLabels?: boolean;
   readonly isRejected?: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   const gateStates = GATE_ORDER.map((gate) => getGateState(gate, progress));
 
   return (
@@ -282,7 +282,7 @@ export function ApprovalProgress({
   compact = false,
   showLabels = true,
   isRejected = false,
-}: ApprovalProgressProps): JSX.Element {
+}: ApprovalProgressProps): React.ReactElement {
   if (compact) {
     return <CompactProgress progress={progress} isRejected={isRejected} />;
   }

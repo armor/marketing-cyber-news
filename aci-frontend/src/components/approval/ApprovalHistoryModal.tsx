@@ -69,7 +69,7 @@ function getStatusBadgeVariant(
   status: string
 ): 'success' | 'warning' | 'destructive' | 'secondary' {
   if (status === 'released') return 'success';
-  if (status === 'approved') return 'info';
+  if (status === 'approved') return 'secondary';
   if (status === 'rejected') return 'destructive';
   return 'warning';
 }
@@ -81,7 +81,7 @@ function getStatusBadgeVariant(
 /**
  * Timeline item for a single approval gate
  */
-function TimelineItem({ data }: { readonly data: TimelineItemData }): JSX.Element {
+function TimelineItem({ data }: { readonly data: TimelineItemData }): React.ReactElement {
   const isCompleted = data.status === 'completed';
   const isCurrent = data.status === 'current';
   const isPending = data.status === 'pending';
@@ -188,7 +188,7 @@ function RejectionSection({
   readonly rejectedBy: string;
   readonly rejectorName?: string;
   readonly rejectedAt: string;
-}): JSX.Element {
+}): React.ReactElement {
   const timestamp = formatTimestamp(rejectedAt);
 
   return (
@@ -228,7 +228,7 @@ function ReleaseSection({
   readonly releasedBy: string;
   readonly releaserName?: string;
   readonly releasedAt: string;
-}): JSX.Element {
+}): React.ReactElement {
   const timestamp = formatTimestamp(releasedAt);
 
   return (
@@ -257,7 +257,7 @@ function ReleaseSection({
 /**
  * Error state
  */
-function ErrorState({ error }: { readonly error: Error }): JSX.Element {
+function ErrorState({ error }: { readonly error: Error }): React.ReactElement {
   return (
     <div className="p-6 text-center">
       <XCircle className="mx-auto text-red-500 dark:text-red-400 mb-3" size={48} />
@@ -270,7 +270,7 @@ function ErrorState({ error }: { readonly error: Error }): JSX.Element {
 /**
  * Loading state
  */
-function LoadingState(): JSX.Element {
+function LoadingState(): React.ReactElement {
   return (
     <div className="p-12 flex justify-center">
       <LoadingSpinner size="lg" />
@@ -305,7 +305,7 @@ export function ApprovalHistoryModal({
   articleTitle,
   isOpen,
   onClose,
-}: ApprovalHistoryModalProps): JSX.Element {
+}: ApprovalHistoryModalProps): React.ReactElement {
   const { data, isLoading, isError, error } = useApprovalHistory(
     isOpen ? articleId : undefined
   );

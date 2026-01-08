@@ -147,7 +147,7 @@ export function Pagination({
                 style={{
                   height: 'var(--spacing-9)',
                   width: 'var(--spacing-9)',
-                  color: 'var(--color-text-muted)',
+                  color: 'var(--color-text-secondary)',
                 }}
                 aria-hidden="true"
               >

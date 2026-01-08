@@ -3,15 +3,17 @@
  *
  * Main approval workflow page that integrates ApprovalQueue component
  * with role-based access control, authentication checks, and navigation.
+ * Uses MVPBlocks sidebar layout via MainLayout wrapper.
  *
  * Features:
  * - Role-based queue display (gate-specific for reviewers, all for admins)
- * - Header shows user role and target gate
- * - Navigation with back button and breadcrumbs
+ * - Page header with title and user role badge
+ * - Breadcrumb navigation
  * - Authentication check with redirect to login
  * - Authorization check with unauthorized message
  * - Toast notifications for approval actions
  * - Responsive layout with design tokens
+ * - MVPBlocks sidebar integration
  *
  * Access:
  * - marketing: Marketing gate queue only
@@ -29,14 +31,15 @@
  */
 
 import { type ReactElement, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, User } from 'lucide-react';
+import { useNavigate, NavLink } from 'react-router-dom';
+import { ShieldCheck, ClipboardCheck, ChevronRight, Home } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { ApprovalQueue } from '@/components/approval/ApprovalQueue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import {
   getUserGate,
   GATE_LABELS,
@@ -98,6 +101,7 @@ function getPageTitle(role: UserRole, gate: ApprovalGate | null): string {
  * Main approval workflow page
  *
  * No props - state managed through auth context and routing
+ * Designed to be rendered within MainLayout (MVPBlocks sidebar)
  */
 export function ApprovalPage(): ReactElement {
   const navigate = useNavigate();
@@ -130,18 +134,9 @@ export function ApprovalPage(): ReactElement {
   // ============================================================================
 
   /**
-   * Navigate back to dashboard
-   */
-  const handleBack = (): void => {
-    navigate(DASHBOARD_PATH);
-  };
-
-  /**
    * Navigate to article detail (can be slide-over or full page)
    */
   const handleArticleSelect = (articleId: string): void => {
-    // For now, navigate to a detail route
-    // TODO: Implement slide-over panel for article detail
     navigate(`/articles/${articleId}`);
   };
 
@@ -151,30 +146,21 @@ export function ApprovalPage(): ReactElement {
 
   if (authLoading) {
     return (
-      <div
-        className="flex items-center justify-center min-h-screen"
-        style={{
-          backgroundColor: 'var(--color-background)',
-        }}
-      >
-        <div
-          className="text-center"
-          style={{
-            color: 'var(--color-text-secondary)',
-          }}
-        >
+      <div className="flex flex-1 items-center justify-center">
+        <div className="text-center">
           <ShieldCheck
             className="mx-auto mb-4 animate-pulse"
             style={{
-              width: 'var(--icon-size-2xl)',
-              height: 'var(--icon-size-2xl)',
-              color: 'var(--color-primary)',
+              width: 'var(--spacing-12)',
+              height: 'var(--spacing-12)',
+              color: 'var(--color-accent-primary)',
             }}
           />
           <p
             style={{
-              fontSize: 'var(--font-size-lg)',
-              fontWeight: 'var(--font-weight-medium)',
+              fontSize: 'var(--typography-font-size-lg)',
+              fontWeight: 'var(--typography-font-weight-medium)',
+              color: 'var(--color-text-secondary)',
             }}
           >
             Loading...
@@ -190,62 +176,42 @@ export function ApprovalPage(): ReactElement {
 
   if (!hasAccess || !userRole) {
     return (
-      <div
-        className="min-h-screen"
-        style={{
-          backgroundColor: 'var(--color-background)',
-          padding: 'var(--spacing-page-padding)',
-        }}
-      >
-        <Card
-          className="max-w-2xl mx-auto"
-          style={{
-            marginTop: 'var(--spacing-section-gap)',
-          }}
-        >
-          <CardContent
-            className="text-center"
-            style={{
-              padding: 'var(--spacing-component-xl)',
-            }}
-          >
+      <div className="flex flex-1 items-center justify-center p-6">
+        <Card className="max-w-md w-full">
+          <CardContent className="text-center pt-6">
             <ShieldCheck
               className="mx-auto mb-4"
               style={{
-                width: 'var(--icon-size-2xl)',
-                height: 'var(--icon-size-2xl)',
-                color: 'var(--color-destructive)',
+                width: 'var(--spacing-12)',
+                height: 'var(--spacing-12)',
+                color: 'var(--color-semantic-error)',
               }}
             />
             <h2
               style={{
-                fontSize: 'var(--font-size-2xl)',
-                fontWeight: 'var(--font-weight-bold)',
+                fontSize: 'var(--typography-font-size-xl)',
+                fontWeight: 'var(--typography-font-weight-bold)',
                 color: 'var(--color-text-primary)',
-                marginBottom: 'var(--spacing-gap-md)',
+                marginBottom: 'var(--spacing-2)',
               }}
             >
               Access Denied
             </h2>
             <p
               style={{
-                fontSize: 'var(--font-size-base)',
+                fontSize: 'var(--typography-font-size-sm)',
                 color: 'var(--color-text-secondary)',
-                marginBottom: 'var(--spacing-gap-lg)',
+                marginBottom: 'var(--spacing-4)',
               }}
             >
               You do not have permission to access the approval queue. Contact
               your administrator to request approval access.
             </p>
-            <Button onClick={handleBack} variant="default">
-              <ArrowLeft
-                style={{
-                  width: 'var(--icon-size-sm)',
-                  height: 'var(--icon-size-sm)',
-                  marginRight: 'var(--spacing-gap-sm)',
-                }}
-              />
-              Back to Dashboard
+            <Button asChild variant="default">
+              <NavLink to={DASHBOARD_PATH}>
+                <Home className="size-4 mr-2" />
+                Back to Dashboard
+              </NavLink>
             </Button>
           </CardContent>
         </Card>
@@ -254,136 +220,102 @@ export function ApprovalPage(): ReactElement {
   }
 
   // ============================================================================
-  // Main Render
+  // Main Render - Works within MVPBlocks MainLayout
   // ============================================================================
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        backgroundColor: 'var(--color-background)',
-      }}
-    >
-      {/* Header */}
-      <header
+    <div className="flex flex-col h-full">
+      {/* Page Header */}
+      <div
+        className="shrink-0"
         style={{
-          backgroundColor: 'var(--color-surface)',
-          borderBottom: `var(--border-width-thin) solid var(--color-border)`,
-          padding: 'var(--spacing-component-lg) var(--spacing-page-padding)',
+          padding: 'var(--spacing-4) var(--spacing-6)',
+          borderBottom: '1px solid var(--color-border-default)',
+          background: 'var(--color-bg-elevated)',
         }}
       >
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between">
-            {/* Left: Back button and title */}
-            <div className="flex items-center gap-[var(--spacing-gap-lg)]">
-              <Button
-                onClick={handleBack}
-                variant="ghost"
-                size="sm"
-                aria-label="Back to dashboard"
-              >
-                <ArrowLeft
-                  style={{
-                    width: 'var(--icon-size-sm)',
-                    height: 'var(--icon-size-sm)',
-                    marginRight: 'var(--spacing-gap-sm)',
-                  }}
-                />
-                Back
-              </Button>
+        {/* Breadcrumb */}
+        <nav
+          className="flex items-center text-sm mb-3"
+          style={{ color: 'var(--color-text-muted)' }}
+          aria-label="Breadcrumb"
+        >
+          <NavLink
+            to={DASHBOARD_PATH}
+            className="hover:text-[var(--color-text-primary)] transition-colors flex items-center"
+          >
+            <Home className="size-4 mr-1" />
+            Dashboard
+          </NavLink>
+          <ChevronRight className="size-4 mx-2" />
+          <span style={{ color: 'var(--color-text-primary)', fontWeight: 'var(--typography-font-weight-medium)' }}>
+            Approvals
+          </span>
+        </nav>
 
-              <div className="flex items-center gap-[var(--spacing-gap-md)]">
-                <ShieldCheck
-                  style={{
-                    width: 'var(--icon-size-lg)',
-                    height: 'var(--icon-size-lg)',
-                    color: 'var(--color-primary)',
-                  }}
-                />
-                <h1
-                  style={{
-                    fontSize: 'var(--font-size-2xl)',
-                    fontWeight: 'var(--font-weight-bold)',
-                    color: 'var(--color-text-primary)',
-                  }}
-                >
-                  {pageTitle}
-                </h1>
-              </div>
+        {/* Title Row */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center" style={{ gap: 'var(--spacing-3)' }}>
+            <div
+              className="flex items-center justify-center"
+              style={{
+                width: 'var(--spacing-10)',
+                height: 'var(--spacing-10)',
+                borderRadius: 'var(--border-radius-md)',
+                background: 'var(--gradient-btn-primary)',
+                color: 'var(--color-bg-elevated)',
+              }}
+            >
+              <ClipboardCheck className="size-5" />
             </div>
-
-            {/* Right: User info badge */}
-            <div className="flex items-center gap-[var(--spacing-gap-md)]">
-              <User
+            <div>
+              <h1
                 style={{
-                  width: 'var(--icon-size-sm)',
-                  height: 'var(--icon-size-sm)',
+                  fontSize: 'var(--typography-font-size-xl)',
+                  fontWeight: 'var(--typography-font-weight-bold)',
+                  color: 'var(--color-text-primary)',
+                  lineHeight: 'var(--typography-line-height-tight)',
+                }}
+              >
+                {pageTitle}
+              </h1>
+              <p
+                style={{
+                  fontSize: 'var(--typography-font-size-sm)',
                   color: 'var(--color-text-secondary)',
                 }}
-              />
-              <div className="flex flex-col items-end gap-[var(--spacing-gap-xs)]">
-                <span
-                  style={{
-                    fontSize: 'var(--font-size-sm)',
-                    color: 'var(--color-text-secondary)',
-                  }}
-                >
-                  {user?.name || user?.email}
-                </span>
-                <Badge
-                  variant="secondary"
-                  style={{
-                    fontSize: 'var(--font-size-xs)',
-                    textTransform: 'capitalize',
-                  }}
-                >
-                  {userRole.replace('_', ' ')}
-                </Badge>
-              </div>
+              >
+                Review and approve pending articles
+              </p>
             </div>
           </div>
 
-          {/* Breadcrumb */}
-          <div
-            className="flex items-center gap-[var(--spacing-gap-sm)]"
+          {/* User Role Badge */}
+          <Badge
+            variant="secondary"
+            className="capitalize"
             style={{
-              marginTop: 'var(--spacing-gap-md)',
-              fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-text-secondary)',
+              padding: 'var(--spacing-1) var(--spacing-3)',
+              fontSize: 'var(--typography-font-size-xs)',
+              fontWeight: 'var(--typography-font-weight-medium)',
             }}
           >
-            <button
-              onClick={handleBack}
-              className="hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2"
-              style={{
-                color: 'var(--color-text-secondary)',
-              }}
-            >
-              Dashboard
-            </button>
-            <span>&gt;</span>
-            <span
-              style={{
-                color: 'var(--color-text-primary)',
-                fontWeight: 'var(--font-weight-medium)',
-              }}
-            >
-              Approvals
-            </span>
-          </div>
+            {userRole.replace('_', ' ')}
+          </Badge>
         </div>
-      </header>
+      </div>
 
-      {/* Main Content */}
-      <main
+      <Separator />
+
+      {/* Main Content Area */}
+      <div
+        className="flex-1 overflow-y-auto"
         style={{
-          padding: 'var(--spacing-page-padding)',
+          padding: 'var(--spacing-6)',
         }}
       >
-        <div className="max-w-7xl mx-auto">
-          <ApprovalQueue onArticleSelect={handleArticleSelect} />
-        </div>
-      </main>
+        <ApprovalQueue onArticleSelect={handleArticleSelect} />
+      </div>
     </div>
   );
 }

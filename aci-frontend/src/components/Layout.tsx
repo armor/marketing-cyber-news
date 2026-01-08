@@ -44,7 +44,7 @@ export function Layout({ children, onNavigate, currentPage }: LayoutProps) {
             marginRight: 'auto',
             padding: 'var(--spacing-4)',
             textAlign: 'center',
-            color: 'var(--color-text-muted)',
+            color: 'var(--color-text-secondary)',
             fontSize: 'var(--typography-font-size-sm)',
           }}
         >

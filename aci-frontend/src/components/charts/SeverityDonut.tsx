@@ -23,6 +23,7 @@ export interface SeverityDonutProps {
     high: number;
     medium: number;
     low: number;
+    informational?: number;
   };
   /** Chart size preset */
   size?: 'sm' | 'md' | 'lg';
@@ -49,6 +50,7 @@ const SEVERITY_CONFIG: Record<Severity, { label: string; color: string }> = {
   high: { label: 'high', color: colors.severity.high },
   medium: { label: 'medium', color: colors.severity.medium },
   low: { label: 'low', color: colors.severity.low },
+  informational: { label: 'informational', color: colors.semantic.info },
 };
 
 /**
@@ -217,7 +219,7 @@ export const SeverityDonut: React.FC<SeverityDonutProps> = ({
     const entries: ChartDataEntry[] = [];
 
     (Object.keys(data) as Severity[]).forEach((severity) => {
-      const count = data[severity];
+      const count = data[severity] ?? 0;
       if (count > 0) {
         entries.push({
           label: SEVERITY_CONFIG[severity].label,

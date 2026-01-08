@@ -1,8 +1,17 @@
+/**
+ * Reading History Page - Fortified Horizon Theme
+ *
+ * Shows user's reading history with timestamps.
+ * Uses CSS custom properties for all styling values.
+ */
 import { useState, useEffect, useCallback } from 'react';
 import type { ReactElement } from 'react';
 import type { Article } from '../types';
 import { userService } from '../services/userService';
-import { SEVERITY_COLORS } from '../config/severity-colors';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface HistoryEntry {
   article: Article;
@@ -56,87 +65,158 @@ export function History({ onArticleClick }: HistoryProps): ReactElement {
     return `${minutes}m`;
   };
 
+  // Map severity to badge variant
+  const getSeverityVariant = (severity: string): 'critical' | 'warning' | 'info' | 'success' => {
+    switch (severity.toLowerCase()) {
+      case 'critical':
+        return 'critical';
+      case 'high':
+        return 'warning';
+      case 'medium':
+        return 'info';
+      default:
+        return 'success';
+    }
+  };
+
   return (
     <div>
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-white mb-2">📜 Reading History</h2>
-        <p className="text-gray-400">Articles you've read recently</p>
+      <div style={{ marginBottom: 'var(--spacing-8)' }}>
+        <h2
+          className="font-bold"
+          style={{
+            fontSize: 'var(--typography-font-size-2xl)',
+            color: 'var(--color-text-primary)',
+            marginBottom: 'var(--spacing-2)',
+          }}
+        >
+          Reading History
+        </h2>
+        <p style={{ color: 'var(--color-text-muted)' }}>
+          Articles you've read recently
+        </p>
       </div>
 
       {/* Loading State */}
       {isLoading && (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <div className="flex justify-center" style={{ padding: 'var(--spacing-12) 0' }}>
+          <LoadingSpinner size="lg" label="Loading history..." />
         </div>
       )}
 
       {/* Error State */}
       {error && !isLoading && (
-        <div className="bg-red-500/20 border border-red-500 text-red-400 px-4 py-3 rounded">
+        <div
+          style={{
+            background: 'var(--gradient-badge-critical)',
+            border: '1px solid var(--color-semantic-error)',
+            color: 'var(--color-semantic-error)',
+            padding: 'var(--spacing-3) var(--spacing-4)',
+            borderRadius: 'var(--border-radius-md)',
+          }}
+        >
           {error}
         </div>
       )}
 
       {/* Empty State */}
       {!isLoading && !error && history.length === 0 && (
-        <div className="text-center py-12 bg-gray-800 rounded-lg">
-          <p className="text-4xl mb-4">📜</p>
-          <p className="text-lg text-gray-300">No reading history yet</p>
-          <p className="text-sm text-gray-500 mt-2">Articles you read will appear here</p>
-        </div>
+        <Card
+          className="text-center"
+          style={{ padding: 'var(--spacing-12)' }}
+        >
+          <p style={{ fontSize: 'var(--typography-font-size-4xl)', marginBottom: 'var(--spacing-4)' }}>
+            📖
+          </p>
+          <p
+            style={{
+              fontSize: 'var(--typography-font-size-lg)',
+              color: 'var(--color-text-secondary)',
+            }}
+          >
+            No reading history yet
+          </p>
+          <p
+            style={{
+              fontSize: 'var(--typography-font-size-sm)',
+              color: 'var(--color-text-muted)',
+              marginTop: 'var(--spacing-2)',
+            }}
+          >
+            Articles you read will appear here
+          </p>
+        </Card>
       )}
 
       {/* History List */}
       {!isLoading && !error && history.length > 0 && (
         <>
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-3)' }}>
             {history.map((entry, index) => (
-              <div
+              <Card
                 key={`${entry.article.id}-${index}`}
                 onClick={() => onArticleClick(entry.article)}
-                className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors cursor-pointer flex items-center gap-4"
+                className="flex items-center cursor-pointer transition-all hover:scale-[1.01]"
+                style={{
+                  padding: 'var(--spacing-4)',
+                  gap: 'var(--spacing-4)',
+                }}
               >
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span
-                      className={`px-2 py-0.5 text-xs font-bold text-white rounded ${SEVERITY_COLORS[entry.article.severity]}`}
-                    >
+                  <div className="flex items-center" style={{ gap: 'var(--spacing-2)', marginBottom: 'var(--spacing-1)' }}>
+                    <Badge variant={getSeverityVariant(entry.article.severity)}>
                       {entry.article.severity.toUpperCase()}
-                    </span>
-                    <span className="px-2 py-0.5 text-xs rounded bg-blue-500/20 text-blue-400">
+                    </Badge>
+                    <Badge variant="info">
                       {entry.article.category}
-                    </span>
+                    </Badge>
                   </div>
-                  <h3 className="text-white font-medium truncate">{entry.article.title}</h3>
+                  <h3
+                    className="truncate font-medium"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
+                    {entry.article.title}
+                  </h3>
                 </div>
-                <div className="text-right text-sm text-gray-400 flex-shrink-0">
+                <div
+                  className="text-right flex-shrink-0"
+                  style={{
+                    fontSize: 'var(--typography-font-size-sm)',
+                    color: 'var(--color-text-muted)',
+                  }}
+                >
                   <p>{formatDate(entry.read_at)}</p>
-                  <p className="text-xs">Read for {formatReadingTime(entry.reading_time_seconds)}</p>
+                  <p style={{ fontSize: 'var(--typography-font-size-xs)' }}>
+                    Read for {formatReadingTime(entry.reading_time_seconds)}
+                  </p>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-4 mt-8">
-              <button
+            <div
+              className="flex justify-center items-center"
+              style={{ gap: 'var(--spacing-4)', marginTop: 'var(--spacing-8)' }}
+            >
+              <Button
+                variant="outline"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2 bg-gray-700 text-white rounded disabled:opacity-50"
               >
                 Previous
-              </button>
-              <span className="text-gray-400">
+              </Button>
+              <span style={{ color: 'var(--color-text-muted)' }}>
                 Page {currentPage} of {totalPages}
               </span>
-              <button
+              <Button
+                variant="outline"
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-gray-700 text-white rounded disabled:opacity-50"
               >
                 Next
-              </button>
+              </Button>
             </div>
           )}
         </>

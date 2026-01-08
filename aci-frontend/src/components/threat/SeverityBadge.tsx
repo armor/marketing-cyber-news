@@ -37,6 +37,7 @@ const severityLabels: Record<Severity, string> = {
   high: 'High',
   medium: 'Medium',
   low: 'Low',
+  informational: 'Informational',
 };
 
 /**

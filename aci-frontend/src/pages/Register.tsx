@@ -8,7 +8,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Shield } from 'lucide-react';
 
 export function Register(): React.JSX.Element {
   const [name, setName] = useState('');
@@ -96,17 +95,16 @@ export function Register(): React.JSX.Element {
           <div
             className="inline-flex items-center justify-center"
             style={{
-              width: 'var(--spacing-12)',
-              height: 'var(--spacing-12)',
-              borderRadius: 'var(--border-radius-lg)',
-              background: 'var(--gradient-btn-primary)',
-              boxShadow: 'var(--shadow-btn-primary)',
               marginBottom: 'var(--spacing-3)',
             }}
           >
-            <Shield
-              className="w-6 h-6"
-              style={{ color: 'var(--color-bg-elevated)' }}
+            <img
+              src="/branding/logos/armor-with-tagline-white.svg"
+              alt="Armor - Proactive Cyber Defense"
+              style={{
+                height: '80px',
+                width: 'auto',
+              }}
             />
           </div>
 
@@ -118,27 +116,8 @@ export function Register(): React.JSX.Element {
               letterSpacing: '-0.02em',
             }}
           >
-            NEXUS
+            Armor Cyber News
           </h1>
-          <p
-            className="font-medium"
-            style={{
-              color: 'var(--color-brand-primary)',
-              fontSize: 'var(--typography-font-size-sm)',
-              marginTop: 'var(--spacing-1)',
-            }}
-          >
-            by Armor
-          </p>
-          <p
-            style={{
-              color: 'var(--color-text-muted)',
-              fontSize: 'var(--typography-font-size-xs)',
-              marginTop: 'var(--spacing-1)',
-            }}
-          >
-            Proactive Cyber Defense
-          </p>
 
           <h2
             className="font-semibold"

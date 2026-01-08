@@ -110,7 +110,7 @@ export function RoleSelector({
   userName,
   onRoleChange,
   disabled = false,
-}: RoleSelectorProps): JSX.Element {
+}: RoleSelectorProps): React.ReactElement {
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
