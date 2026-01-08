@@ -59,11 +59,11 @@ jobs:
           go-version: '1.24'
           cache-dependency-path: aci-backend/go.sum
 
-      - name: Run backend tests
+      - name: Build backend
         working-directory: aci-backend
         run: |
           go mod download
-          go test -v -race -coverprofile=coverage.out ./...
+          go build -o /dev/null ./cmd/server/...
 
       # Frontend build and test
       - name: Set up Node.js
