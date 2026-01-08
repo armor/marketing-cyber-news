@@ -23,16 +23,31 @@ type Server struct {
 
 // Handlers holds all HTTP handlers
 type Handlers struct {
-	Auth      *handlers.AuthHandler
-	Article   *handlers.ArticleHandler
-	Alert     *handlers.AlertHandler
-	Webhook   *handlers.WebhookHandler
-	User      *handlers.UserHandler
-	Admin     *handlers.AdminHandler
-	Category  *handlers.CategoryHandler
-	Dashboard *handlers.DashboardHandler
-	DeepDive  *handlers.DeepDiveHandler
-	Approval  *handlers.ApprovalHandler
+	Auth               *handlers.AuthHandler
+	Article            *handlers.ArticleHandler
+	Alert              *handlers.AlertHandler
+	Webhook            *handlers.WebhookHandler
+	User               *handlers.UserHandler
+	Admin              *handlers.AdminHandler
+	Category           *handlers.CategoryHandler
+	Dashboard          *handlers.DashboardHandler
+	DeepDive           *handlers.DeepDiveHandler
+	Approval           *handlers.ApprovalHandler
+	Content            *handlers.ContentHandler
+	NewsletterConfig   *handlers.NewsletterConfigHandler
+	Segment            *handlers.SegmentHandler
+	Issue              *handlers.IssueHandler
+	Analytics          *handlers.AnalyticsHandler
+	Engagement         *handlers.EngagementHandler
+	Campaign           *handlers.CampaignHandler
+	ContentStudio      *handlers.ContentStudioHandler
+	Channel            *handlers.ChannelHandler
+	MarketingAnalytics *handlers.MarketingAnalyticsHandler
+	Competitor         *handlers.CompetitorHandler
+	Brand              *handlers.BrandHandler
+	Calendar           *handlers.CalendarHandler
+	Health             *handlers.HealthHandler
+	Metrics            *handlers.MetricsHandler
 }
 
 // Config holds server configuration

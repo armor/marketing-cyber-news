@@ -260,3 +260,120 @@ type EngagementEventRepository interface {
 	GetTopicEngagement(ctx context.Context, issueID uuid.UUID) ([]domain.TopicEngagement, error)
 	GetDeviceBreakdown(ctx context.Context, issueID uuid.UUID) (*domain.DeviceBreakdown, error)
 }
+
+// =============================================================================
+// Marketing Autopilot Repositories
+// =============================================================================
+
+// CampaignRepository defines operations for campaign persistence
+type CampaignRepository interface {
+	Create(ctx context.Context, campaign *domain.Campaign) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.Campaign, error)
+	List(ctx context.Context, filter *domain.CampaignFilter) ([]*domain.Campaign, int, error)
+	Update(ctx context.Context, campaign *domain.Campaign) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	UpdateStatus(ctx context.Context, id uuid.UUID, status domain.CampaignStatus) error
+	UpdateStats(ctx context.Context, id uuid.UUID, stats domain.CampaignStats) error
+	GetActiveCampaigns(ctx context.Context, tenantID uuid.UUID) ([]*domain.Campaign, error)
+	AddWorkflowID(ctx context.Context, id uuid.UUID, workflowID string) error
+	RemoveWorkflowID(ctx context.Context, id uuid.UUID, workflowID string) error
+}
+
+// CompetitorRepository defines operations for competitor persistence
+type CompetitorRepository interface {
+	Create(ctx context.Context, competitor *domain.Competitor) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.Competitor, error)
+	GetByCampaignID(ctx context.Context, campaignID uuid.UUID) ([]*domain.Competitor, error)
+	Update(ctx context.Context, competitor *domain.Competitor) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	BulkCreate(ctx context.Context, competitors []*domain.Competitor) error
+}
+
+// ChannelConnectionRepository defines operations for channel connection persistence
+type ChannelConnectionRepository interface {
+	Create(ctx context.Context, connection *domain.ChannelConnection) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.ChannelConnection, error)
+	GetByTenantAndChannel(ctx context.Context, tenantID uuid.UUID, channel domain.Channel) (*domain.ChannelConnection, error)
+	List(ctx context.Context, filter *domain.ChannelConnectionFilter) ([]*domain.ChannelConnection, int, error)
+	Update(ctx context.Context, connection *domain.ChannelConnection) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	UpdateStatus(ctx context.Context, id uuid.UUID, status domain.ConnectionStatus) error
+	UpdateCredentials(ctx context.Context, id uuid.UUID, encryptedCreds []byte, n8nCredID string, expiresAt *time.Time) error
+	UpdateLastUsed(ctx context.Context, id uuid.UUID) error
+	GetExpiringConnections(ctx context.Context, within time.Duration) ([]*domain.ChannelConnection, error)
+}
+
+// BrandStoreRepository defines operations for brand store persistence
+type BrandStoreRepository interface {
+	Create(ctx context.Context, store *domain.BrandStore) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.BrandStore, error)
+	GetByTenantID(ctx context.Context, tenantID uuid.UUID) (*domain.BrandStore, error)
+	Update(ctx context.Context, store *domain.BrandStore) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	UpdateCounts(ctx context.Context, id uuid.UUID, voiceExamples, guidelines, terminology, corrections int) error
+	UpdateHealthScore(ctx context.Context, id uuid.UUID, score int) error
+	UpdateTerminology(ctx context.Context, id uuid.UUID, approved []string, banned []domain.TermEntry) error
+	UpdateSettings(ctx context.Context, id uuid.UUID, strictness float64, autoCorrect bool) error
+	UpdateLastTrained(ctx context.Context, id uuid.UUID, trainedAt time.Time) error
+}
+
+// CalendarEntryRepository defines operations for calendar entry persistence
+type CalendarEntryRepository interface {
+	Create(ctx context.Context, entry *domain.CalendarEntry) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.CalendarEntry, error)
+	List(ctx context.Context, filter *domain.CalendarFilter) ([]*domain.CalendarEntry, int, error)
+	Update(ctx context.Context, entry *domain.CalendarEntry) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	UpdateStatus(ctx context.Context, id uuid.UUID, status domain.PublishingStatus) error
+	Reschedule(ctx context.Context, id uuid.UUID, scheduledAt time.Time) error
+	GetUpcoming(ctx context.Context, tenantID uuid.UUID, channel *domain.Channel, limit int) ([]*domain.CalendarEntry, error)
+	GetByDateRange(ctx context.Context, tenantID uuid.UUID, startDate, endDate time.Time) ([]*domain.CalendarEntry, error)
+	GetScheduledForPublishing(ctx context.Context, before time.Time) ([]*domain.CalendarEntry, error)
+}
+
+// WorkflowTemplateRepository defines operations for workflow template persistence
+type WorkflowTemplateRepository interface {
+	Create(ctx context.Context, template *domain.WorkflowTemplate) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.WorkflowTemplate, error)
+	GetByName(ctx context.Context, name string) (*domain.WorkflowTemplate, error)
+	List(ctx context.Context, category *string, activeOnly bool) ([]*domain.WorkflowTemplate, error)
+	Update(ctx context.Context, template *domain.WorkflowTemplate) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	GetActiveByCategory(ctx context.Context, category string) ([]*domain.WorkflowTemplate, error)
+}
+
+// CompetitorProfileRepository defines operations for competitor profile persistence
+type CompetitorProfileRepository interface {
+	Create(ctx context.Context, competitor *domain.CompetitorProfile) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.CompetitorProfile, error)
+	GetByCampaignID(ctx context.Context, campaignID uuid.UUID) ([]*domain.CompetitorProfile, error)
+	List(ctx context.Context, filter *domain.CompetitorFilter) ([]*domain.CompetitorProfile, int, error)
+	Update(ctx context.Context, competitor *domain.CompetitorProfile) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	SetActive(ctx context.Context, id uuid.UUID, isActive bool) error
+}
+
+// CompetitorContentRepository defines operations for competitor content persistence
+type CompetitorContentRepository interface {
+	Create(ctx context.Context, content *domain.CompetitorContent) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.CompetitorContent, error)
+	GetByURL(ctx context.Context, url string) (*domain.CompetitorContent, error)
+	GetByCompetitorID(ctx context.Context, competitorID uuid.UUID, limit int) ([]*domain.CompetitorContent, error)
+	List(ctx context.Context, filter *domain.CompetitorContentFilter) ([]*domain.CompetitorContent, int, error)
+	Update(ctx context.Context, content *domain.CompetitorContent) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	GetRecentContent(ctx context.Context, competitorID uuid.UUID, since time.Time) ([]*domain.CompetitorContent, error)
+	GetContentStats(ctx context.Context, competitorID uuid.UUID, periodDays int) (*domain.CompetitorAnalysis, error)
+}
+
+// CompetitorAlertRepository defines operations for competitor alert persistence
+type CompetitorAlertRepository interface {
+	Create(ctx context.Context, alert *domain.CompetitorAlert) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.CompetitorAlert, error)
+	List(ctx context.Context, filter *domain.CompetitorAlertFilter) ([]*domain.CompetitorAlert, int, error)
+	Update(ctx context.Context, alert *domain.CompetitorAlert) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	MarkRead(ctx context.Context, id uuid.UUID) error
+	MarkAllRead(ctx context.Context, campaignID uuid.UUID) error
+	GetUnreadCount(ctx context.Context, campaignID uuid.UUID) (int, error)
+}

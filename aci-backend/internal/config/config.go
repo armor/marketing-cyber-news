@@ -23,7 +23,11 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	URL string
+	URL                string
+	MaxConns           int
+	MinConns           int
+	MaxConnLifetime    time.Duration
+	MaxConnIdleTime    time.Duration
 }
 
 type JWTConfig struct {
@@ -34,11 +38,15 @@ type JWTConfig struct {
 }
 
 type N8NConfig struct {
-	WebhookSecret string
+	WebhookSecret      string
+	WebhookURL         string
+	WebhookTimeoutSecs int
 }
 
 type AIConfig struct {
-	AnthropicAPIKey string
+	AnthropicAPIKey    string
+	TimeoutSecs        int
+	WebinarResourceURL string
 }
 
 type RedisConfig struct {
@@ -59,7 +67,11 @@ func Load() (*Config, error) {
 			Port: getEnvInt("SERVER_PORT", 8080),
 		},
 		Database: DatabaseConfig{
-			URL: os.Getenv("DATABASE_URL"),
+			URL:                os.Getenv("DATABASE_URL"),
+			MaxConns:           getEnvInt("DB_MAX_CONNS", 25),
+			MinConns:           getEnvInt("DB_MIN_CONNS", 5),
+			MaxConnLifetime:    getEnvDuration("DB_MAX_CONN_LIFETIME", time.Hour),
+			MaxConnIdleTime:    getEnvDuration("DB_MAX_CONN_IDLE_TIME", 30*time.Minute),
 		},
 		JWT: JWTConfig{
 			PrivateKeyPath:     os.Getenv("JWT_PRIVATE_KEY_PATH"),
@@ -68,10 +80,14 @@ func Load() (*Config, error) {
 			RefreshTokenExpiry: getEnvDuration("JWT_REFRESH_TOKEN_EXPIRY", 168*time.Hour),
 		},
 		N8N: N8NConfig{
-			WebhookSecret: os.Getenv("N8N_WEBHOOK_SECRET"),
+			WebhookSecret:      os.Getenv("N8N_WEBHOOK_SECRET"),
+			WebhookURL:         os.Getenv("N8N_WEBHOOK_URL"),
+			WebhookTimeoutSecs: getEnvInt("N8N_WEBHOOK_TIMEOUT_SECS", 30),
 		},
 		AI: AIConfig{
-			AnthropicAPIKey: os.Getenv("ANTHROPIC_API_KEY"),
+			AnthropicAPIKey:    os.Getenv("ANTHROPIC_API_KEY"),
+			TimeoutSecs:        getEnvInt("AI_TIMEOUT_SECS", 60),
+			WebinarResourceURL: getEnvString("WEBINAR_RESOURCE_URL", ""),
 		},
 		Redis: RedisConfig{
 			URL: os.Getenv("REDIS_URL"),
@@ -108,6 +124,30 @@ func (c *Config) Validate() error {
 
 	if c.AI.AnthropicAPIKey == "" {
 		return fmt.Errorf("ANTHROPIC_API_KEY is required")
+	}
+
+	if c.N8N.WebhookURL == "" {
+		return fmt.Errorf("N8N_WEBHOOK_URL is required")
+	}
+
+	if c.Database.MaxConns <= 0 {
+		return fmt.Errorf("DB_MAX_CONNS must be greater than 0")
+	}
+
+	if c.Database.MinConns < 0 {
+		return fmt.Errorf("DB_MIN_CONNS must be non-negative")
+	}
+
+	if c.Database.MinConns > c.Database.MaxConns {
+		return fmt.Errorf("DB_MIN_CONNS cannot exceed DB_MAX_CONNS")
+	}
+
+	if c.N8N.WebhookTimeoutSecs <= 0 {
+		return fmt.Errorf("N8N_WEBHOOK_TIMEOUT_SECS must be greater than 0")
+	}
+
+	if c.AI.TimeoutSecs <= 0 {
+		return fmt.Errorf("AI_TIMEOUT_SECS must be greater than 0")
 	}
 
 	return nil

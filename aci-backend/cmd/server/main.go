@@ -11,6 +11,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
@@ -18,6 +19,8 @@ import (
 	"github.com/phillipboles/aci-backend/internal/api"
 	"github.com/phillipboles/aci-backend/internal/api/handlers"
 	"github.com/phillipboles/aci-backend/internal/config"
+	"github.com/phillipboles/aci-backend/internal/crypto"
+	"github.com/phillipboles/aci-backend/internal/n8n"
 	"github.com/phillipboles/aci-backend/internal/pkg/jwt"
 	"github.com/phillipboles/aci-backend/internal/repository/postgres"
 	"github.com/phillipboles/aci-backend/internal/service"
@@ -48,10 +51,17 @@ func main() {
 		log.Fatal().Err(err).Msg("Failed to parse database URL")
 	}
 
-	poolConfig.MaxConns = 25
-	poolConfig.MinConns = 5
-	poolConfig.MaxConnLifetime = time.Hour
-	poolConfig.MaxConnIdleTime = 30 * time.Minute
+	poolConfig.MaxConns = int32(cfg.Database.MaxConns)
+	poolConfig.MinConns = int32(cfg.Database.MinConns)
+	poolConfig.MaxConnLifetime = cfg.Database.MaxConnLifetime
+	poolConfig.MaxConnIdleTime = cfg.Database.MaxConnIdleTime
+
+	log.Info().
+		Int("max_conns", cfg.Database.MaxConns).
+		Int("min_conns", cfg.Database.MinConns).
+		Dur("max_conn_lifetime", cfg.Database.MaxConnLifetime).
+		Dur("max_conn_idle_time", cfg.Database.MaxConnIdleTime).
+		Msg("Database pool configured")
 
 	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
 	if err != nil {
@@ -80,6 +90,9 @@ func main() {
 	if err := sqlDB.Ping(); err != nil {
 		log.Fatal().Err(err).Msg("Failed to ping sql.DB connection")
 	}
+
+	// Create sqlx.DB wrapper for repositories that use sqlx (competitor repos)
+	sqlxDB := sqlx.NewDb(sqlDB, "pgx")
 
 	// Initialize JWT service
 	jwtService, err := jwt.NewService(&jwt.Config{
@@ -115,7 +128,29 @@ func main() {
 	webhookLogRepo := postgres.NewWebhookLogRepository(db)
 	alertRepo := postgres.NewAlertRepository(db)
 	alertMatchRepo := postgres.NewAlertMatchRepository(db)
-	approvalRepo := postgres.NewApprovalRepository(db)
+	_ = postgres.NewApprovalRepository(db) // TODO: Wire up when article approval is implemented
+
+	// Newsletter repositories (pgx-based)
+	newsletterConfigRepo := postgres.NewNewsletterConfigRepository(db)
+	segmentRepo := postgres.NewSegmentRepository(db)
+	contactRepo := postgres.NewContactRepository(db)
+	contentSourceRepo := postgres.NewContentSourceRepository(db)
+	contentItemRepo := postgres.NewContentItemRepository(db)
+	newsletterIssueRepo := postgres.NewNewsletterIssueRepository(db)
+	newsletterBlockRepo := postgres.NewNewsletterBlockRepository(db)
+	testVariantRepo := postgres.NewTestVariantRepository(db)
+	engagementEventRepo := postgres.NewEngagementEventRepository(db)
+
+	// Marketing Autopilot repositories (pgx-based)
+	campaignRepo := postgres.NewCampaignRepository(db)
+	channelConnectionRepo := postgres.NewChannelConnectionRepository(db)
+	brandStoreRepo := postgres.NewBrandStoreRepository(db)
+	calendarEntryRepo := postgres.NewCalendarEntryRepository(db)
+
+	// Competitor repositories (sqlx-based)
+	competitorProfileRepo := postgres.NewCompetitorProfileRepo(sqlxDB)
+	competitorContentRepo := postgres.NewCompetitorContentRepo(sqlxDB)
+	competitorAlertRepo := postgres.NewCompetitorAlertRepo(sqlxDB)
 
 	// Repositories still using *sql.DB
 	bookmarkRepo := postgres.NewBookmarkRepository(sqlDB)
@@ -141,14 +176,114 @@ func main() {
 	searchService := service.NewSearchService(articleRepo)
 	engagementService := service.NewEngagementService(bookmarkRepo, articleReadRepo, articleRepo)
 	enrichmentService := service.NewEnrichmentService(enricher, articleRepo)
-	approvalService := service.NewApprovalService(approvalRepo, auditLogRepo, log.Logger)
+	articleApprovalService := service.NewArticleApprovalService()
+
+	// Newsletter services
+	newsletterConfigService := service.NewNewsletterConfigService(newsletterConfigRepo, auditLogRepo)
+	segmentService := service.NewSegmentService(segmentRepo, contactRepo, auditLogRepo)
+	contentService := service.NewContentService(contentItemRepo, contentSourceRepo, segmentRepo, newsletterConfigRepo, auditLogRepo)
+	brandVoiceService := service.NewBrandVoiceService(newsletterConfigRepo)
+	generationService := service.NewGenerationService(
+		newsletterIssueRepo,
+		newsletterBlockRepo,
+		newsletterConfigRepo,
+		segmentRepo,
+		contentService,
+		brandVoiceService,
+		auditLogRepo,
+		contactRepo,
+		cfg.AI.WebinarResourceURL,
+	)
+	// SEC-003: Pass userRepo for tier-based approval validation
+	newsletterApprovalService := service.NewApprovalService(newsletterIssueRepo, newsletterConfigRepo, auditLogRepo, userRepo)
+	analyticsService := service.NewAnalyticsService(engagementEventRepo, newsletterIssueRepo, newsletterConfigRepo, segmentRepo)
+
+	// n8n webhook URL and timeout from configuration (validated at startup)
+	// TODO: Wire deliveryService when newsletter delivery is enabled
+	_ = service.NewDeliveryService(
+		newsletterIssueRepo,
+		newsletterConfigRepo,
+		contactRepo,
+		cfg.N8N.WebhookURL,
+		cfg.N8N.WebhookTimeoutSecs,
+	)
+	abTestService := service.NewABTestService(testVariantRepo, engagementEventRepo, contactRepo, newsletterConfigRepo)
+
+	// Marketing Autopilot services (local mode - minimal dependencies)
+	competitorService := service.NewCompetitorService(
+		competitorProfileRepo,
+		competitorContentRepo,
+		competitorAlertRepo,
+		campaignRepo,
+	)
+
+	marketingAnalyticsService := service.NewMarketingAnalyticsService(
+		campaignRepo,
+		calendarEntryRepo,
+		contentItemRepo,
+	)
+
+	// Marketing Autopilot services with mock dependencies for local development
+	n8nClient := n8n.NewNoOpClient()
+
+	// Initialize crypto encryptor with development key (local mode)
+	encryptor, err := crypto.NewEncryptor("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize encryptor")
+	}
+
+	// Campaign service - uses n8n interface for workflow management
+	// Note: competitorRepo passed as nil - competitor monitoring uses separate CompetitorService
+	campaignService := service.NewCampaignService(
+		campaignRepo,
+		nil, // competitorRepo - not needed, competitors managed by CompetitorService
+		channelConnectionRepo,
+		n8nClient,
+	)
+
+	// Channel service - handles OAuth connections
+	channelService := service.NewChannelService(
+		channelConnectionRepo,
+		encryptor,
+		n8nClient,
+		service.ChannelConfig{}, // Empty config for local mode (no OAuth credentials)
+	)
+
+	// Brand service mocks for local development
+	mockVectorStore := service.NewMockVectorStore()
+	mockEmbeddingGen := service.NewMockEmbeddingGenerator(384)
+	mockDocParser := service.NewMockDocumentParser()
+	mockLLMClient := service.NewMockLLMClient()
+
+	brandService := service.NewBrandCenterService(
+		brandStoreRepo,
+		mockVectorStore,
+		mockEmbeddingGen,
+		mockDocParser,
+		mockLLMClient,
+		nil, // Use default config
+	)
+
+	// Content Studio service - uses brand validation and AI content generation
+	mockContentStudioN8n := service.NewMockContentStudioN8nClient()
+	contentStudioService := service.NewContentStudioService(
+		contentItemRepo,
+		calendarEntryRepo,
+		brandService,
+		mockLLMClient,
+		channelConnectionRepo,
+		mockContentStudioN8n,
+	)
+
+	log.Info().Msg("Marketing Autopilot services initialized with mock dependencies")
 
 	// NOTE: AdminService initialization blocked due to interface mismatch
 	// UserRepository expects domain.User but postgres.UserRepository uses entities.User
 	// This needs to be resolved before AdminService can be initialized
 	// adminService := service.NewAdminService(articleRepo, sourceRepo, userRepo, auditLogRepo)
 
-	notificationService, err := service.NewNotificationService(hub)
+	// TODO: Wire notificationService when notification features are enabled
+	_, err = service.NewNotificationService(hub)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialize notification service")
 	}
@@ -169,7 +304,39 @@ func main() {
 	userHandler := handlers.NewUserHandler(engagementService, userRepo)
 	webhookHandler := handlers.NewWebhookHandler(articleService, enrichmentService, webhookLogRepo, cfg.N8N.WebhookSecret)
 	dashboardHandler := handlers.NewDashboardHandler(articleRepo)
-	approvalHandler := handlers.NewApprovalHandler(approvalService, log.Logger)
+	articleApprovalHandler := handlers.NewApprovalHandler(articleApprovalService, log.Logger)
+
+	// Newsletter handlers
+	newsletterConfigHandler := handlers.NewNewsletterConfigHandler(newsletterConfigService)
+	segmentHandler := handlers.NewSegmentHandler(segmentService, log.Logger)
+	contentHandler := handlers.NewContentHandler(contentService)
+	issueHandler := handlers.NewIssueHandler(generationService, brandVoiceService, newsletterApprovalService, contactRepo)
+	analyticsHandler := handlers.NewAnalyticsHandler(analyticsService, abTestService)
+
+	// Get n8n webhook secret from environment for engagement handler
+	n8nWebhookSecret := os.Getenv("N8N_WEBHOOK_SECRET")
+	if n8nWebhookSecret == "" {
+		log.Warn().Msg("N8N_WEBHOOK_SECRET not set, webhook validation will be disabled")
+	}
+	engagementHandler := handlers.NewEngagementHandler(engagementEventRepo, contactRepo, newsletterIssueRepo, n8nWebhookSecret)
+
+	// Marketing Autopilot handlers (working services)
+	calendarHandler := handlers.NewCalendarHandler(calendarEntryRepo, contentItemRepo)
+	competitorHandler := handlers.NewCompetitorHandler(competitorService)
+	marketingAnalyticsHandler := handlers.NewMarketingAnalyticsHandler(marketingAnalyticsService)
+
+	// Marketing Autopilot handlers - now properly wired with services
+	campaignAdapter := handlers.NewCampaignServiceAdapter(campaignService)
+	campaignHandler := handlers.NewCampaignHandler(campaignAdapter)
+	channelHandler := handlers.NewChannelHandler(channelService, log.Logger)
+	brandHandler := handlers.NewBrandHandler(brandService)
+	contentStudioHandler := handlers.NewContentStudioHandler(contentStudioService)
+
+	// Initialize health handler with database for real health checks
+	healthHandler := handlers.NewHealthHandler(db)
+
+	// Initialize metrics handler for Prometheus
+	metricsHandler := handlers.NewMetricsHandler()
 
 	// NOTE: AdminHandler blocked until AdminService interface issue is resolved
 	// adminHandler := handlers.NewAdminHandler(adminService)
@@ -177,19 +344,32 @@ func main() {
 	log.Info().Msg("Handlers initialized")
 
 	// Create HTTP server
-	// TODO: Router agent needs to wire handlers into SetupRoutes()
-	// Services available: notificationService, enrichmentService
 	// NOTE: adminHandler not available until UserRepository interface mismatch resolved
-	handlers := &api.Handlers{
-		Auth:      authHandler,
-		Article:   articleHandler,
-		Alert:     alertHandler,
-		Webhook:   webhookHandler,
-		User:      userHandler,
-		Admin:     nil, // TODO: Wire AdminHandler once UserRepository type mismatch is resolved
-		Category:  categoryHandler,
-		Dashboard: dashboardHandler,
-		Approval:  approvalHandler,
+	apiHandlers := &api.Handlers{
+		Auth:               authHandler,
+		Article:            articleHandler,
+		Alert:              alertHandler,
+		Webhook:            webhookHandler,
+		User:               userHandler,
+		Admin:              nil, // TODO: Wire AdminHandler once UserRepository type mismatch is resolved
+		Category:           categoryHandler,
+		Dashboard:          dashboardHandler,
+		Approval:           articleApprovalHandler,
+		Content:            contentHandler,
+		NewsletterConfig:   newsletterConfigHandler,
+		Segment:            segmentHandler,
+		Issue:              issueHandler,
+		Analytics:          analyticsHandler,
+		Engagement:         engagementHandler,
+		Campaign:           campaignHandler,
+		ContentStudio:      contentStudioHandler,
+		Channel:            channelHandler,
+		MarketingAnalytics: marketingAnalyticsHandler,
+		Competitor:         competitorHandler,
+		Brand:              brandHandler,
+		Calendar:           calendarHandler,
+		Health:             healthHandler,
+		Metrics:            metricsHandler,
 	}
 
 	serverConfig := api.Config{
@@ -200,10 +380,7 @@ func main() {
 	}
 
 	// Create server with WebSocket handler wired
-	server := api.NewServerWithWebSocket(serverConfig, handlers, jwtService, wsHandler)
-
-	// Prevent unused variable warnings until services are wired
-	_ = notificationService
+	server := api.NewServerWithWebSocket(serverConfig, apiHandlers, jwtService, wsHandler)
 
 	log.Info().Msg("ACI Backend server starting...")
 

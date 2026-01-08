@@ -3,19 +3,103 @@ package websocket
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/gorilla/websocket"
 	jwtPkg "github.com/phillipboles/aci-backend/internal/pkg/jwt"
 	"github.com/rs/zerolog/log"
 )
 
+// getAllowedOrigins returns the list of allowed origins from environment
+// SEC-CRIT-004: WebSocket origin validation
+func getAllowedOrigins() []string {
+	// Support both CORS_ALLOWED_ORIGINS (preferred) and ALLOWED_ORIGINS (legacy)
+	allowedOrigins := os.Getenv("CORS_ALLOWED_ORIGINS")
+	if allowedOrigins == "" {
+		allowedOrigins = os.Getenv("ALLOWED_ORIGINS")
+	}
+
+	if allowedOrigins == "" {
+		// Development fallback - only allow localhost
+		return []string{
+			"http://localhost:5173",
+			"http://localhost:3000",
+			"http://127.0.0.1:5173",
+			"http://127.0.0.1:3000",
+		}
+	}
+
+	// Parse comma-separated origins from environment
+	var origins []string
+	for _, origin := range strings.Split(allowedOrigins, ",") {
+		trimmed := strings.TrimSpace(origin)
+		if trimmed != "" {
+			origins = append(origins, trimmed)
+		}
+	}
+	return origins
+}
+
+// isOriginAllowed checks if the origin is in the allowed origins list
+// SEC-CRIT-004: Validates WebSocket origin against allowed list
+func isOriginAllowed(origin string, allowedOrigins []string) bool {
+	for _, allowed := range allowedOrigins {
+		if allowed == origin {
+			return true
+		}
+	}
+	return false
+}
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
-		// TODO: Configure allowed origins in production
-		// For now, allow all origins
-		return true
+		// SEC-CRIT-004: Validate origin against allowed origins
+		origin := r.Header.Get("Origin")
+
+		// All WebSocket connections require authentication via JWT token in query param
+		// The JWT validation in ServeWS is the primary security control
+		// Origin validation provides defense-in-depth against CSWSH attacks
+
+		if origin == "" {
+			// SEC-CRIT-004: Reject requests without Origin header in production
+			// to prevent CSRF via non-browser tools spoofing WebSocket connections
+			// In development, Origin may be empty for local testing
+			allowedOrigins := getAllowedOrigins()
+			isDevelopment := false
+			for _, o := range allowedOrigins {
+				if strings.Contains(o, "localhost") || strings.Contains(o, "127.0.0.1") {
+					isDevelopment = true
+					break
+				}
+			}
+
+			if isDevelopment {
+				log.Debug().
+					Str("remote_addr", r.RemoteAddr).
+					Msg("WebSocket connection without Origin header - allowing in development")
+				return true
+			}
+
+			log.Warn().
+				Str("remote_addr", r.RemoteAddr).
+				Msg("WebSocket connection rejected - Origin header required in production")
+			return false
+		}
+
+		allowedOrigins := getAllowedOrigins()
+		if isOriginAllowed(origin, allowedOrigins) {
+			return true
+		}
+
+		log.Warn().
+			Str("origin", origin).
+			Str("remote_addr", r.RemoteAddr).
+			Strs("allowed_origins", allowedOrigins).
+			Msg("WebSocket connection rejected - origin not allowed")
+		return false
 	},
 }
 
