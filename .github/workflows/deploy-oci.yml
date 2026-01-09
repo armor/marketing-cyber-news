@@ -218,6 +218,11 @@ jobs:
             aci-backend=${{ env.OCI_REGION }}.ocir.io/${{ env.OCI_TENANCY_NAMESPACE }}/aci-backend:${{ needs.build-and-test.outputs.version }} \
             aci-frontend=${{ env.OCI_REGION }}.ocir.io/${{ env.OCI_TENANCY_NAMESPACE }}/aci-frontend:${{ needs.build-and-test.outputs.version }}
 
+      - name: Clean up existing deployments (selector is immutable)
+        run: |
+          kubectl delete deployment aci-backend n8n redis -n ${{ env.K8S_NAMESPACE }} --ignore-not-found=true
+          kubectl delete statefulset postgres -n ${{ env.K8S_NAMESPACE }} --ignore-not-found=true
+
       - name: Deploy to OKE
         run: |
           kubectl apply -k aci-backend/deployments/k8s/overlays/oci
