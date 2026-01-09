@@ -142,15 +142,15 @@ export function Login(): React.JSX.Element {
             <img
               src="/branding/logos/armor-dash-white-logo.svg"
               alt="Armor"
-              style={{ height: '40px', width: 'auto' }}
+              style={{ height: '52px', width: 'auto' }}
             />
           </div>
 
           {/* Main Content */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h1 style={{ fontSize: '42px', fontWeight: 700, lineHeight: 1.15, margin: 0, letterSpacing: '-0.02em' }}>
-                <span>AI-Powered</span>
+              <h1 style={{ fontSize: '52px', fontWeight: 700, lineHeight: 1.1, margin: 0, letterSpacing: '-0.02em' }}>
+                <span style={{ color: colors.white }}>AI-Powered</span>
                 <br />
                 <span
                   style={{
@@ -221,11 +221,11 @@ export function Login(): React.JSX.Element {
             </div>
 
             {/* Stats */}
-            <div style={{ display: 'flex', gap: '32px', paddingTop: '8px' }}>
+            <div style={{ display: 'flex', gap: '40px', paddingTop: '16px' }}>
               {stats.map((stat, idx) => (
                 <div key={idx}>
-                  <div style={{ fontSize: '28px', fontWeight: 700, color: colors.white }}>{stat.value}</div>
-                  <div style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)' }}>{stat.label}</div>
+                  <div style={{ fontSize: '42px', fontWeight: 800, color: colors.white, letterSpacing: '-0.02em' }}>{stat.value}</div>
+                  <div style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '2px' }}>{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -350,7 +350,7 @@ export function Login(): React.JSX.Element {
                   style={{
                     width: '100%',
                     padding: '10px 12px',
-                    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                    backgroundColor: colors.zinc800,
                     border: `1px solid ${colors.zinc700}`,
                     borderRadius: '6px',
                     color: colors.white,
@@ -407,7 +407,7 @@ export function Login(): React.JSX.Element {
                   style={{
                     width: '100%',
                     padding: '10px 12px',
-                    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                    backgroundColor: colors.zinc800,
                     border: `1px solid ${colors.zinc700}`,
                     borderRadius: '6px',
                     color: colors.white,
