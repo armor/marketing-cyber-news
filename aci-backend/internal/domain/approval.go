@@ -11,22 +11,24 @@ import (
 type ApprovalStatus string
 
 const (
-	StatusPendingMarketing ApprovalStatus = "pending_marketing"
-	StatusPendingBranding  ApprovalStatus = "pending_branding"
-	StatusPendingSocL1     ApprovalStatus = "pending_soc_l1"
-	StatusPendingSocL3     ApprovalStatus = "pending_soc_l3"
-	StatusPendingCISO      ApprovalStatus = "pending_ciso"
-	StatusApproved         ApprovalStatus = "approved"
-	StatusRejected         ApprovalStatus = "rejected"
-	StatusReleased         ApprovalStatus = "released"
+	StatusPendingMarketing   ApprovalStatus = "pending_marketing"
+	StatusPendingBranding    ApprovalStatus = "pending_branding"
+	StatusPendingVoC         ApprovalStatus = "pending_voc"
+	StatusPendingSocL1       ApprovalStatus = "pending_soc_l1"
+	StatusPendingSocL3       ApprovalStatus = "pending_soc_l3"
+	StatusPendingCompliance  ApprovalStatus = "pending_compliance"
+	StatusPendingCISO        ApprovalStatus = "pending_ciso"
+	StatusApproved           ApprovalStatus = "approved"
+	StatusRejected           ApprovalStatus = "rejected"
+	StatusReleased           ApprovalStatus = "released"
 )
 
 // IsValid checks if the approval status is valid
 func (s ApprovalStatus) IsValid() bool {
 	switch s {
-	case StatusPendingMarketing, StatusPendingBranding, StatusPendingSocL1,
-		StatusPendingSocL3, StatusPendingCISO, StatusApproved,
-		StatusRejected, StatusReleased:
+	case StatusPendingMarketing, StatusPendingBranding, StatusPendingVoC,
+		StatusPendingSocL1, StatusPendingSocL3, StatusPendingCompliance,
+		StatusPendingCISO, StatusApproved, StatusRejected, StatusReleased:
 		return true
 	default:
 		return false
@@ -34,15 +36,20 @@ func (s ApprovalStatus) IsValid() bool {
 }
 
 // NextOnApprove returns the next status after approval
+// 7-gate workflow: Marketing -> Branding -> VoC -> SOC L1 -> SOC L3 -> Compliance -> CISO
 func (s ApprovalStatus) NextOnApprove() (ApprovalStatus, error) {
 	switch s {
 	case StatusPendingMarketing:
 		return StatusPendingBranding, nil
 	case StatusPendingBranding:
+		return StatusPendingVoC, nil
+	case StatusPendingVoC:
 		return StatusPendingSocL1, nil
 	case StatusPendingSocL1:
 		return StatusPendingSocL3, nil
 	case StatusPendingSocL3:
+		return StatusPendingCompliance, nil
+	case StatusPendingCompliance:
 		return StatusPendingCISO, nil
 	case StatusPendingCISO:
 		return StatusApproved, nil
@@ -58,10 +65,14 @@ func (s ApprovalStatus) RequiredGate() ApprovalGate {
 		return GateMarketing
 	case StatusPendingBranding:
 		return GateBranding
+	case StatusPendingVoC:
+		return GateVoC
 	case StatusPendingSocL1:
 		return GateSocL1
 	case StatusPendingSocL3:
 		return GateSocL3
+	case StatusPendingCompliance:
+		return GateCompliance
 	case StatusPendingCISO:
 		return GateCISO
 	default:
@@ -78,26 +89,31 @@ func (s ApprovalStatus) String() string {
 type ApprovalGate string
 
 const (
-	GateMarketing ApprovalGate = "marketing"
-	GateBranding  ApprovalGate = "branding"
-	GateSocL1     ApprovalGate = "soc_l1"
-	GateSocL3     ApprovalGate = "soc_l3"
-	GateCISO      ApprovalGate = "ciso"
+	GateMarketing   ApprovalGate = "marketing"
+	GateBranding    ApprovalGate = "branding"
+	GateVoC         ApprovalGate = "voc"
+	GateSocL1       ApprovalGate = "soc_l1"
+	GateSocL3       ApprovalGate = "soc_l3"
+	GateCompliance  ApprovalGate = "compliance"
+	GateCISO        ApprovalGate = "ciso"
 )
 
 // GateOrder defines the sequential order of approval gates
+// 7-gate workflow: Marketing -> Branding -> VoC -> SOC L1 -> SOC L3 -> Compliance -> CISO
 var GateOrder = []ApprovalGate{
 	GateMarketing,
 	GateBranding,
+	GateVoC,
 	GateSocL1,
 	GateSocL3,
+	GateCompliance,
 	GateCISO,
 }
 
 // IsValid checks if the approval gate is valid
 func (g ApprovalGate) IsValid() bool {
 	switch g {
-	case GateMarketing, GateBranding, GateSocL1, GateSocL3, GateCISO:
+	case GateMarketing, GateBranding, GateVoC, GateSocL1, GateSocL3, GateCompliance, GateCISO:
 		return true
 	default:
 		return false
@@ -123,12 +139,17 @@ func (r UserRole) CanApproveGate(gate ApprovalGate) bool {
 	switch r {
 	case RoleMarketing:
 		return gate == GateMarketing
-	case RoleBranding:
+	case RoleBranding, RoleDesigner:
+		// Both branding and designer can approve branding gate
 		return gate == GateBranding
+	case RoleVoCExpert:
+		return gate == GateVoC
 	case RoleSocLevel1:
 		return gate == GateSocL1
 	case RoleSocLevel3:
 		return gate == GateSocL3
+	case RoleComplianceSME:
+		return gate == GateCompliance
 	case RoleCISO:
 		return gate == GateCISO
 	default:
@@ -153,12 +174,16 @@ func (r UserRole) GetTargetGate() ApprovalGate {
 	switch r {
 	case RoleMarketing:
 		return GateMarketing
-	case RoleBranding:
+	case RoleBranding, RoleDesigner:
 		return GateBranding
+	case RoleVoCExpert:
+		return GateVoC
 	case RoleSocLevel1:
 		return GateSocL1
 	case RoleSocLevel3:
 		return GateSocL3
+	case RoleComplianceSME:
+		return GateCompliance
 	case RoleCISO:
 		return GateCISO
 	default:
@@ -214,8 +239,9 @@ func StatusTransitionValid(from, to ApprovalStatus) bool {
 	// Rejection is allowed from any pending status
 	if to == StatusRejected {
 		switch from {
-		case StatusPendingMarketing, StatusPendingBranding, StatusPendingSocL1,
-			StatusPendingSocL3, StatusPendingCISO:
+		case StatusPendingMarketing, StatusPendingBranding, StatusPendingVoC,
+			StatusPendingSocL1, StatusPendingSocL3, StatusPendingCompliance,
+			StatusPendingCISO:
 			return true
 		default:
 			return false
@@ -253,8 +279,9 @@ func RoleCanApproveStatus(role UserRole, status ApprovalStatus) bool {
 
 	// Only pending statuses can be approved
 	switch status {
-	case StatusPendingMarketing, StatusPendingBranding, StatusPendingSocL1,
-		StatusPendingSocL3, StatusPendingCISO:
+	case StatusPendingMarketing, StatusPendingBranding, StatusPendingVoC,
+		StatusPendingSocL1, StatusPendingSocL3, StatusPendingCompliance,
+		StatusPendingCISO:
 		// Check if role can approve the required gate
 		requiredGate := status.RequiredGate()
 		return role.CanApproveGate(requiredGate)

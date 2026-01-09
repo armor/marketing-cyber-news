@@ -77,6 +77,12 @@ type NewsletterIssue struct {
 	RejectedBy      *uuid.UUID `json:"rejected_by,omitempty"`
 	RejectedAt      *time.Time `json:"rejected_at,omitempty"`
 
+	// Multi-Gate Approval (7-gate workflow)
+	CurrentApprovalStage *ApprovalGate `json:"current_approval_stage,omitempty"`
+	VoCNotes             *string       `json:"voc_notes,omitempty"`
+	ComplianceNotes      *string       `json:"compliance_notes,omitempty"`
+	Approvals            []IssueApproval `json:"approvals,omitempty"` // Joined field
+
 	// Delivery
 	ScheduledFor  *time.Time `json:"scheduled_for,omitempty"`
 	SentAt        *time.Time `json:"sent_at,omitempty"`
@@ -125,6 +131,9 @@ type NewsletterBlock struct {
 	// Categorization
 	IsPromotional bool     `json:"is_promotional"`
 	TopicTags     []string `json:"topic_tags,omitempty"`
+
+	// Claims Library References
+	ClaimsReferences []uuid.UUID `json:"claims_references,omitempty"`
 
 	// Metrics
 	Clicks int `json:"clicks"`

@@ -11,16 +11,19 @@ import (
 type UserRole string
 
 const (
-	RoleUser       UserRole = "user"
-	RoleAdmin      UserRole = "admin"
-	RoleAnalyst    UserRole = "analyst"
-	RoleViewer     UserRole = "viewer"
-	RoleMarketing  UserRole = "marketing"
-	RoleBranding   UserRole = "branding"
-	RoleSocLevel1  UserRole = "soc_level_1"
-	RoleSocLevel3  UserRole = "soc_level_3"
-	RoleCISO       UserRole = "ciso"
-	RoleSuperAdmin UserRole = "super_admin"
+	RoleUser          UserRole = "user"
+	RoleAdmin         UserRole = "admin"
+	RoleAnalyst       UserRole = "analyst"
+	RoleViewer        UserRole = "viewer"
+	RoleMarketing     UserRole = "marketing"
+	RoleBranding      UserRole = "branding"
+	RoleSocLevel1     UserRole = "soc_level_1"
+	RoleSocLevel3     UserRole = "soc_level_3"
+	RoleCISO          UserRole = "ciso"
+	RoleSuperAdmin    UserRole = "super_admin"
+	RoleComplianceSME UserRole = "compliance_sme"
+	RoleVoCExpert     UserRole = "voc_expert"
+	RoleDesigner      UserRole = "designer"
 )
 
 // SubscriptionTier represents user subscription levels
@@ -45,16 +48,19 @@ func (s SubscriptionTier) IsValid() bool {
 // IsValid checks if the user role is valid
 func (r UserRole) IsValid() error {
 	validRoles := map[UserRole]bool{
-		RoleUser:       true,
-		RoleAdmin:      true,
-		RoleAnalyst:    true,
-		RoleViewer:     true,
-		RoleMarketing:  true,
-		RoleBranding:   true,
-		RoleSocLevel1:  true,
-		RoleSocLevel3:  true,
-		RoleCISO:       true,
-		RoleSuperAdmin: true,
+		RoleUser:          true,
+		RoleAdmin:         true,
+		RoleAnalyst:       true,
+		RoleViewer:        true,
+		RoleMarketing:     true,
+		RoleBranding:      true,
+		RoleSocLevel1:     true,
+		RoleSocLevel3:     true,
+		RoleCISO:          true,
+		RoleSuperAdmin:    true,
+		RoleComplianceSME: true,
+		RoleVoCExpert:     true,
+		RoleDesigner:      true,
 	}
 
 	if !validRoles[r] {

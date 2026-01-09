@@ -431,3 +431,47 @@ type SystemSettingsRepository interface {
 	SetSignupMode(ctx context.Context, mode domain.SignupMode, updatedBy uuid.UUID) error
 	GetAll(ctx context.Context) ([]*domain.SystemSetting, error)
 }
+
+// =============================================================================
+// Claims Library and Extended Approval Workflow Repositories
+// =============================================================================
+
+// ClaimsLibraryRepository defines operations for claims library persistence
+type ClaimsLibraryRepository interface {
+	Create(ctx context.Context, claim *domain.ClaimsLibraryEntry) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.ClaimsLibraryEntry, error)
+	List(ctx context.Context, filter *domain.ClaimsLibraryFilter) ([]*domain.ClaimsLibraryEntry, int, error)
+	Update(ctx context.Context, claim *domain.ClaimsLibraryEntry) error
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// Approval workflow
+	Approve(ctx context.Context, id uuid.UUID, approvedBy uuid.UUID, expiresAt *time.Time) error
+	Reject(ctx context.Context, id uuid.UUID, rejectedBy uuid.UUID, reason string) error
+
+	// Usage tracking
+	IncrementUsage(ctx context.Context, id uuid.UUID) error
+	BulkIncrementUsage(ctx context.Context, ids []uuid.UUID) error
+
+	// Search and discovery
+	GetByCategory(ctx context.Context, category string) ([]*domain.ClaimsLibraryEntry, error)
+	GetApprovedByType(ctx context.Context, claimType domain.ClaimType) ([]*domain.ClaimsLibraryEntry, error)
+	GetExpiringSoon(ctx context.Context, within time.Duration) ([]*domain.ClaimsLibraryEntry, error)
+	SearchFullText(ctx context.Context, query string, limit int) ([]*domain.ClaimsLibraryEntry, error)
+
+	// Categories
+	ListCategories(ctx context.Context) ([]string, error)
+
+	// Validation helpers
+	GetByIDs(ctx context.Context, ids []uuid.UUID) ([]*domain.ClaimsLibraryEntry, error)
+	GetDoNotSayItems(ctx context.Context) ([]*domain.ClaimsLibraryEntry, error)
+}
+
+// IssueApprovalRepository defines operations for issue approval tracking in 7-gate workflow
+type IssueApprovalRepository interface {
+	Create(ctx context.Context, approval *domain.IssueApproval) error
+	GetByIssueID(ctx context.Context, issueID uuid.UUID) ([]*domain.IssueApproval, error)
+	GetByGate(ctx context.Context, gate domain.ApprovalGate) ([]*domain.IssueApproval, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+	DeleteByIssueID(ctx context.Context, issueID uuid.UUID) error
+	GetLatestByIssueAndGate(ctx context.Context, issueID uuid.UUID, gate domain.ApprovalGate) (*domain.IssueApproval, error)
+}
