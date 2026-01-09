@@ -104,3 +104,29 @@ export { useCampaignMutations } from './useCampaignMutations';
 
 // Marketing query keys
 export { marketingKeys } from './marketingKeys';
+
+// Claims library hooks
+export { useClaims } from './useClaims';
+export type { UseClaimsOptions, UseClaimsReturn } from './useClaims';
+export { useClaim } from './useClaim';
+export type { UseClaimOptions, UseClaimReturn } from './useClaim';
+export {
+  useCreateClaim,
+  useUpdateClaim,
+  useDeleteClaim,
+  useApproveClaim,
+  useRejectClaim,
+  useRecordClaimUsage,
+} from './useClaimMutations';
+export { useClaimCategories } from './useClaimCategories';
+export type {
+  UseClaimCategoriesOptions,
+  UseClaimCategoriesReturn,
+} from './useClaimCategories';
+export { useClaimSearch } from './useClaimSearch';
+export type { UseClaimSearchOptions, UseClaimSearchReturn } from './useClaimSearch';
+export { useClaimValidation, getValidationState } from './useClaimValidation';
+export type { UseClaimValidationState } from './useClaimValidation';
+
+// Claims query keys
+export { claimsKeys } from './claimsKeys';

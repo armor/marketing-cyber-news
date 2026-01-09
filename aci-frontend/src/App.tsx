@@ -64,6 +64,9 @@ const NewsletterApprovalPage = lazy(() =>
 const NewsletterContentPage = lazy(() =>
   import('@/pages/NewsletterContentPage').then((module) => ({ default: module.NewsletterContentPage }))
 );
+const ClaimsLibraryPage = lazy(() =>
+  import('@/pages/ClaimsLibraryPage').then((module) => ({ default: module.ClaimsLibraryPage }))
+);
 const CalendarPage = lazy(() =>
   import('@/pages/CalendarPage').then((module) => ({ default: module.CalendarPage }))
 );
@@ -350,6 +353,16 @@ function App(): React.ReactElement {
                   <ProtectedRoute>
                     <MainLayout>
                       <NewsletterContentPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/newsletter/claims"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <ClaimsLibraryPage />
                     </MainLayout>
                   </ProtectedRoute>
                 }
