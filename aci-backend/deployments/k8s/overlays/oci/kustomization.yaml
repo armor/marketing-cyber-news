@@ -4,6 +4,7 @@ kind: Kustomization
 # Reference base configuration
 resources:
   - ../../base
+  - loadbalancer.yaml
 
 # Override namespace for OCI deployment
 namespace: armor-newsletter
