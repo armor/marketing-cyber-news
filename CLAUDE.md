@@ -1,270 +1,487 @@
-# n8n-cyber-news Development Guidelines
+# CLAUDE.md
 
-Auto-generated from all feature plans. Last updated: 2025-12-13
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
----
+## Overview
 
-## MANDATORY: Deep E2E Testing (READ THIS FIRST)
+n8n-cyber-news (Armor Newsletter) is an AI-powered cybersecurity newsletter automation platform. It combines threat intelligence aggregation, AI content generation, human-in-the-loop approval workflows, and multi-channel delivery via n8n orchestration.
 
-> **"E2E tests MUST verify the system's actual behavior (network requests, database state), NOT just UI feedback. Toasts, loading spinners, and success messages are implementation details that CAN AND WILL LIE."**
+## Repository Structure
 
-### This Is Non-Negotiable
+```
+n8n-cyber-news/
+├── aci-frontend/          # React/TypeScript frontend (Vite)
+├── aci-backend/           # Go backend API server
+├── n8n-workflows/         # n8n workflow JSON definitions
+├── deployments/k8s/       # Kubernetes deployment manifests
+├── specs/                 # Feature specifications (SpecKit)
+├── agents/                # Agent coordination documents
+├── docs/                  # Documentation
+└── tests/                 # Test reports
+```
 
-**Surface-level testing is FORBIDDEN.** Every feature that touches data must prove:
+### Key Directories
 
-1. **The API was actually called** - Intercept the request, verify method and URL
-2. **The API returned success** - Check status code (200/201), not just "no error"
-3. **Data actually persisted** - Reload the page, verify data survives
-4. **Validation actually blocks** - Prove invalid submissions make NO API call
+| Directory | Purpose | Language/Tech |
+|-----------|---------|---------------|
+| `aci-frontend/` | React SPA with shadcn/ui | TypeScript, React 19, Vite 7 |
+| `aci-backend/` | REST API server | Go 1.24 |
+| `aci-backend/migrations/` | PostgreSQL migrations | SQL |
+| `n8n-workflows/` | Newsletter automation workflows | n8n JSON |
+| `deployments/k8s/` | Kubernetes manifests (Kustomize) | YAML |
+| `specs/` | Feature specs using SpecKit | Markdown |
 
-### Why This Matters
+## Tech Stack
 
-A form can show a success toast while:
-- Validation silently fails (no API call made)
-- API call fails but error isn't handled
-- Optimistic UI updates without waiting for response
-- Frontend state updates but backend never receives data
+### Frontend
+- **Framework:** React 19.2 + TypeScript 5.9
+- **Build:** Vite 7.2
+- **UI:** shadcn/ui (Radix UI + Tailwind CSS)
+- **State:** TanStack Query v5, React Context
+- **Routing:** react-router-dom v7
+- **Charts:** Recharts, Reviz
+- **Testing:** Vitest (unit), Playwright (E2E)
 
-**ALL of these bugs are invisible to surface-level "click and check toast" testing.**
+### Backend
+- **Language:** Go 1.24
+- **Framework:** Chi router
+- **Database:** PostgreSQL with pgx
+- **Cache:** Redis
+- **Auth:** JWT (RS256)
+- **AI:** OpenRouter API (Claude models)
+
+### Infrastructure
+- **Orchestration:** n8n (workflow automation)
+- **Container:** Docker
+- **Deployment:** Kubernetes (OKE)
+- **Email:** Mailpit (dev), SMTP/Mailchimp/HubSpot (prod)
+
+## Development Commands
+
+### Prerequisites
+- Node.js 22+
+- Go 1.24+
+- Docker
+- kubectl (for k8s deployment)
+
+### Frontend Development
+```bash
+cd aci-frontend
+npm install
+npm run dev          # Start dev server (localhost:5173)
+npm run build        # Production build
+npm run lint         # ESLint
+npm run test         # Vitest unit tests
+npm run test:e2e     # Playwright E2E tests
+```
+
+### Backend Development
+```bash
+cd aci-backend
+go mod download
+go run ./cmd/server          # Start server (localhost:8080)
+go test ./...                # Run tests
+go build -o aci-backend ./cmd/server
+```
+
+### Database
+```bash
+# Run migrations (from aci-backend/)
+cat migrations/*.up.sql | psql $DATABASE_URL
+
+# Seed test data
+psql $DATABASE_URL -f scripts/seed-test-data.sql
+```
+
+### Kubernetes Deployment
+```bash
+# Build and push images
+docker buildx build --platform linux/amd64 -t <registry>/aci-backend:latest --push -f aci-backend/deployments/Dockerfile aci-backend/
+docker buildx build --platform linux/amd64 -t <registry>/aci-frontend:latest --push -f aci-frontend/Dockerfile aci-frontend/
+
+# Deploy
+kubectl apply -k deployments/k8s
+
+# Port forward for local access
+kubectl port-forward -n armor-newsletter svc/aci-frontend 3000:80
+kubectl port-forward -n armor-newsletter svc/aci-backend 8080:80
+```
+
+## Architecture
+
+### API Structure
+- Base URL: `/v1/`
+- Auth: Bearer token (JWT)
+- Format: JSON with `{ data: T }` or `{ error: { code, message } }`
+
+### Key API Endpoints
+| Endpoint | Purpose |
+|----------|---------|
+| `POST /v1/auth/login` | User authentication |
+| `GET /v1/threats` | List threat articles |
+| `GET /v1/newsletters` | List newsletters |
+| `POST /v1/newsletters/:id/approve` | Approve newsletter |
+| `GET /v1/dashboard/stats` | Dashboard metrics |
+
+### n8n Workflows
+| Workflow | Purpose |
+|----------|---------|
+| `newsletter-content-ingestion` | Fetch and process threat articles |
+| `newsletter-generation` | AI-powered content generation |
+| `newsletter-approval` | Human approval workflow |
+| `newsletter-delivery-smtp` | Email delivery |
+| `engagement-webhook` | Track email engagement |
+
+## E2E Testing Gate (NON-NEGOTIABLE)
+
+> **E2E tests MUST verify actual behavior, not just UI feedback.**
+
+### Required Verification Layers
+
+| Layer | What to Verify | How to Verify |
+|-------|----------------|---------------|
+| **1. Network** | API call made | `page.waitForResponse()` |
+| **2. Status** | 200/201 returned | `response.status()` |
+| **3. Persistence** | Data survives reload | Reload page, verify data |
+| **4. Console** | Zero errors | `page.on('console')` |
+| **5. Network Errors** | No 4xx/5xx | Monitor responses |
 
 ### Deep Testing Pattern (MANDATORY)
 
 ```typescript
-// SHALLOW (FORBIDDEN) - catches nothing
+// BAD - Tests nothing (FORBIDDEN)
 await saveButton.click();
-await expect(toast).toBeVisible(); // MEANINGLESS
+await expect(toast).toBeVisible(); // LIES!
 
-// DEEP (REQUIRED) - proves the system works
-const apiResponse = await Promise.all([
-  page.waitForResponse(r =>
-    r.url().includes('/api/resource') &&
-    r.request().method() === 'PUT'
-  ),
-  saveButton.click()
-]);
-expect(apiResponse[0].status()).toBe(200);  // API actually called
-await page.reload();                          // Fresh state
-await expect(page.getByText(newValue)).toBeVisible(); // Data persisted
-```
-
-### Golden Rule
-
-> **"If you can't prove data hit the backend and persisted, you haven't tested anything."**
-
-### 5 Required Verification Layers
-
-| Layer | What to Check | How to Verify | Failure = |
-|-------|---------------|---------------|-----------|
-| 1. Network | Request actually sent | `page.waitForResponse()` | Silent failure |
-| 2. HTTP Status | Backend accepted (200/201) | `response.status()` | Rejected data |
-| 3. Persistence | Data in database | Reload page, verify visible | Lost data |
-| 4. Console Errors | Zero JS errors | Capture and assert empty | Broken UI |
-| 5. Network Errors | No 4xx/5xx | Monitor failed requests | API issues |
-
-### Deep Testing Patterns
-
-#### Form Submission (MANDATORY)
-```typescript
-// BAD - proves nothing
-await saveButton.click();
-await expect(toast).toBeVisible();
-
-// GOOD - proves API called
-const response = await Promise.all([
+// GOOD - Proves API called
+const [response] = await Promise.all([
   page.waitForResponse(r => r.url().includes('/api/') && r.request().method() === 'PUT'),
   saveButton.click()
 ]);
-expect(response[0].status()).toBe(200);
+expect(response.status()).toBe(200);
 
-// BEST - proves persistence
+// BEST - Proves persistence
 await page.reload();
 await expect(page.getByText(savedValue)).toBeVisible();
 ```
 
-#### Validation Testing (MANDATORY)
-```typescript
-// Prove validation BLOCKS the API call
-let apiCalled = false;
-page.on('request', r => {
-  if (r.url().includes('/api/')) apiCalled = true;
-});
+## Test Credentials
 
-// Try to submit with invalid/empty data
-await submitButton.click();
-await page.waitForTimeout(1000);
+| Email | Password | Role |
+|-------|----------|------|
+| `admin@test.com` | `TestPass123` | Admin |
+| `marketing@test.com` | `TestPass123` | Marketing |
+| `soc1@test.com` | `TestPass123` | SOC Analyst |
 
-// API should NOT have been called
-expect(apiCalled).toBe(false);
+## Key Documentation
 
-// Error should be visible to user
-await expect(page.locator('[role="alert"], .text-destructive')).toBeVisible();
-```
+| Document | Location |
+|----------|----------|
+| **Implementation Rules** | `CLAUDE_RULES.md` |
+| **Feature Specs** | `specs/` |
+| **API Documentation** | `aci-backend/docs/` |
+| **Test Reports** | `tests/reports/` |
 
-#### Console Error Capture (MANDATORY)
-```typescript
-const consoleErrors: string[] = [];
-page.on('console', msg => {
-  if (msg.type() === 'error') consoleErrors.push(msg.text());
-});
-page.on('pageerror', err => consoleErrors.push(err.message));
+## SpecKit Commands
 
-// ... run your tests ...
-
-// ZERO errors allowed
-expect(consoleErrors).toHaveLength(0);
-```
-
-### Anti-Patterns (AUTOMATIC FAILURE)
-
-| Anti-Pattern | Why It's Wrong | Do This Instead |
-|--------------|----------------|-----------------|
-| `expect(toast).toBeVisible()` | Toast fires before/without API | Intercept actual API call |
-| "It should work" | Zero evidence | Show test output + screenshots |
-| "Form saves correctly" | No proof of persistence | Reload page, verify data |
-| "Validation works" | Could fail silently | Prove API was NOT called |
-| "No errors in console" | Didn't capture them | Capture + assert length = 0 |
-| Testing only happy path | Misses edge cases | Test invalid states too |
-| `await page.click()` only | No verification | Always verify result |
-
-### Test Completion Checklist
-
-Before marking ANY form/CRUD feature complete:
-
-- [ ] **API Intercepted**: `waitForResponse()` captured the request
-- [ ] **Status Verified**: Response status is 200/201
-- [ ] **Persistence Proven**: Data visible after `page.reload()`
-- [ ] **Validation Tested**: Invalid submission makes NO API call
-- [ ] **Errors Captured**: Console errors array is empty
-- [ ] **Network Clean**: No 4xx/5xx responses
-- [ ] **Screenshots Taken**: Visual proof of each state
-
-### PR Approval Evidence Requirements
-
-**"It should work" is NOT evidence.** PRs must include:
-
-```
-VERIFICATION EVIDENCE:
-├─ API Calls: [list with method + URL + status]
-├─ Persistence: [reload test passed]
-├─ Validation: [API blocked when invalid: YES]
-├─ Console Errors: 0
-├─ Network Errors: 0
-├─ Screenshots: [paths to visual proof]
-└─ Test Output: [actual playwright output]
+```bash
+/speckit.specify    # Create feature specification
+/speckit.plan       # Generate implementation plan
+/speckit.tasks      # Generate task list
+/speckit.implement  # Execute implementation
+/speckit.analyze    # Cross-artifact analysis
 ```
 
 ---
 
-## Active Technologies
-- TypeScript 5.9 with React 19.2 + React 19.2, Vite 7.2, shadcn/ui (Radix UI + Tailwind), Reviz, TanStack Query v5, react-router-dom v7 (002-nexus-frontend)
-- N/A (frontend-only, backend manages persistence) (002-nexus-frontend)
+## Code Quality Standards (MANDATORY)
 
-- TypeScript 5.9, React 19.2 + Vite 7.2, shadcn/ui, Reviz, Ant Design, TanStack Query, react-router-dom 7.x (002-nexus-frontend)
+### Design Patterns - Gang of Four
 
-## Project Structure
+All code MUST use appropriate Gang of Four design patterns:
 
-```text
-src/
-tests/
+| Pattern | When to Use | Example in Codebase |
+|---------|-------------|---------------------|
+| **Factory** | Object creation | Service factories, handler construction |
+| **Singleton** | Single instance needed | Config, DB pool, Logger |
+| **Strategy** | Interchangeable algorithms | Notification channels, auth providers |
+| **Observer** | Event-driven systems | WebSocket handlers, event emitters |
+| **Decorator** | Add behavior dynamically | Middleware chain, logging wrappers |
+| **Adapter** | Interface compatibility | External API clients |
+| **Repository** | Data access abstraction | All database operations |
+| **Builder** | Complex object construction | Query builders, response builders |
+
+### SOLID Principles (NON-NEGOTIABLE)
+
+| Principle | Rule | Violation Example |
+|-----------|------|-------------------|
+| **S**ingle Responsibility | One class/function = one job | Handler doing validation + business logic + DB |
+| **O**pen/Closed | Open for extension, closed for modification | Switch statements for new types |
+| **L**iskov Substitution | Subtypes must be substitutable | Interface violations |
+| **I**nterface Segregation | Many specific interfaces > one general | God interfaces with 20+ methods |
+| **D**ependency Inversion | Depend on abstractions, not concretions | Direct DB calls in handlers |
+
+### DRY - Don't Repeat Yourself
+
+```go
+// BAD - Repeated code
+func GetUser(id string) (*User, error) {
+    row := db.QueryRow("SELECT * FROM users WHERE id = $1", id)
+    // ... parsing logic
+}
+func GetUserByEmail(email string) (*User, error) {
+    row := db.QueryRow("SELECT * FROM users WHERE email = $1", email)
+    // ... same parsing logic duplicated
+}
+
+// GOOD - DRY with shared implementation
+func (r *UserRepo) scanUser(row pgx.Row) (*User, error) {
+    // Single parsing implementation
+}
+func (r *UserRepo) GetUser(id string) (*User, error) {
+    row := r.db.QueryRow(ctx, userByIDQuery, id)
+    return r.scanUser(row)
+}
 ```
 
-## Commands
+### No Nested If Statements (CLEAN CODE)
 
-npm test && npm run lint
+Nested if statements are a **clean code violation**. Use guard clauses, early returns, and extract methods.
 
-## Code Style
+```go
+// BAD - Nested if (FORBIDDEN)
+func ProcessRequest(req *Request) error {
+    if req != nil {
+        if req.User != nil {
+            if req.User.IsActive {
+                if req.Data != nil {
+                    // actual logic buried 4 levels deep
+                }
+            }
+        }
+    }
+    return nil
+}
 
-TypeScript 5.9, React 19.2: Follow standard conventions
+// GOOD - Guard clauses with early returns
+func ProcessRequest(req *Request) error {
+    if req == nil {
+        return ErrNilRequest
+    }
+    if req.User == nil {
+        return ErrNilUser
+    }
+    if !req.User.IsActive {
+        return ErrInactiveUser
+    }
+    if req.Data == nil {
+        return ErrNilData
+    }
 
-## Recent Changes
-- 004-ai-newsletter-automation: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
-- 002-nexus-frontend: Added TypeScript 5.9 with React 19.2 + React 19.2, Vite 7.2, shadcn/ui (Radix UI + Tailwind), Reviz, TanStack Query v5, react-router-dom v7
-
-- 002-nexus-frontend: Added TypeScript 5.9, React 19.2 + Vite 7.2, shadcn/ui, Reviz, Ant Design, TanStack Query, react-router-dom 7.x
-
-<!-- MANUAL ADDITIONS START -->
-
-## E2E Testing Standards (MANDATORY)
-
-### Critical Rule: Verify Behavior, Not Symptoms
-
-> "E2E tests must verify the system's actual behavior (network requests, database state), not just UI feedback. Toasts, loading spinners, and success messages are implementation details that can lie."
-
-### Form Submission Tests MUST Verify:
-
-1. **Network request actually sent** - Use `page.waitForResponse()` or request interception
-2. **Correct HTTP method and status** - Verify PUT/POST returns 200/201
-3. **Data persistence** - Reload page and verify data still present
-4. **Never trust toasts alone** - UI feedback can fire before/without actual submission
-
-### Required Test Pattern for CRUD Operations:
+    // Clean, flat logic
+    return processData(req.Data)
+}
+```
 
 ```typescript
-// BAD - only checks UI (THIS WILL MISS BUGS)
-await saveButton.click();
-await expect(toast).toBeVisible(); // Toast doesn't prove anything!
+// BAD - Nested conditions (FORBIDDEN)
+if (user) {
+    if (user.permissions) {
+        if (user.permissions.includes('admin')) {
+            // logic
+        }
+    }
+}
 
-// GOOD - verifies actual API call
-const putResponse = await Promise.all([
-  page.waitForResponse(r =>
-    r.url().includes('/api/resource') &&
-    r.request().method() === 'PUT'
-  ),
-  saveButton.click()
-]);
-expect(putResponse[0].status()).toBe(200);
-
-// BETTER - also verify persistence survives reload
-await page.reload();
-await expect(page.getByText(newValue)).toBeVisible();
+// GOOD - Guard clauses or optional chaining
+if (!user?.permissions?.includes('admin')) {
+    return <AccessDenied />;
+}
+// Clean logic here
 ```
 
-### Form Validation Testing:
+---
 
-- Test submission with each required field empty
-- Verify validation errors block submission (no network request made)
-- Test that fixing validation allows submission
-- Use request spy to confirm NO API call when validation fails:
+## Logging & Observability Standards
+
+### Logs MUST Go to stdout (Docker/K8s Requirement)
+
+All logs MUST write to stdout/stderr for Docker and Kubernetes compatibility:
+
+```go
+// BAD - File logging (breaks containerization)
+log.SetOutput(file)
+
+// GOOD - stdout logging with zerolog
+logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+
+// With structured fields
+logger.Info().
+    Str("service", "aci-backend").
+    Str("request_id", requestID).
+    Msg("Processing request")
+```
 
 ```typescript
-let apiCalled = false;
-page.on('request', r => {
-  if (r.url().includes('/api/endpoint')) apiCalled = true;
-});
-await submitButton.click();
-await page.waitForTimeout(1000);
-expect(apiCalled).toBe(false); // Validation should block API call
+// BAD - File logging
+fs.appendFileSync('app.log', message);
+
+// GOOD - Console logging (stdout)
+console.log(JSON.stringify({ level: 'info', msg: 'Request processed', requestId }));
 ```
 
-### Before Marking Form Feature Complete:
+### OpenTelemetry Integration (MANDATORY)
 
-- [ ] Happy path: fill all fields -> submit -> verify API call -> verify persistence
-- [ ] Validation: submit with required fields empty -> verify NO API call
-- [ ] Error handling: simulate API failure -> verify error shown
-- [ ] Edit mode: load existing data -> modify -> save -> reload -> verify changes
-- [ ] Console errors: capture and assert zero errors
+All code changes MUST include OpenTelemetry instrumentation:
 
-### Anti-Patterns to Flag in Code Review:
+```go
+// Backend - Trace spans for all operations
+import "go.opentelemetry.io/otel"
+
+func (s *Service) ProcessItem(ctx context.Context, id string) error {
+    ctx, span := otel.Tracer("aci-backend").Start(ctx, "ProcessItem")
+    defer span.End()
+
+    span.SetAttributes(
+        attribute.String("item.id", id),
+    )
+
+    // ... operation logic
+
+    if err != nil {
+        span.RecordError(err)
+        span.SetStatus(codes.Error, err.Error())
+        return err
+    }
+    return nil
+}
+```
 
 ```typescript
-// DANGEROUS - validation can fail silently
-const handleSubmit = async () => {
-  if (!validate()) return; // Silent return - no user feedback!
-  await api.save(data);
-  toast.success('Saved!');
-};
-
-// CORRECT - make validation failure visible
-const handleSubmit = async () => {
-  const errors = validate();
-  if (Object.keys(errors).length > 0) {
-    setErrors(errors); // Show errors to user
-    return;
-  }
-  // Only show toast AFTER successful API response
-  const response = await api.save(data);
-  if (response.ok) toast.success('Saved!');
-};
+// Frontend - Performance marks
+performance.mark('api-call-start');
+const response = await apiClient.get('/endpoint');
+performance.mark('api-call-end');
+performance.measure('API Call Duration', 'api-call-start', 'api-call-end');
 ```
 
-<!-- MANUAL ADDITIONS END -->
+**Required Instrumentation:**
+- HTTP requests (automatic with OTEL middleware)
+- Database queries (query text, duration)
+- External API calls (service name, endpoint)
+- Business operations (custom spans)
+- Error recording with stack traces
+
+---
+
+## Mandatory Code Review Gate
+
+### ALL Code Changes MUST Be Reviewed
+
+Before ANY code is merged or deployed, it MUST pass review by:
+
+1. **`code-reviewer` agent** - Code quality, patterns, DRY, SOLID compliance
+2. **`security-reviewer` agent** - Security vulnerabilities, OWASP compliance
+
+### Review Checklist
+
+```
+CODE REVIEW REQUIREMENTS:
+├─ [ ] Gang of Four patterns used appropriately
+├─ [ ] SOLID principles followed
+├─ [ ] DRY - No duplicate code
+├─ [ ] No nested if statements (guard clauses used)
+├─ [ ] Logging goes to stdout (no file logging)
+├─ [ ] OpenTelemetry spans added for new operations
+├─ [ ] E2E tests verify actual behavior (not just UI)
+├─ [ ] Error handling is comprehensive
+└─ [ ] TypeScript has no `any` types
+
+SECURITY REVIEW REQUIREMENTS:
+├─ [ ] No SQL injection vulnerabilities
+├─ [ ] No XSS vulnerabilities
+├─ [ ] No hardcoded secrets
+├─ [ ] Input validation on all endpoints
+├─ [ ] Authentication/authorization checks
+├─ [ ] Rate limiting on sensitive endpoints
+├─ [ ] CORS properly configured
+└─ [ ] No sensitive data in logs
+```
+
+### How to Request Review
+
+```bash
+# After implementation, always run:
+# 1. Code review
+Task: code-reviewer agent - Review the changes in [files]
+
+# 2. Security review
+Task: security-reviewer agent - Security audit of [files]
+```
+
+**NO EXCEPTIONS** - All PRs must include evidence of both reviews passing.
+
+---
+
+## OCI Infrastructure (MANDATORY)
+
+### Always Use OCI_MARKETING Profile
+
+This project is deployed on Oracle Cloud Infrastructure (OCI) using the **armormarketing** tenant. Always use the `OCI_MARKETING` profile for all OCI operations.
+
+```bash
+# Always specify the profile for OCI CLI commands
+export OCI_CLI_PROFILE=OCI_MARKETING
+
+# Or use --profile flag
+oci compute instance list --profile OCI_MARKETING
+```
+
+### OCI Configuration
+
+| Setting | Value |
+|---------|-------|
+| **Tenant** | armormarketing |
+| **Region** | us-ashburn-1 |
+| **Profile Name** | OCI_MARKETING |
+| **Config File** | `~/.oci/config` |
+| **Key File** | `~/.oci/oci_api_key.pem` |
+
+### Kubernetes Cluster (OKE)
+
+| Resource | Value |
+|----------|-------|
+| **Cluster** | OKE in us-ashburn-1 |
+| **Namespace** | armor-newsletter |
+| **Frontend LB** | armor-frontend-lb |
+| **Backend LB** | armor-backend-lb |
+
+### Static IP Addresses (RESERVED)
+
+These IPs are reserved and will persist across LoadBalancer recreation:
+
+| Service | IP Address | OCID |
+|---------|------------|------|
+| **Frontend** | 129.158.205.38 | `ocid1.floatingip.oc1.iad.aaaaaaaapromx47ltswdrbkvpez5rsqh3hskbu52tvhop7bjlohihtodrclq` |
+| **Backend** | 129.153.33.152 | `ocid1.floatingip.oc1.iad.aaaaaaaanz4kvvexwl6d3qeojz6y3kbumcq7o35g2s3pyudcpym4e6hgliza` |
+| **OKE API** | 129.158.35.209 | `ocid1.publicip.oc1.iad.amaaaaaajkki2oaabytpybjeo6aofwcdirj44ws4tbnqgnvkg5tbkcgqg6yq` |
+
+### Endpoints
+
+| Service | URL |
+|---------|-----|
+| **Frontend** | http://129.158.205.38 |
+| **Backend API** | http://129.153.33.152:8080 |
+
+### Common OCI Commands
+
+```bash
+# List reserved public IPs
+oci network public-ip list --scope REGION --compartment-id $COMPARTMENT_ID --profile OCI_MARKETING
+
+# Create reserved public IP
+oci network public-ip create --compartment-id $COMPARTMENT_ID --lifetime RESERVED --display-name "armor-frontend-ip" --profile OCI_MARKETING
+
+# List load balancers
+oci lb load-balancer list --compartment-id $COMPARTMENT_ID --profile OCI_MARKETING
+```
