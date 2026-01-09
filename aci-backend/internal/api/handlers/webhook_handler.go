@@ -348,10 +348,10 @@ func (h *WebhookHandler) handleBulkImport(ctx context.Context, data json.RawMess
 	}
 
 	return map[string]interface{}{
-		"total":       len(bulkData.Articles),
-		"success":     successCount,
-		"failed":      len(errors),
-		"errors":      errorMessages,
+		"total":   len(bulkData.Articles),
+		"success": successCount,
+		"failed":  len(errors),
+		"errors":  errorMessages,
 	}, nil
 }
 

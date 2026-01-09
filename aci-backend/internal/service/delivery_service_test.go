@@ -150,7 +150,7 @@ func TestSendIssue_MissingRequiredFields(t *testing.T) {
 		IssueNumber:         1,
 		IssueDate:           time.Now(),
 		Status:              domain.IssueStatusApproved,
-		SelectedSubjectLine: nil, // Missing
+		SelectedSubjectLine: nil,                        // Missing
 		Blocks:              []domain.NewsletterBlock{}, // Empty
 		CreatedAt:           time.Now(),
 		UpdatedAt:           time.Now(),

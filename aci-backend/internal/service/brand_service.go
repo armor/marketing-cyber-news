@@ -64,8 +64,8 @@ type BrandCenterService struct {
 
 // BrandServiceConfig holds configuration for the brand service
 type BrandServiceConfig struct {
-	ChunkSize          int
-	ChunkOverlap       int
+	ChunkSize           int
+	ChunkOverlap        int
 	EmbeddingVectorSize int
 }
 
@@ -95,8 +95,8 @@ func NewBrandCenterService(
 	}
 	if config == nil {
 		config = &BrandServiceConfig{
-			ChunkSize:          500,
-			ChunkOverlap:       50,
+			ChunkSize:           500,
+			ChunkOverlap:        50,
 			EmbeddingVectorSize: 384,
 		}
 	}
@@ -361,9 +361,9 @@ func (s *BrandCenterService) IngestBrandAsset(ctx context.Context, tenantID uuid
 		// Store in vector database
 		chunkID := fmt.Sprintf("%s_%s_%d", store.ID.String(), filename, i)
 		metadata := map[string]interface{}{
-			"filename":   filename,
+			"filename":    filename,
 			"chunk_index": i,
-			"type":       "guideline",
+			"type":        "guideline",
 		}
 
 		err = s.vectorStore.Store(ctx, collection, chunkID, chunk, embedding, metadata)

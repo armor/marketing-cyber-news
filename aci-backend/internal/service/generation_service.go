@@ -26,11 +26,11 @@ type GenerationRequest struct {
 
 // GenerationResult contains the result of issue generation
 type GenerationResult struct {
-	Issue                *domain.NewsletterIssue  `json:"issue"`
-	Blocks               []*domain.NewsletterBlock `json:"blocks"`
-	ContentRecommendations []*ContentRecommendation `json:"content_recommendations"`
-	BrandVoiceValidation *BrandVoiceValidationResult `json:"brand_voice_validation,omitempty"`
-	GenerationMetadata   map[string]interface{}   `json:"generation_metadata"`
+	Issue                  *domain.NewsletterIssue     `json:"issue"`
+	Blocks                 []*domain.NewsletterBlock   `json:"blocks"`
+	ContentRecommendations []*ContentRecommendation    `json:"content_recommendations"`
+	BrandVoiceValidation   *BrandVoiceValidationResult `json:"brand_voice_validation,omitempty"`
+	GenerationMetadata     map[string]interface{}      `json:"generation_metadata"`
 }
 
 // GenerationService handles newsletter issue generation
@@ -167,15 +167,15 @@ func (s *GenerationService) CreateDraftIssue(ctx context.Context, req *Generatio
 
 	// Create the issue
 	issue := &domain.NewsletterIssue{
-		ID:              uuid.New(),
-		ConfigurationID: req.ConfigurationID,
-		SegmentID:       req.SegmentID,
-		IssueNumber:     nextNumber,
-		IssueDate:       issueDate,
-		SubjectLines:    subjectLines,
-		Status:          domain.IssueStatusDraft,
-		Version:         1,
-		AIModelUsed:     stringPtr(config.AIModel),
+		ID:                uuid.New(),
+		ConfigurationID:   req.ConfigurationID,
+		SegmentID:         req.SegmentID,
+		IssueNumber:       nextNumber,
+		IssueDate:         issueDate,
+		SubjectLines:      subjectLines,
+		Status:            domain.IssueStatusDraft,
+		Version:           1,
+		AIModelUsed:       stringPtr(config.AIModel),
 		PromptVersionUsed: intPtr(config.PromptVersion),
 		GenerationMetadata: map[string]interface{}{
 			"generated_at":    now.Format(time.RFC3339),

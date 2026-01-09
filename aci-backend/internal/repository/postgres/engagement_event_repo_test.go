@@ -158,7 +158,7 @@ func TestEngagementEventRepository_Integration_Create(t *testing.T) {
 	// Example implementation (requires actual DB):
 	// db := setupTestDB(t)
 	// defer cleanupTestDB(t, db)
-	// 
+	//
 	// repo := NewEngagementEventRepository(db)
 	// ctx := context.Background()
 	//

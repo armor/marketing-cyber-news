@@ -223,11 +223,11 @@ type CalendarView struct {
 
 // CalendarSummary provides aggregate statistics for a calendar view.
 type CalendarSummary struct {
-	TotalEntries     int                          `json:"total_entries"`
-	ByChannel        map[Channel]int              `json:"by_channel"`
-	ByStatus         map[PublishingStatus]int     `json:"by_status"`
-	UpcomingToday    int                          `json:"upcoming_today"`
-	UpcomingThisWeek int                          `json:"upcoming_this_week"`
+	TotalEntries     int                      `json:"total_entries"`
+	ByChannel        map[Channel]int          `json:"by_channel"`
+	ByStatus         map[PublishingStatus]int `json:"by_status"`
+	UpcomingToday    int                      `json:"upcoming_today"`
+	UpcomingThisWeek int                      `json:"upcoming_this_week"`
 }
 
 // NewCalendarSummary creates an empty summary with initialized maps.

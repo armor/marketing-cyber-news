@@ -16,6 +16,7 @@ type Config struct {
 	AI       AIConfig
 	Redis    RedisConfig
 	Logger   LoggerConfig
+	Auth     AuthConfig
 }
 
 type ServerConfig struct {
@@ -23,18 +24,18 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	URL                string
-	MaxConns           int
-	MinConns           int
-	MaxConnLifetime    time.Duration
-	MaxConnIdleTime    time.Duration
+	URL             string
+	MaxConns        int
+	MinConns        int
+	MaxConnLifetime time.Duration
+	MaxConnIdleTime time.Duration
 }
 
 type JWTConfig struct {
-	PrivateKeyPath       string
-	PublicKeyPath        string
-	AccessTokenExpiry    time.Duration
-	RefreshTokenExpiry   time.Duration
+	PrivateKeyPath     string
+	PublicKeyPath      string
+	AccessTokenExpiry  time.Duration
+	RefreshTokenExpiry time.Duration
 }
 
 type N8NConfig struct {
@@ -57,6 +58,15 @@ type LoggerConfig struct {
 	Level string
 }
 
+type AuthConfig struct {
+	SignupMode              string // open, email_verification, admin_approval, invitation_only
+	AllowedEmailDomain      string // Required email domain (default: armor.com)
+	LockoutThreshold        int    // Failed attempts before lockout
+	LockoutDurationMinutes  int    // Lockout duration in minutes
+	InvitationExpiryHours   int    // Hours until invitation expires
+	VerificationExpiryHours int    // Hours until verification link expires
+}
+
 // Load loads configuration from environment variables
 func Load() (*Config, error) {
 	// Load .env file if exists (optional)
@@ -67,11 +77,11 @@ func Load() (*Config, error) {
 			Port: getEnvInt("SERVER_PORT", 8080),
 		},
 		Database: DatabaseConfig{
-			URL:                os.Getenv("DATABASE_URL"),
-			MaxConns:           getEnvInt("DB_MAX_CONNS", 25),
-			MinConns:           getEnvInt("DB_MIN_CONNS", 5),
-			MaxConnLifetime:    getEnvDuration("DB_MAX_CONN_LIFETIME", time.Hour),
-			MaxConnIdleTime:    getEnvDuration("DB_MAX_CONN_IDLE_TIME", 30*time.Minute),
+			URL:             os.Getenv("DATABASE_URL"),
+			MaxConns:        getEnvInt("DB_MAX_CONNS", 25),
+			MinConns:        getEnvInt("DB_MIN_CONNS", 5),
+			MaxConnLifetime: getEnvDuration("DB_MAX_CONN_LIFETIME", time.Hour),
+			MaxConnIdleTime: getEnvDuration("DB_MAX_CONN_IDLE_TIME", 30*time.Minute),
 		},
 		JWT: JWTConfig{
 			PrivateKeyPath:     os.Getenv("JWT_PRIVATE_KEY_PATH"),
@@ -94,6 +104,14 @@ func Load() (*Config, error) {
 		},
 		Logger: LoggerConfig{
 			Level: getEnvString("LOG_LEVEL", "info"),
+		},
+		Auth: AuthConfig{
+			SignupMode:              getEnvString("AUTH_SIGNUP_MODE", "open"),
+			AllowedEmailDomain:      getEnvString("AUTH_ALLOWED_EMAIL_DOMAIN", "armor.com"),
+			LockoutThreshold:        getEnvInt("AUTH_LOCKOUT_THRESHOLD", 5),
+			LockoutDurationMinutes:  getEnvInt("AUTH_LOCKOUT_DURATION_MINUTES", 30),
+			InvitationExpiryHours:   getEnvInt("AUTH_INVITATION_EXPIRY_HOURS", 72),
+			VerificationExpiryHours: getEnvInt("AUTH_VERIFICATION_EXPIRY_HOURS", 24),
 		},
 	}
 
@@ -148,6 +166,29 @@ func (c *Config) Validate() error {
 
 	if c.AI.TimeoutSecs <= 0 {
 		return fmt.Errorf("AI_TIMEOUT_SECS must be greater than 0")
+	}
+
+	// Validate Auth config
+	validSignupModes := map[string]bool{
+		"open":               true,
+		"email_verification": true,
+		"admin_approval":     true,
+		"invitation_only":    true,
+	}
+	if !validSignupModes[c.Auth.SignupMode] {
+		return fmt.Errorf("AUTH_SIGNUP_MODE must be one of: open, email_verification, admin_approval, invitation_only")
+	}
+
+	if c.Auth.AllowedEmailDomain == "" {
+		return fmt.Errorf("AUTH_ALLOWED_EMAIL_DOMAIN is required")
+	}
+
+	if c.Auth.LockoutThreshold < 1 {
+		return fmt.Errorf("AUTH_LOCKOUT_THRESHOLD must be at least 1")
+	}
+
+	if c.Auth.LockoutDurationMinutes < 1 {
+		return fmt.Errorf("AUTH_LOCKOUT_DURATION_MINUTES must be at least 1")
 	}
 
 	return nil

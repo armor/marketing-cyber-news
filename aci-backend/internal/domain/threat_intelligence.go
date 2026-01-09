@@ -47,24 +47,7 @@ func (p Priority) IsValid() bool {
 	}
 }
 
-// SubscriptionTier represents user subscription levels
-type SubscriptionTier string
-
-const (
-	SubscriptionFree     SubscriptionTier = "free"
-	SubscriptionPremium  SubscriptionTier = "premium"
-	SubscriptionEnterprise SubscriptionTier = "enterprise"
-)
-
-// IsValid validates the subscription tier
-func (s SubscriptionTier) IsValid() bool {
-	switch s {
-	case SubscriptionFree, SubscriptionPremium, SubscriptionEnterprise:
-		return true
-	default:
-		return false
-	}
-}
+// Note: SubscriptionTier type and constants are defined in user.go
 
 // ExternalReference represents a reference to external sources
 type ExternalReference struct {
@@ -211,13 +194,13 @@ func (t *TimelineEvent) IsValid() error {
 
 // TechnicalAnalysis represents detailed technical analysis
 type TechnicalAnalysis struct {
-	Summary              string   `json:"summary"`                         // Executive summary
-	AttackChain          []string `json:"attack_chain"`                    // Step-by-step attack progression
-	Indicators           []string `json:"indicators"`                      // Observable indicators
-	DetectionMethods     []string `json:"detection_methods"`               // How to detect this threat
-	MitigationStrategies []string `json:"mitigation_strategies"`           // How to mitigate
-	ToolsUsed            []string `json:"tools_used,omitempty"`            // Tools used by attackers
-	Vulnerabilities      []string `json:"vulnerabilities,omitempty"`       // CVEs and vulnerabilities exploited
+	Summary              string   `json:"summary"`                   // Executive summary
+	AttackChain          []string `json:"attack_chain"`              // Step-by-step attack progression
+	Indicators           []string `json:"indicators"`                // Observable indicators
+	DetectionMethods     []string `json:"detection_methods"`         // How to detect this threat
+	MitigationStrategies []string `json:"mitigation_strategies"`     // How to mitigate
+	ToolsUsed            []string `json:"tools_used,omitempty"`      // Tools used by attackers
+	Vulnerabilities      []string `json:"vulnerabilities,omitempty"` // CVEs and vulnerabilities exploited
 }
 
 // IsValid validates the technical analysis structure
@@ -288,19 +271,19 @@ func (t *ThreatActorProfile) IsValid() error {
 
 // DeepDive represents comprehensive threat intelligence analysis
 type DeepDive struct {
-	ID                 uuid.UUID           `json:"id"`
-	ArticleID          uuid.UUID           `json:"article_id"`
-	ExecutiveSummary   string              `json:"executive_summary"`
-	TechnicalAnalysis  TechnicalAnalysis   `json:"technical_analysis"`
-	Timeline           []TimelineEvent     `json:"timeline"`
-	MitreTechniques    []MitreTechnique    `json:"mitre_techniques"`
-	IOCs               []IOC               `json:"iocs"`
-	ThreatActors       []ThreatActorProfile `json:"threat_actors,omitempty"`
-	AffectedProducts   []string            `json:"affected_products,omitempty"`
-	RelatedThreats     []uuid.UUID         `json:"related_threats,omitempty"` // Article IDs
-	RequiredTier       SubscriptionTier    `json:"required_tier"`             // Minimum tier required
-	CreatedAt          time.Time           `json:"created_at"`
-	UpdatedAt          time.Time           `json:"updated_at"`
+	ID                uuid.UUID            `json:"id"`
+	ArticleID         uuid.UUID            `json:"article_id"`
+	ExecutiveSummary  string               `json:"executive_summary"`
+	TechnicalAnalysis TechnicalAnalysis    `json:"technical_analysis"`
+	Timeline          []TimelineEvent      `json:"timeline"`
+	MitreTechniques   []MitreTechnique     `json:"mitre_techniques"`
+	IOCs              []IOC                `json:"iocs"`
+	ThreatActors      []ThreatActorProfile `json:"threat_actors,omitempty"`
+	AffectedProducts  []string             `json:"affected_products,omitempty"`
+	RelatedThreats    []uuid.UUID          `json:"related_threats,omitempty"` // Article IDs
+	RequiredTier      SubscriptionTier     `json:"required_tier"`             // Minimum tier required
+	CreatedAt         time.Time            `json:"created_at"`
+	UpdatedAt         time.Time            `json:"updated_at"`
 }
 
 // Validate performs validation on the DeepDive

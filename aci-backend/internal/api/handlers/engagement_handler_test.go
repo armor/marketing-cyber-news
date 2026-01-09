@@ -317,12 +317,12 @@ func TestHandleWebhook_GenericClickEvent(t *testing.T) {
 
 	// Create request
 	payload := map[string]interface{}{
-		"event_type":  "click",
-		"contact_id":  contactID.String(),
-		"issue_id":    issueID.String(),
-		"clicked_url": clickedURL,
-		"utm_source":  "newsletter",
-		"utm_medium":  "email",
+		"event_type":   "click",
+		"contact_id":   contactID.String(),
+		"issue_id":     issueID.String(),
+		"clicked_url":  clickedURL,
+		"utm_source":   "newsletter",
+		"utm_medium":   "email",
 		"utm_campaign": "weekly",
 	}
 

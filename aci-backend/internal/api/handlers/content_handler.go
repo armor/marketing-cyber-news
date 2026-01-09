@@ -430,22 +430,22 @@ func (h *ContentHandler) CreateContentItem(w http.ResponseWriter, r *http.Reques
 	}
 
 	item := &domain.ContentItem{
-		SourceID:      req.SourceID,
-		Title:         req.Title,
-		URL:           req.URL,
-		Summary:       req.Summary,
-		Content:       req.Content,
-		ContentType:   domain.ContentType(req.ContentType),
-		TopicTags:     req.TopicTags,
-		FrameworkTags: req.FrameworkTags,
-		IndustryTags:  req.IndustryTags,
-		BuyerStage:    req.BuyerStage,
-		PartnerTags:   req.PartnerTags,
-		Author:        req.Author,
-		PublishDate:   req.PublishDate,
-		WordCount:     req.WordCount,
-		ImageURL:      req.ImageURL,
-		TrustScore:    req.TrustScore,
+		SourceID:       req.SourceID,
+		Title:          req.Title,
+		URL:            req.URL,
+		Summary:        req.Summary,
+		Content:        req.Content,
+		ContentType:    domain.ContentType(req.ContentType),
+		TopicTags:      req.TopicTags,
+		FrameworkTags:  req.FrameworkTags,
+		IndustryTags:   req.IndustryTags,
+		BuyerStage:     req.BuyerStage,
+		PartnerTags:    req.PartnerTags,
+		Author:         req.Author,
+		PublishDate:    req.PublishDate,
+		WordCount:      req.WordCount,
+		ImageURL:       req.ImageURL,
+		TrustScore:     req.TrustScore,
 		RelevanceScore: req.RelevanceScore,
 	}
 
@@ -621,8 +621,8 @@ func (h *ContentHandler) GetFreshContent(w http.ResponseWriter, r *http.Request)
 	response.JSON(w, http.StatusOK, map[string]interface{}{
 		"data": items,
 		"meta": map[string]interface{}{
-			"count":           len(items),
-			"days_threshold":  daysThreshold,
+			"count":          len(items),
+			"days_threshold": daysThreshold,
 		},
 	})
 }
@@ -687,15 +687,15 @@ type CreateContentItemRequest struct {
 
 // UpdateContentItemRequest represents a request to update a content item
 type UpdateContentItemRequest struct {
-	Title          *string   `json:"title,omitempty"`
-	Summary        *string   `json:"summary,omitempty"`
-	Content        *string   `json:"content,omitempty"`
-	TopicTags      []string  `json:"topic_tags,omitempty"`
-	FrameworkTags  []string  `json:"framework_tags,omitempty"`
-	IndustryTags   []string  `json:"industry_tags,omitempty"`
-	TrustScore     *float64  `json:"trust_score,omitempty"`
-	RelevanceScore *float64  `json:"relevance_score,omitempty"`
-	IsActive       *bool     `json:"is_active,omitempty"`
+	Title          *string  `json:"title,omitempty"`
+	Summary        *string  `json:"summary,omitempty"`
+	Content        *string  `json:"content,omitempty"`
+	TopicTags      []string `json:"topic_tags,omitempty"`
+	FrameworkTags  []string `json:"framework_tags,omitempty"`
+	IndustryTags   []string `json:"industry_tags,omitempty"`
+	TrustScore     *float64 `json:"trust_score,omitempty"`
+	RelevanceScore *float64 `json:"relevance_score,omitempty"`
+	IsActive       *bool    `json:"is_active,omitempty"`
 }
 
 // ContentSelectionRequest represents a request to select content for a segment

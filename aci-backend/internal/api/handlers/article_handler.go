@@ -68,36 +68,36 @@ type SourceSummary struct {
 
 // ArticleResponse represents a single article in list view
 type ArticleResponse struct {
-	ID                 uuid.UUID               `json:"id"`
-	Title              string                  `json:"title"`
-	Slug               string                  `json:"slug"`
-	Summary            *string                 `json:"summary,omitempty"`
-	Category           *CategorySummary        `json:"category,omitempty"`
-	Source             *SourceSummary          `json:"source,omitempty"`
-	SourceURL          string                  `json:"source_url"`
-	Severity           string                  `json:"severity"`
-	Tags               []string                `json:"tags"`
-	CVEs               []string                `json:"cves"`
-	Vendors            []string                `json:"vendors"`
-	Industries         []domain.Industry       `json:"industries,omitempty"`
-	HasDeepDive        bool                    `json:"has_deep_dive"`
-	ReadingTimeMinutes int                     `json:"reading_time_minutes"`
-	ViewCount          int                     `json:"view_count"`
-	PublishedAt        string                  `json:"published_at"`
+	ID                 uuid.UUID         `json:"id"`
+	Title              string            `json:"title"`
+	Slug               string            `json:"slug"`
+	Summary            *string           `json:"summary,omitempty"`
+	Category           *CategorySummary  `json:"category,omitempty"`
+	Source             *SourceSummary    `json:"source,omitempty"`
+	SourceURL          string            `json:"source_url"`
+	Severity           string            `json:"severity"`
+	Tags               []string          `json:"tags"`
+	CVEs               []string          `json:"cves"`
+	Vendors            []string          `json:"vendors"`
+	Industries         []domain.Industry `json:"industries,omitempty"`
+	HasDeepDive        bool              `json:"has_deep_dive"`
+	ReadingTimeMinutes int               `json:"reading_time_minutes"`
+	ViewCount          int               `json:"view_count"`
+	PublishedAt        string            `json:"published_at"`
 }
 
 // ArticleDetailResponse represents a full article with all details
 type ArticleDetailResponse struct {
 	ArticleResponse
-	Content            string                      `json:"content"`
-	ThreatType         *string                     `json:"threat_type,omitempty"`
-	AttackVector       *string                     `json:"attack_vector,omitempty"`
-	ImpactAssessment   *string                     `json:"impact_assessment,omitempty"`
-	RecommendedActions []string                    `json:"recommended_actions,omitempty"`
-	IOCs               []domain.IOC                `json:"iocs,omitempty"`
-	ArmorCTA           *domain.ArmorCTA            `json:"armor_cta,omitempty"`
-	ExternalReferences []domain.ExternalReference  `json:"external_references,omitempty"`
-	Recommendations    []domain.Recommendation     `json:"recommendations,omitempty"`
+	Content            string                     `json:"content"`
+	ThreatType         *string                    `json:"threat_type,omitempty"`
+	AttackVector       *string                    `json:"attack_vector,omitempty"`
+	ImpactAssessment   *string                    `json:"impact_assessment,omitempty"`
+	RecommendedActions []string                   `json:"recommended_actions,omitempty"`
+	IOCs               []domain.IOC               `json:"iocs,omitempty"`
+	ArmorCTA           *domain.ArmorCTA           `json:"armor_cta,omitempty"`
+	ExternalReferences []domain.ExternalReference `json:"external_references,omitempty"`
+	Recommendations    []domain.Recommendation    `json:"recommendations,omitempty"`
 }
 
 // List handles GET /v1/articles - returns paginated list of articles
@@ -454,7 +454,6 @@ func toArticleDetailResponse(article *domain.Article) ArticleDetailResponse {
 		Recommendations:    article.Recommendations,
 	}
 }
-
 
 // AddBookmark handles POST /v1/articles/{id}/bookmark - bookmark an article
 func (h *ArticleHandler) AddBookmark(w http.ResponseWriter, r *http.Request) {

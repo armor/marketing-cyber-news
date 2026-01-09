@@ -162,4 +162,3 @@ func containsRole(allowedRoles []domain.UserRole, role domain.UserRole) bool {
 	}
 	return false
 }
-

@@ -427,8 +427,8 @@ func parseSegmentFilter(r *http.Request) (*domain.SegmentFilter, error) {
 
 // parsePaginationParams parses pagination parameters from the request
 func parsePaginationParams(r *http.Request) (limit, offset int, err error) {
-	limit = 20  // Default limit
-	offset = 0  // Default offset
+	limit = 20 // Default limit
+	offset = 0 // Default offset
 
 	// Parse limit
 	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {

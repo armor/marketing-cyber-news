@@ -44,8 +44,8 @@ func (t TestType) IsValid() bool {
 
 // TestVariant represents an A/B test variant for newsletter optimization
 type TestVariant struct {
-	ID       uuid.UUID `json:"id"`
-	IssueID  uuid.UUID `json:"issue_id"`
+	ID      uuid.UUID `json:"id"`
+	IssueID uuid.UUID `json:"issue_id"`
 
 	// Configuration
 	TestType     TestType `json:"test_type"`

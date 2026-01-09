@@ -5,12 +5,12 @@ import "fmt"
 // Domain errors - clean, semantic error types for business logic
 
 var (
-	ErrNotFound      = fmt.Errorf("resource not found")
-	ErrUnauthorized  = fmt.Errorf("unauthorized access")
-	ErrForbidden     = fmt.Errorf("forbidden operation")
-	ErrConflict      = fmt.Errorf("resource conflict")
-	ErrInvalidInput  = fmt.Errorf("invalid input")
-	ErrInternal      = fmt.Errorf("internal error")
+	ErrNotFound     = fmt.Errorf("resource not found")
+	ErrUnauthorized = fmt.Errorf("unauthorized access")
+	ErrForbidden    = fmt.Errorf("forbidden operation")
+	ErrConflict     = fmt.Errorf("resource conflict")
+	ErrInvalidInput = fmt.Errorf("invalid input")
+	ErrInternal     = fmt.Errorf("internal error")
 )
 
 // NotFoundError represents a resource not found error
@@ -42,4 +42,16 @@ type ConflictError struct {
 
 func (e *ConflictError) Error() string {
 	return fmt.Sprintf("%s already exists with %s: %s", e.Resource, e.Field, e.Value)
+}
+
+// ForbiddenError represents a forbidden operation
+type ForbiddenError struct {
+	Message string
+}
+
+func (e *ForbiddenError) Error() string {
+	if e.Message != "" {
+		return e.Message
+	}
+	return "forbidden operation"
 }

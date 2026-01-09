@@ -248,7 +248,6 @@ func (s *CampaignService) List(ctx context.Context, filter *domain.CampaignFilte
 		return nil, 0, fmt.Errorf("failed to list campaigns: %w", err)
 	}
 
-
 	return campaigns, total, nil
 }
 
@@ -450,7 +449,7 @@ func (s *CampaignService) Launch(ctx context.Context, id uuid.UUID) (*domain.Cam
 
 		// TODO: Implement proper workflow creation - CreateCampaignWorkflows returns []string not single ID
 		workflowID := fmt.Sprintf("placeholder-%s-%s", campaign.ID.String(), channel)
-		
+
 		workflowIDs[string(channel)] = workflowID
 
 		// Activate the workflow
@@ -657,10 +656,9 @@ func (s *CampaignService) GetStats(ctx context.Context, id uuid.UUID) (*domain.C
 		return nil, fmt.Errorf("failed to get campaign %s: %w", id, err)
 	}
 
-	return &campaign.Stats, nil  // Using campaign.Stats directly since GetStats method doesn't exist
+	return &campaign.Stats, nil // Using campaign.Stats directly since GetStats method doesn't exist
 
 	// Enrich with campaign data
-
 
 }
 
@@ -704,18 +702,6 @@ func (s *CampaignService) AddCompetitors(ctx context.Context, campaignID uuid.UU
 			Website:    comp.Website,
 			CreatedAt:  time.Now(),
 		}
-
-
-
-
-
-
-
-
-
-
-
-
 
 		if err := s.competitorRepo.Create(ctx, competitor); err != nil {
 			return fmt.Errorf("failed to create competitor %s: %w", comp.Name, err)

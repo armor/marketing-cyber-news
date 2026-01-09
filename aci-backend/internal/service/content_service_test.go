@@ -153,16 +153,16 @@ func setupContentServiceTest(t *testing.T) (*ContentService, *MockContentSourceR
 func createValidContentSource() *domain.ContentSource {
 	feedURL := "https://example.com/feed.rss"
 	return &domain.ContentSource{
-		Name:                 "Test Feed",
-		SourceType:           domain.SourceTypeRSS,
-		FeedURL:              &feedURL,
-		TrustScore:           0.8,
-		MinTrustThreshold:    0.5,
-		FreshnessDays:        7,
-		PollIntervalMinutes:  120,
-		IsActive:             true,
-		IsInternal:           false,
-		CreatedBy:            uuid.New(),
+		Name:                "Test Feed",
+		SourceType:          domain.SourceTypeRSS,
+		FeedURL:             &feedURL,
+		TrustScore:          0.8,
+		MinTrustThreshold:   0.5,
+		FreshnessDays:       7,
+		PollIntervalMinutes: 120,
+		IsActive:            true,
+		IsInternal:          false,
+		CreatedBy:           uuid.New(),
 	}
 }
 

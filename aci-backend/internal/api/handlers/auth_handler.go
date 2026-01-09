@@ -16,7 +16,8 @@ import (
 
 // AuthHandler handles authentication HTTP requests
 type AuthHandler struct {
-	authService *service.AuthService
+	authService         *service.AuthService
+	enhancedAuthService *service.EnhancedAuthService
 }
 
 // NewAuthHandler creates a new authentication handler
@@ -26,6 +27,17 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 	}
 	return &AuthHandler{
 		authService: authService,
+	}
+}
+
+// NewEnhancedAuthHandler creates a new authentication handler with enhanced features
+func NewEnhancedAuthHandler(authService *service.AuthService, enhancedAuthService *service.EnhancedAuthService) *AuthHandler {
+	if authService == nil {
+		panic("authService cannot be nil")
+	}
+	return &AuthHandler{
+		authService:         authService,
+		enhancedAuthService: enhancedAuthService,
 	}
 }
 
@@ -55,10 +67,10 @@ type LogoutRequest struct {
 
 // AuthResponse represents the authentication response
 type AuthResponse struct {
-	User         UserDTO  `json:"user"`
-	AccessToken  string   `json:"access_token"`
-	RefreshToken string   `json:"refresh_token"`
-	ExpiresAt    string   `json:"expires_at"`
+	User         UserDTO `json:"user"`
+	AccessToken  string  `json:"access_token"`
+	RefreshToken string  `json:"refresh_token"`
+	ExpiresAt    string  `json:"expires_at"`
 }
 
 // UserDTO represents user data transfer object
@@ -202,7 +214,6 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	response.SuccessWithMessage(w, nil, "Logged out successfully")
 }
 
-
 // handleAuthError handles authentication-specific errors
 func (h *AuthHandler) handleAuthError(w http.ResponseWriter, r *http.Request, err error) {
 	requestID := middleware.GetRequestID(r.Context())
@@ -241,6 +252,7 @@ func (h *AuthHandler) handleAuthError(w http.ResponseWriter, r *http.Request, er
 		Msg("Unhandled error in auth handler")
 	response.InternalError(w, "An unexpected error occurred", requestID)
 }
+
 // userToDTO converts entities.User to DTO
 func (h *AuthHandler) userToDTO(u *entities.User) UserDTO {
 	dto := UserDTO{
@@ -257,4 +269,264 @@ func (h *AuthHandler) userToDTO(u *entities.User) UserDTO {
 	}
 
 	return dto
+}
+
+// =============================================================================
+// Enhanced Authentication Endpoints
+// =============================================================================
+
+// VerifyEmailRequest represents the email verification request payload
+type VerifyEmailRequest struct {
+	Token string `json:"token"`
+}
+
+// RegisterFromInvitationRequest represents the invitation registration request payload
+type RegisterFromInvitationRequest struct {
+	Token    string `json:"token"`
+	Password string `json:"password"`
+	Name     string `json:"name"`
+}
+
+// ChangePasswordRequest represents the password change request payload
+type ChangePasswordRequest struct {
+	CurrentPassword string `json:"current_password"`
+	NewPassword     string `json:"new_password"`
+}
+
+// SignupModeResponse represents the signup mode response
+type SignupModeResponse struct {
+	Mode string `json:"mode"`
+}
+
+// EnhancedUserDTO extends UserDTO with status information
+type EnhancedUserDTO struct {
+	UserDTO
+	Status              string `json:"status"`
+	ForcePasswordChange bool   `json:"force_password_change"`
+}
+
+// GetSignupMode returns the current signup mode
+// GET /v1/auth/signup-mode
+func (h *AuthHandler) GetSignupMode(w http.ResponseWriter, r *http.Request) {
+	if h.enhancedAuthService == nil {
+		response.ServiceUnavailable(w, "Enhanced auth service not configured")
+		return
+	}
+
+	mode, err := h.enhancedAuthService.GetSignupMode(r.Context())
+	if err != nil {
+		requestID := middleware.GetRequestID(r.Context())
+		log.Error().
+			Err(err).
+			Str("request_id", requestID).
+			Msg("Failed to get signup mode")
+		response.InternalError(w, "Failed to get signup mode", requestID)
+		return
+	}
+
+	response.Success(w, SignupModeResponse{Mode: string(mode)})
+}
+
+// RegisterWithMode handles user registration using the current signup mode
+// POST /v1/auth/register (enhanced version)
+func (h *AuthHandler) RegisterWithMode(w http.ResponseWriter, r *http.Request) {
+	if h.enhancedAuthService == nil {
+		// Fall back to basic registration
+		h.Register(w, r)
+		return
+	}
+
+	var req RegisterRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		requestID := middleware.GetRequestID(r.Context())
+		response.BadRequestWithDetails(w, "Invalid request body", nil, requestID)
+		return
+	}
+
+	user, tokens, err := h.enhancedAuthService.RegisterWithMode(r.Context(), req.Email, req.Password, req.Name)
+	if err != nil {
+		h.handleAuthError(w, r, err)
+		return
+	}
+
+	// If tokens are nil, user needs additional steps (verification or approval)
+	if tokens == nil {
+		resp := map[string]interface{}{
+			"user":    h.userToEnhancedDTO(user),
+			"message": h.getStatusMessage(user.Status),
+		}
+		response.Created(w, resp)
+		return
+	}
+
+	authResp := AuthResponse{
+		User:         h.userToDTO(user),
+		AccessToken:  tokens.AccessToken,
+		RefreshToken: tokens.RefreshToken,
+		ExpiresAt:    tokens.ExpiresAt.Format("2006-01-02T15:04:05Z07:00"),
+	}
+
+	response.Created(w, authResp)
+}
+
+// VerifyEmail verifies a user's email address
+// POST /v1/auth/verify-email
+func (h *AuthHandler) VerifyEmail(w http.ResponseWriter, r *http.Request) {
+	if h.enhancedAuthService == nil {
+		response.ServiceUnavailable(w, "Enhanced auth service not configured")
+		return
+	}
+
+	var req VerifyEmailRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		requestID := middleware.GetRequestID(r.Context())
+		response.BadRequestWithDetails(w, "Invalid request body", nil, requestID)
+		return
+	}
+
+	if req.Token == "" {
+		response.BadRequest(w, "token is required")
+		return
+	}
+
+	user, tokens, err := h.enhancedAuthService.VerifyEmail(r.Context(), req.Token)
+	if err != nil {
+		h.handleAuthError(w, r, err)
+		return
+	}
+
+	authResp := AuthResponse{
+		User:         h.userToDTO(user),
+		AccessToken:  tokens.AccessToken,
+		RefreshToken: tokens.RefreshToken,
+		ExpiresAt:    tokens.ExpiresAt.Format("2006-01-02T15:04:05Z07:00"),
+	}
+
+	response.Success(w, authResp)
+}
+
+// RegisterFromInvitation handles registration using an invitation token
+// POST /v1/auth/register/invitation
+func (h *AuthHandler) RegisterFromInvitation(w http.ResponseWriter, r *http.Request) {
+	if h.enhancedAuthService == nil {
+		response.ServiceUnavailable(w, "Enhanced auth service not configured")
+		return
+	}
+
+	var req RegisterFromInvitationRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		requestID := middleware.GetRequestID(r.Context())
+		response.BadRequestWithDetails(w, "Invalid request body", nil, requestID)
+		return
+	}
+
+	user, tokens, err := h.enhancedAuthService.RegisterFromInvitation(r.Context(), req.Token, req.Password, req.Name)
+	if err != nil {
+		h.handleAuthError(w, r, err)
+		return
+	}
+
+	authResp := AuthResponse{
+		User:         h.userToDTO(user),
+		AccessToken:  tokens.AccessToken,
+		RefreshToken: tokens.RefreshToken,
+		ExpiresAt:    tokens.ExpiresAt.Format("2006-01-02T15:04:05Z07:00"),
+	}
+
+	response.Created(w, authResp)
+}
+
+// ChangePassword handles self-service password change
+// POST /v1/auth/change-password
+func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	if h.enhancedAuthService == nil {
+		response.ServiceUnavailable(w, "Enhanced auth service not configured")
+		return
+	}
+
+	claims, ok := middleware.GetUserFromContext(r.Context())
+	if !ok {
+		response.Unauthorized(w, "Authentication required")
+		return
+	}
+
+	var req ChangePasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		requestID := middleware.GetRequestID(r.Context())
+		response.BadRequestWithDetails(w, "Invalid request body", nil, requestID)
+		return
+	}
+
+	err := h.enhancedAuthService.ChangePassword(r.Context(), claims.UserID, req.CurrentPassword, req.NewPassword)
+	if err != nil {
+		h.handleAuthError(w, r, err)
+		return
+	}
+
+	response.SuccessWithMessage(w, nil, "Password changed successfully")
+}
+
+// LoginEnhanced handles login with enhanced security (lockout protection)
+// POST /v1/auth/login (enhanced version)
+func (h *AuthHandler) LoginEnhanced(w http.ResponseWriter, r *http.Request) {
+	if h.enhancedAuthService == nil {
+		// Fall back to basic login
+		h.Login(w, r)
+		return
+	}
+
+	var req LoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		requestID := middleware.GetRequestID(r.Context())
+		response.BadRequestWithDetails(w, "Invalid request body", nil, requestID)
+		return
+	}
+
+	// Extract IP and user agent for security tracking
+	ipAddress := r.RemoteAddr
+	if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
+		ipAddress = forwarded
+	}
+	userAgent := r.UserAgent()
+
+	user, tokens, err := h.enhancedAuthService.LoginEnhanced(r.Context(), req.Email, req.Password, ipAddress, userAgent)
+	if err != nil {
+		h.handleAuthError(w, r, err)
+		return
+	}
+
+	// Check if user needs to change password
+	resp := map[string]interface{}{
+		"user":          h.userToDTO(user),
+		"access_token":  tokens.AccessToken,
+		"refresh_token": tokens.RefreshToken,
+		"expires_at":    tokens.ExpiresAt.Format("2006-01-02T15:04:05Z07:00"),
+	}
+
+	if user.ForcePasswordChange {
+		resp["force_password_change"] = true
+	}
+
+	response.Success(w, resp)
+}
+
+// userToEnhancedDTO converts entities.User to EnhancedUserDTO
+func (h *AuthHandler) userToEnhancedDTO(u *entities.User) EnhancedUserDTO {
+	return EnhancedUserDTO{
+		UserDTO:             h.userToDTO(u),
+		Status:              string(u.Status),
+		ForcePasswordChange: u.ForcePasswordChange,
+	}
+}
+
+// getStatusMessage returns a user-friendly message for the user status
+func (h *AuthHandler) getStatusMessage(status entities.UserStatus) string {
+	switch status {
+	case entities.UserStatusPendingVerification:
+		return "Please check your email to verify your account"
+	case entities.UserStatusPendingApproval:
+		return "Your registration is pending admin approval"
+	default:
+		return ""
+	}
 }

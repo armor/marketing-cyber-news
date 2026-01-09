@@ -268,13 +268,13 @@ func (s *AuthService) generateAndStoreTokens(
 
 	// Create refresh token record
 	refreshToken := &domain.RefreshToken{
-		ID:         uuid.New(),
-		UserID:     user.ID,
-		Token:      tokenHash, // Store hash, not plain token
-		ExpiresAt:  time.Now().Add(jwt.RefreshTokenExpiry),
-		CreatedAt:  time.Now(),
-		IPAddress:  ipAddress,
-		UserAgent:  userAgent,
+		ID:        uuid.New(),
+		UserID:    user.ID,
+		Token:     tokenHash, // Store hash, not plain token
+		ExpiresAt: time.Now().Add(jwt.RefreshTokenExpiry),
+		CreatedAt: time.Now(),
+		IPAddress: ipAddress,
+		UserAgent: userAgent,
 	}
 
 	// Store refresh token in database

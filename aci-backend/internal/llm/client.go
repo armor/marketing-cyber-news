@@ -86,7 +86,7 @@ type ValidateRequest struct {
 
 // ValidateResponse from brand validation
 type ValidateResponse struct {
-	Score       int           // 0-100
+	Score       int // 0-100
 	Issues      []BrandIssue
 	Suggestions []string
 	AutoFix     string // Auto-corrected content if possible
@@ -109,12 +109,12 @@ type TextPosition struct {
 
 // OpenRouter API request/response structures
 type openRouterRequest struct {
-	Model       string                   `json:"model"`
-	Messages    []openRouterMessage      `json:"messages"`
-	MaxTokens   int                      `json:"max_tokens,omitempty"`
-	Temperature float64                  `json:"temperature,omitempty"`
-	TopP        float64                  `json:"top_p,omitempty"`
-	Stream      bool                     `json:"stream"`
+	Model       string              `json:"model"`
+	Messages    []openRouterMessage `json:"messages"`
+	MaxTokens   int                 `json:"max_tokens,omitempty"`
+	Temperature float64             `json:"temperature,omitempty"`
+	TopP        float64             `json:"top_p,omitempty"`
+	Stream      bool                `json:"stream"`
 }
 
 type openRouterMessage struct {

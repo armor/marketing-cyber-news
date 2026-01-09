@@ -755,7 +755,6 @@ func TestBuildPersonalizationContextByID_HappyPath(t *testing.T) {
 	assert.Equal(t, "CISO", pctx.FieldTokens["title"])
 	assert.Equal(t, "finance", pctx.FieldTokens["industry"])
 
-
 	// Check topic weights
 	assert.Equal(t, 0.7, pctx.TopicWeights["compliance"])
 	assert.Contains(t, pctx.TopicWeights, "ransomware")

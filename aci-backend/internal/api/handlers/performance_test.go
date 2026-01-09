@@ -163,19 +163,19 @@ func createMockNewsletterConfig(index int) *domain.NewsletterConfig {
 
 func createMockNewsletterIssue(configID uuid.UUID, index int) *domain.NewsletterIssue {
 	return &domain.NewsletterIssue{
-		ID:                 uuid.New(),
-		ConfigID:           configID,
-		SegmentID:          uuid.New(),
-		Status:             "ready_for_approval",
-		SubjectLine:        fmt.Sprintf("Test Newsletter Issue %d", index),
-		PreheaderText:      "Preview text",
-		HeroBlockID:        uuid.New(),
-		GeneratedAt:        time.Now(),
-		ApprovalStatus:     "pending_approval",
-		ContentVersion:     1,
+		ID:                  uuid.New(),
+		ConfigID:            configID,
+		SegmentID:           uuid.New(),
+		Status:              "ready_for_approval",
+		SubjectLine:         fmt.Sprintf("Test Newsletter Issue %d", index),
+		PreheaderText:       "Preview text",
+		HeroBlockID:         uuid.New(),
+		GeneratedAt:         time.Now(),
+		ApprovalStatus:      "pending_approval",
+		ContentVersion:      1,
 		PersonalizationTags: []string{"test"},
-		CreatedAt:          time.Now(),
-		UpdatedAt:          time.Now(),
+		CreatedAt:           time.Now(),
+		UpdatedAt:           time.Now(),
 	}
 }
 
@@ -232,27 +232,27 @@ func BenchmarkCreateNewsletterConfig(b *testing.B) {
 	mockRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
 
 	configData := map[string]interface{}{
-		"name":                    "Performance Test Config",
-		"description":             "Config for performance testing",
-		"segment_id":              uuid.New().String(),
-		"cadence":                 "weekly",
-		"send_day_of_week":        2,
-		"send_time_utc":           "14:00",
-		"timezone":                "America/New_York",
-		"max_blocks":              6,
-		"education_ratio_min":     0.3,
-		"content_freshness_days":  7,
-		"hero_topic_priority":     "critical_vulnerabilities",
-		"framework_focus":         "NIST",
-		"subject_line_style":      "pain_first",
-		"max_metaphors":           2,
-		"banned_phrases":          []string{"synergy"},
-		"approval_tier":           "tier1",
-		"risk_level":              "standard",
-		"ai_provider":             "anthropic",
-		"ai_model":                "claude-3-sonnet",
-		"prompt_version":          2,
-		"is_active":               true,
+		"name":                   "Performance Test Config",
+		"description":            "Config for performance testing",
+		"segment_id":             uuid.New().String(),
+		"cadence":                "weekly",
+		"send_day_of_week":       2,
+		"send_time_utc":          "14:00",
+		"timezone":               "America/New_York",
+		"max_blocks":             6,
+		"education_ratio_min":    0.3,
+		"content_freshness_days": 7,
+		"hero_topic_priority":    "critical_vulnerabilities",
+		"framework_focus":        "NIST",
+		"subject_line_style":     "pain_first",
+		"max_metaphors":          2,
+		"banned_phrases":         []string{"synergy"},
+		"approval_tier":          "tier1",
+		"risk_level":             "standard",
+		"ai_provider":            "anthropic",
+		"ai_model":               "claude-3-sonnet",
+		"prompt_version":         2,
+		"is_active":              true,
 	}
 
 	b.ResetTimer()
@@ -501,19 +501,19 @@ func (m *MockContentItemRepository) List(ctx context.Context, filter *domain.Con
 func createMockContentItem(index int) *domain.ContentItem {
 	now := time.Now()
 	return &domain.ContentItem{
-		ID:              uuid.New(),
-		SourceID:        uuid.New(),
-		Title:           fmt.Sprintf("Test Content Item %d", index),
-		URL:             fmt.Sprintf("https://example.com/article-%d", index),
-		PublishedDate:   now,
-		IngestedAt:      now,
-		ContentSummary:  "Test summary",
-		Topics:          []string{"security", "vulnerability"},
-		Sentiment:       "neutral",
-		RelevanceScore:  0.85,
-		IsProcessed:     true,
-		CreatedAt:       now,
-		UpdatedAt:       now,
+		ID:             uuid.New(),
+		SourceID:       uuid.New(),
+		Title:          fmt.Sprintf("Test Content Item %d", index),
+		URL:            fmt.Sprintf("https://example.com/article-%d", index),
+		PublishedDate:  now,
+		IngestedAt:     now,
+		ContentSummary: "Test summary",
+		Topics:         []string{"security", "vulnerability"},
+		Sentiment:      "neutral",
+		RelevanceScore: 0.85,
+		IsProcessed:    true,
+		CreatedAt:      now,
+		UpdatedAt:      now,
 	}
 }
 
@@ -582,11 +582,11 @@ func BenchmarkAnalyticsOverview(b *testing.B) {
 
 		// Mock data processing
 		_ = map[string]interface{}{
-			"total_sends": 10000,
-			"total_opens": 3200,
-			"open_rate": 0.32,
+			"total_sends":  10000,
+			"total_opens":  3200,
+			"open_rate":    0.32,
 			"total_clicks": 450,
-			"click_rate": 0.045,
+			"click_rate":   0.045,
 		}
 
 		elapsed := time.Since(start)
@@ -626,7 +626,7 @@ func BenchmarkIssueGeneration(b *testing.B) {
 		// 5. Block assembly (2s)
 
 		mockGenerationTime := 90 * time.Second // Simulated AI call time
-		time.Sleep(100 * time.Microsecond) // Minimal sleep to simulate work
+		time.Sleep(100 * time.Microsecond)     // Minimal sleep to simulate work
 
 		elapsed := time.Since(start)
 

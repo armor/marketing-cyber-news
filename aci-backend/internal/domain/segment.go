@@ -67,10 +67,10 @@ type Contact struct {
 	PartnerTags []string `json:"partner_tags,omitempty"`
 
 	// Behavioral
-	EngagementScore       float64              `json:"engagement_score"`
-	Last10Interactions    []Interaction        `json:"last_10_interactions,omitempty"`
-	LastWebinarAttendance *time.Time           `json:"last_webinar_attendance,omitempty"`
-	TopicScores           map[string]float64   `json:"topic_scores,omitempty"`
+	EngagementScore       float64            `json:"engagement_score"`
+	Last10Interactions    []Interaction      `json:"last_10_interactions,omitempty"`
+	LastWebinarAttendance *time.Time         `json:"last_webinar_attendance,omitempty"`
+	TopicScores           map[string]float64 `json:"topic_scores,omitempty"`
 
 	// Subscription
 	IsSubscribed   bool       `json:"is_subscribed"`
@@ -111,14 +111,14 @@ type SegmentFilter struct {
 
 // ContactFilter provides filtering options for contact queries
 type ContactFilter struct {
-	SegmentID      *uuid.UUID `json:"segment_id,omitempty"`
-	IsSubscribed   *bool      `json:"is_subscribed,omitempty"`
-	IsBounced      *bool      `json:"is_bounced,omitempty"`
-	IsHighTouch    *bool      `json:"is_high_touch,omitempty"`
-	RoleCategory   *string    `json:"role_category,omitempty"`
-	Industry       *string    `json:"industry,omitempty"`
-	Region         *string    `json:"region,omitempty"`
-	Search         string     `json:"search,omitempty"`
+	SegmentID    *uuid.UUID `json:"segment_id,omitempty"`
+	IsSubscribed *bool      `json:"is_subscribed,omitempty"`
+	IsBounced    *bool      `json:"is_bounced,omitempty"`
+	IsHighTouch  *bool      `json:"is_high_touch,omitempty"`
+	RoleCategory *string    `json:"role_category,omitempty"`
+	Industry     *string    `json:"industry,omitempty"`
+	Region       *string    `json:"region,omitempty"`
+	Search       string     `json:"search,omitempty"`
 
 	// Pagination
 	Limit  int `json:"limit"`

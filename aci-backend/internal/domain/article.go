@@ -102,8 +102,8 @@ type Article struct {
 	IOCs               []IOC    `json:"iocs,omitempty"`
 
 	// Armor marketing
-	ArmorRelevance float64    `json:"armor_relevance"`
-	ArmorCTA       *ArmorCTA  `json:"armor_cta,omitempty"`
+	ArmorRelevance float64   `json:"armor_relevance"`
+	ArmorCTA       *ArmorCTA `json:"armor_cta,omitempty"`
 
 	// Internal scoring (not exposed to API)
 	CompetitorScore       float64 `json:"-"`
@@ -126,13 +126,13 @@ type Article struct {
 	UpdatedAt          time.Time  `json:"updated_at"`
 
 	// Approval Workflow fields (5-gate process)
-	ApprovalStatus   ApprovalStatus `json:"approval_status" db:"approval_status"`
-	Rejected         bool           `json:"rejected" db:"rejected"`
-	RejectionReason  *string        `json:"rejection_reason,omitempty" db:"rejection_reason"`
-	RejectedBy       *uuid.UUID     `json:"rejected_by,omitempty" db:"rejected_by"`
-	RejectedAt       *time.Time     `json:"rejected_at,omitempty" db:"rejected_at"`
-	ReleasedAt       *time.Time     `json:"released_at,omitempty" db:"released_at"`
-	ReleasedBy       *uuid.UUID     `json:"released_by,omitempty" db:"released_by"`
+	ApprovalStatus  ApprovalStatus `json:"approval_status" db:"approval_status"`
+	Rejected        bool           `json:"rejected" db:"rejected"`
+	RejectionReason *string        `json:"rejection_reason,omitempty" db:"rejection_reason"`
+	RejectedBy      *uuid.UUID     `json:"rejected_by,omitempty" db:"rejected_by"`
+	RejectedAt      *time.Time     `json:"rejected_at,omitempty" db:"rejected_at"`
+	ReleasedAt      *time.Time     `json:"released_at,omitempty" db:"released_at"`
+	ReleasedBy      *uuid.UUID     `json:"released_by,omitempty" db:"released_by"`
 }
 
 // Validate performs validation on the Article
@@ -247,19 +247,19 @@ func (a *Article) HasVendor(vendor string) bool {
 
 // ArticleFilter represents query parameters for filtering articles
 type ArticleFilter struct {
-	CategoryID   *uuid.UUID
-	SourceID     *uuid.UUID
-	Severity     *Severity
-	Tags         []string
-	CVE          *string
-	Vendor       *string
-	Industry     *string
-	HasDeepDive  *bool
-	DateFrom     *time.Time
-	DateTo       *time.Time
-	SearchQuery  *string
-	Page         int
-	PageSize     int
+	CategoryID  *uuid.UUID
+	SourceID    *uuid.UUID
+	Severity    *Severity
+	Tags        []string
+	CVE         *string
+	Vendor      *string
+	Industry    *string
+	HasDeepDive *bool
+	DateFrom    *time.Time
+	DateTo      *time.Time
+	SearchQuery *string
+	Page        int
+	PageSize    int
 }
 
 // NewArticleFilter returns a filter with default values

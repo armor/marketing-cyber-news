@@ -168,11 +168,11 @@ type ContentItem struct {
 	PartnerTags   []string    `json:"partner_tags,omitempty"`
 
 	// Metadata
-	Author             *string    `json:"author,omitempty"`
-	PublishDate        time.Time  `json:"publish_date"`
-	WordCount          *int       `json:"word_count,omitempty"`
-	ReadingTimeMinutes *int       `json:"reading_time_minutes,omitempty"`
-	ImageURL           *string    `json:"image_url,omitempty"`
+	Author             *string   `json:"author,omitempty"`
+	PublishDate        time.Time `json:"publish_date"`
+	WordCount          *int      `json:"word_count,omitempty"`
+	ReadingTimeMinutes *int      `json:"reading_time_minutes,omitempty"`
+	ImageURL           *string   `json:"image_url,omitempty"`
 
 	// Scoring
 	TrustScore       float64 `json:"trust_score"`

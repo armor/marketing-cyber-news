@@ -421,5 +421,3 @@ func (h *ContentStudioHandler) GetContent(w http.ResponseWriter, r *http.Request
 // ============================================================================
 // Helper functions
 // ============================================================================
-
-

@@ -360,4 +360,3 @@ func (h *ChannelHandler) RefreshExpiringTokens(ctx context.Context) error {
 
 	return nil
 }
-

@@ -181,7 +181,6 @@ func parseHostPortFromDSN(dsn string) (string, int, error) {
 	return host, port, nil
 }
 
-
 // runMigrations applies database migrations
 func runMigrations(ctx context.Context, testDB *TestDB) error {
 	// Get migrations directory
@@ -411,7 +410,6 @@ func SetupTestServer(t *testing.T, testDB *TestDB) *TestServer {
 		BaseURL:    testServer.URL,
 	}
 }
-
 
 // TeardownTestServer cleans up the test server
 func TeardownTestServer(t *testing.T, testServer *TestServer) {

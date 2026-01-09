@@ -145,19 +145,19 @@ func setupContentHandlerTest(t *testing.T) (*ContentHandler, *MockContentService
 func createTestContentSource() *domain.ContentSource {
 	feedURL := "https://example.com/feed.rss"
 	return &domain.ContentSource{
-		ID:                   uuid.New(),
-		Name:                 "Test Feed",
-		SourceType:           domain.SourceTypeRSS,
-		FeedURL:              &feedURL,
-		TrustScore:           0.8,
-		MinTrustThreshold:    0.5,
-		FreshnessDays:        7,
-		PollIntervalMinutes:  120,
-		IsActive:             true,
-		IsInternal:           false,
-		CreatedBy:            uuid.New(),
-		CreatedAt:            time.Now(),
-		UpdatedAt:            time.Now(),
+		ID:                  uuid.New(),
+		Name:                "Test Feed",
+		SourceType:          domain.SourceTypeRSS,
+		FeedURL:             &feedURL,
+		TrustScore:          0.8,
+		MinTrustThreshold:   0.5,
+		FreshnessDays:       7,
+		PollIntervalMinutes: 120,
+		IsActive:            true,
+		IsInternal:          false,
+		CreatedBy:           uuid.New(),
+		CreatedAt:           time.Now(),
+		UpdatedAt:           time.Now(),
 	}
 }
 
@@ -197,14 +197,14 @@ func TestCreateContentSource_Success(t *testing.T) {
 	userID := uuid.New()
 
 	reqBody := CreateContentSourceRequest{
-		Name:                 "Test Feed",
-		SourceType:           "rss",
-		FeedURL:              stringPtr("https://example.com/feed.rss"),
-		TrustScore:           0.8,
-		MinTrustThreshold:    0.5,
-		FreshnessDays:        7,
-		PollIntervalMinutes:  120,
-		IsInternal:           false,
+		Name:                "Test Feed",
+		SourceType:          "rss",
+		FeedURL:             stringPtr("https://example.com/feed.rss"),
+		TrustScore:          0.8,
+		MinTrustThreshold:   0.5,
+		FreshnessDays:       7,
+		PollIntervalMinutes: 120,
+		IsInternal:          false,
 	}
 
 	body, _ := json.Marshal(reqBody)
@@ -244,12 +244,12 @@ func TestCreateContentSource_InvalidFeedURL(t *testing.T) {
 	userID := uuid.New()
 
 	reqBody := CreateContentSourceRequest{
-		Name:                 "Test Feed",
-		SourceType:           "rss",
-		FeedURL:              stringPtr("not-a-valid-url"),
-		TrustScore:           0.8,
-		FreshnessDays:        7,
-		PollIntervalMinutes:  120,
+		Name:                "Test Feed",
+		SourceType:          "rss",
+		FeedURL:             stringPtr("not-a-valid-url"),
+		TrustScore:          0.8,
+		FreshnessDays:       7,
+		PollIntervalMinutes: 120,
 	}
 
 	body, _ := json.Marshal(reqBody)
@@ -280,11 +280,11 @@ func TestCreateContentSource_InvalidPollingInterval(t *testing.T) {
 			userID := uuid.New()
 
 			reqBody := CreateContentSourceRequest{
-				Name:                 "Test Feed",
-				SourceType:           "rss",
-				FeedURL:              stringPtr("https://example.com/feed.rss"),
-				TrustScore:           0.8,
-				PollIntervalMinutes:  tc.interval,
+				Name:                "Test Feed",
+				SourceType:          "rss",
+				FeedURL:             stringPtr("https://example.com/feed.rss"),
+				TrustScore:          0.8,
+				PollIntervalMinutes: tc.interval,
 			}
 
 			body, _ := json.Marshal(reqBody)
@@ -306,11 +306,11 @@ func TestCreateContentSource_Unauthenticated(t *testing.T) {
 	handler, _ := setupContentHandlerTest(t)
 
 	reqBody := CreateContentSourceRequest{
-		Name:                 "Test Feed",
-		SourceType:           "rss",
-		FeedURL:              stringPtr("https://example.com/feed.rss"),
-		TrustScore:           0.8,
-		PollIntervalMinutes:  120,
+		Name:                "Test Feed",
+		SourceType:          "rss",
+		FeedURL:             stringPtr("https://example.com/feed.rss"),
+		TrustScore:          0.8,
+		PollIntervalMinutes: 120,
 	}
 
 	body, _ := json.Marshal(reqBody)
@@ -330,11 +330,11 @@ func TestCreateContentSource_ServiceError(t *testing.T) {
 	userID := uuid.New()
 
 	reqBody := CreateContentSourceRequest{
-		Name:                 "Test Feed",
-		SourceType:           "rss",
-		FeedURL:              stringPtr("https://example.com/feed.rss"),
-		TrustScore:           0.8,
-		PollIntervalMinutes:  120,
+		Name:                "Test Feed",
+		SourceType:          "rss",
+		FeedURL:             stringPtr("https://example.com/feed.rss"),
+		TrustScore:          0.8,
+		PollIntervalMinutes: 120,
 	}
 
 	body, _ := json.Marshal(reqBody)
@@ -681,10 +681,10 @@ func TestGetPollingStatus_Success(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	mockService.On("GetPollingStatus", mock.Anything, sourceID).Return(&service.PollingStatus{
-		LastPolledAt:  &lastPolled,
-		NextPollAt:    &nextPoll,
-		ItemCount:     15,
-		ErrorCount:    2,
+		LastPolledAt: &lastPolled,
+		NextPollAt:   &nextPoll,
+		ItemCount:    15,
+		ErrorCount:   2,
 	}, nil)
 
 	// Act

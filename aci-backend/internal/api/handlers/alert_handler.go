@@ -59,13 +59,13 @@ type AlertResponse struct {
 
 // AlertMatchResponse represents an alert match in API responses
 type AlertMatchResponse struct {
-	ID         uuid.UUID                `json:"id"`
-	AlertID    uuid.UUID                `json:"alert_id"`
-	ArticleID  uuid.UUID                `json:"article_id"`
-	Priority   string                   `json:"priority"`
-	MatchedAt  string                   `json:"matched_at"`
-	NotifiedAt *string                  `json:"notified_at,omitempty"`
-	Article    *ArticleResponse         `json:"article,omitempty"`
+	ID         uuid.UUID        `json:"id"`
+	AlertID    uuid.UUID        `json:"alert_id"`
+	ArticleID  uuid.UUID        `json:"article_id"`
+	Priority   string           `json:"priority"`
+	MatchedAt  string           `json:"matched_at"`
+	NotifiedAt *string          `json:"notified_at,omitempty"`
+	Article    *ArticleResponse `json:"article,omitempty"`
 }
 
 // Validate validates the CreateAlertRequest

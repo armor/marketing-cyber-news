@@ -47,16 +47,16 @@ func NewCalendarHandler(
 
 // CalendarEntryDTO represents a calendar entry in API responses
 type CalendarEntryDTO struct {
-	ID          string              `json:"id"`
-	CampaignID  *string             `json:"campaign_id,omitempty"`
-	ContentID   *string             `json:"content_id,omitempty"`
-	Channel     string              `json:"channel"`
-	ScheduledAt string              `json:"scheduled_at"`
-	Status      string              `json:"status"`
-	Content     *ContentSummaryDTO  `json:"content,omitempty"`
-	CreatedAt   string              `json:"created_at"`
-	UpdatedAt   string              `json:"updated_at"`
-	PublishedAt *string             `json:"published_at,omitempty"`
+	ID          string             `json:"id"`
+	CampaignID  *string            `json:"campaign_id,omitempty"`
+	ContentID   *string            `json:"content_id,omitempty"`
+	Channel     string             `json:"channel"`
+	ScheduledAt string             `json:"scheduled_at"`
+	Status      string             `json:"status"`
+	Content     *ContentSummaryDTO `json:"content,omitempty"`
+	CreatedAt   string             `json:"created_at"`
+	UpdatedAt   string             `json:"updated_at"`
+	PublishedAt *string            `json:"published_at,omitempty"`
 }
 
 // ContentSummaryDTO represents a summary of content for calendar display
@@ -460,5 +460,3 @@ func (h *CalendarHandler) buildCalendarSummary(entries []*domain.CalendarEntry, 
 
 	return summary
 }
-
-

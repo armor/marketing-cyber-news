@@ -403,14 +403,14 @@ func (h *AnalyticsHandler) GetTestResults(w http.ResponseWriter, r *http.Request
 
 	// Build response
 	testResp := map[string]interface{}{
-		"issue_id":           testResult.IssueID,
-		"test_type":          testResult.TestType,
-		"variants":           testResult.Variants,
-		"winner":             testResult.Winner,
-		"confidence":         testResult.Confidence,
-		"is_significant":     testResult.IsSignificant,
+		"issue_id":            testResult.IssueID,
+		"test_type":           testResult.TestType,
+		"variants":            testResult.Variants,
+		"winner":              testResult.Winner,
+		"confidence":          testResult.Confidence,
+		"is_significant":      testResult.IsSignificant,
 		"min_sample_size_met": testResult.MinSampleSizeMet,
-		"total_sample_size":  testResult.TotalSampleSize,
+		"total_sample_size":   testResult.TotalSampleSize,
 	}
 
 	log.Info().

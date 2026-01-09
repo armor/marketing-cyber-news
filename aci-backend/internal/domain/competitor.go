@@ -35,16 +35,16 @@ func (t CompetitorAlertType) String() string {
 
 // CompetitorProfile represents a competitor being tracked
 type CompetitorProfile struct {
-	ID           uuid.UUID  `json:"id"`
-	CampaignID   uuid.UUID  `json:"campaign_id"`
-	Name         string     `json:"name"`
-	LinkedInURL  *string    `json:"linkedin_url,omitempty"`
+	ID            uuid.UUID `json:"id"`
+	CampaignID    uuid.UUID `json:"campaign_id"`
+	Name          string    `json:"name"`
+	LinkedInURL   *string   `json:"linkedin_url,omitempty"`
 	TwitterHandle *string   `json:"twitter_handle,omitempty"`
-	BlogURL      *string    `json:"blog_url,omitempty"`
-	WebsiteURL   *string    `json:"website_url,omitempty"`
-	IsActive     bool       `json:"is_active"`
-	CreatedAt    time.Time  `json:"created_at"`
-	UpdatedAt    time.Time  `json:"updated_at"`
+	BlogURL       *string   `json:"blog_url,omitempty"`
+	WebsiteURL    *string   `json:"website_url,omitempty"`
+	IsActive      bool      `json:"is_active"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 // Validate validates the competitor profile
@@ -102,13 +102,13 @@ func (c *CompetitorContent) Validate() error {
 
 // CompetitorAnalysis represents analysis data for a competitor
 type CompetitorAnalysis struct {
-	CompetitorID         uuid.UUID              `json:"competitor_id"`
-	ContentCount         int                    `json:"content_count"`
-	AvgPostingFrequency  float64                `json:"avg_posting_frequency"`
-	TopTopics            []string               `json:"top_topics"`
-	EngagementTrends     map[string]interface{} `json:"engagement_trends"`
-	LastAnalyzedAt       time.Time              `json:"last_analyzed_at"`
-	PeriodDays           int                    `json:"period_days"`
+	CompetitorID        uuid.UUID              `json:"competitor_id"`
+	ContentCount        int                    `json:"content_count"`
+	AvgPostingFrequency float64                `json:"avg_posting_frequency"`
+	TopTopics           []string               `json:"top_topics"`
+	EngagementTrends    map[string]interface{} `json:"engagement_trends"`
+	LastAnalyzedAt      time.Time              `json:"last_analyzed_at"`
+	PeriodDays          int                    `json:"period_days"`
 }
 
 // CompetitorAlert represents an alert about competitor activity

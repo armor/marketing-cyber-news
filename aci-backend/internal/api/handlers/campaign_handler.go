@@ -52,15 +52,15 @@ func NewCampaignHandler(service CampaignService) *CampaignHandler {
 
 // CreateCampaignDTO represents the request to create a campaign
 type CreateCampaignDTO struct {
-	Name         string   `json:"name" validate:"required,min=1,max=255"`
-	Description  string   `json:"description,omitempty"`
-	Goal         string   `json:"goal" validate:"required,oneof=awareness leads engagement traffic"`
-	Channels     []string `json:"channels" validate:"required,min=1"`
-	Frequency    string   `json:"frequency" validate:"required"`
-	ContentStyle string   `json:"content_style" validate:"required"`
-	Topics       []string `json:"topics,omitempty"`
-	StartDate    *string  `json:"start_date,omitempty"`
-	EndDate      *string  `json:"end_date,omitempty"`
+	Name         string          `json:"name" validate:"required,min=1,max=255"`
+	Description  string          `json:"description,omitempty"`
+	Goal         string          `json:"goal" validate:"required,oneof=awareness leads engagement traffic"`
+	Channels     []string        `json:"channels" validate:"required,min=1"`
+	Frequency    string          `json:"frequency" validate:"required"`
+	ContentStyle string          `json:"content_style" validate:"required"`
+	Topics       []string        `json:"topics,omitempty"`
+	StartDate    *string         `json:"start_date,omitempty"`
+	EndDate      *string         `json:"end_date,omitempty"`
 	Competitors  []CompetitorDTO `json:"competitors,omitempty"`
 }
 
@@ -96,11 +96,11 @@ type RecommendationsRequest struct {
 
 // AIRecommendation represents an AI-powered recommendation
 type AIRecommendation struct {
-	Type        string `json:"type"`
-	Category    string `json:"category"`
-	Suggestion  string `json:"suggestion"`
-	Reasoning   string `json:"reasoning"`
-	Confidence  float64 `json:"confidence"`
+	Type       string  `json:"type"`
+	Category   string  `json:"category"`
+	Suggestion string  `json:"suggestion"`
+	Reasoning  string  `json:"reasoning"`
+	Confidence float64 `json:"confidence"`
 }
 
 // List handles GET /v1/campaigns - returns paginated campaigns
@@ -132,10 +132,10 @@ func (h *CampaignHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	// Build filter
 	filter := &domain.CampaignFilter{
-		TenantID: uuid.Nil, // TODO: Add multi-tenancy support
+		TenantID:  uuid.Nil, // TODO: Add multi-tenancy support
 		CreatedBy: &user.ID,
-		Page:     page,
-		PageSize: pageSize,
+		Page:      page,
+		PageSize:  pageSize,
 	}
 
 	// Parse optional filters

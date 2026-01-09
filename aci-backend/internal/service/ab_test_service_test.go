@@ -934,8 +934,8 @@ func TestCalculateWinner_SubjectLineUsesOpenRate(t *testing.T) {
 		VariantName:      "A",
 		VariantValue:     "Subject A",
 		AssignedContacts: 150,
-		Opens:            90,  // 60% open rate (higher)
-		Clicks:           30,  // 33% click rate (lower)
+		Opens:            90, // 60% open rate (higher)
+		Clicks:           30, // 33% click rate (lower)
 	}
 
 	variantB := &domain.TestVariant{
@@ -945,8 +945,8 @@ func TestCalculateWinner_SubjectLineUsesOpenRate(t *testing.T) {
 		VariantName:      "B",
 		VariantValue:     "Subject B",
 		AssignedContacts: 150,
-		Opens:            45,  // 30% open rate (lower)
-		Clicks:           36,  // 80% click rate (higher)
+		Opens:            45, // 30% open rate (lower)
+		Clicks:           36, // 80% click rate (higher)
 	}
 
 	variantRepo := new(MockTestVariantRepository)
@@ -983,8 +983,8 @@ func TestCalculateWinner_CTAFramingUsesClickRate(t *testing.T) {
 		VariantName:      "A",
 		VariantValue:     "Read More",
 		AssignedContacts: 150,
-		Opens:            90,  // 60% open rate (higher)
-		Clicks:           30,  // 33% click rate (lower)
+		Opens:            90, // 60% open rate (higher)
+		Clicks:           30, // 33% click rate (lower)
 	}
 
 	variantB := &domain.TestVariant{
@@ -994,8 +994,8 @@ func TestCalculateWinner_CTAFramingUsesClickRate(t *testing.T) {
 		VariantName:      "B",
 		VariantValue:     "Learn More",
 		AssignedContacts: 150,
-		Opens:            75,  // 50% open rate (lower)
-		Clicks:           60,  // 80% click rate (higher)
+		Opens:            75, // 50% open rate (lower)
+		Clicks:           60, // 80% click rate (higher)
 	}
 
 	variantRepo := new(MockTestVariantRepository)
@@ -1086,10 +1086,10 @@ func TestApplyFeedbackLoop_DifferentTestTypes(t *testing.T) {
 // TestStatisticalHelpers_CalculatePValue tests p-value calculation
 func TestStatisticalHelpers_CalculatePValue(t *testing.T) {
 	tests := []struct {
-		name          string
-		zScore        float64
-		expectedPVal  float64
-		tolerance     float64
+		name         string
+		zScore       float64
+		expectedPVal float64
+		tolerance    float64
 	}{
 		{name: "zero z-score", zScore: 0, expectedPVal: 1.0, tolerance: 0.001},
 		{name: "z=1.96 (95% confidence)", zScore: 1.96, expectedPVal: 0.05, tolerance: 0.01},
@@ -1132,8 +1132,8 @@ func TestStatisticalHelpers_NormalCDF(t *testing.T) {
 // TestStatisticalHelpers_IsStatisticallySignificant tests significance determination
 func TestStatisticalHelpers_IsStatisticallySignificant(t *testing.T) {
 	tests := []struct {
-		name       string
-		pValue     float64
+		name        string
+		pValue      float64
 		shouldBeSig bool
 	}{
 		{name: "highly significant", pValue: 0.001, shouldBeSig: true},
@@ -1233,49 +1233,49 @@ func TestStatisticalHelpers_HashString(t *testing.T) {
 // TestZScoreAccuracy tests z-score calculation accuracy
 func TestZScoreAccuracy(t *testing.T) {
 	tests := []struct {
-		name               string
-		rate1              float64
-		rate2              float64
-		n1                 int
-		n2                 int
-		expectSignificant  bool
-		expectPositive     bool
+		name              string
+		rate1             float64
+		rate2             float64
+		n1                int
+		n2                int
+		expectSignificant bool
+		expectPositive    bool
 	}{
 		{
-			name:               "clear difference - 60% vs 30%",
-			rate1:              0.60,
-			rate2:              0.30,
-			n1:                 150,
-			n2:                 150,
-			expectSignificant:  true,
-			expectPositive:     true,
+			name:              "clear difference - 60% vs 30%",
+			rate1:             0.60,
+			rate2:             0.30,
+			n1:                150,
+			n2:                150,
+			expectSignificant: true,
+			expectPositive:    true,
 		},
 		{
-			name:               "small difference - 52% vs 48%",
-			rate1:              0.52,
-			rate2:              0.48,
-			n1:                 100,
-			n2:                 100,
-			expectSignificant:  false,
-			expectPositive:     true,
+			name:              "small difference - 52% vs 48%",
+			rate1:             0.52,
+			rate2:             0.48,
+			n1:                100,
+			n2:                100,
+			expectSignificant: false,
+			expectPositive:    true,
 		},
 		{
-			name:               "identical rates",
-			rate1:              0.50,
-			rate2:              0.50,
-			n1:                 100,
-			n2:                 100,
-			expectSignificant:  false,
-			expectPositive:     false, // Should be ~0
+			name:              "identical rates",
+			rate1:             0.50,
+			rate2:             0.50,
+			n1:                100,
+			n2:                100,
+			expectSignificant: false,
+			expectPositive:    false, // Should be ~0
 		},
 		{
-			name:               "zero sample size",
-			rate1:              0.50,
-			rate2:              0.30,
-			n1:                 0,
-			n2:                 100,
-			expectSignificant:  false,
-			expectPositive:     false, // Returns 0
+			name:              "zero sample size",
+			rate1:             0.50,
+			rate2:             0.30,
+			n1:                0,
+			n2:                100,
+			expectSignificant: false,
+			expectPositive:    false, // Returns 0
 		},
 	}
 
@@ -1706,16 +1706,16 @@ func TestGetTestResults_WithDeclaredWinner(t *testing.T) {
 	declaredAt := time.Now()
 
 	variantA := &domain.TestVariant{
-		ID:                 winnerID,
-		IssueID:            issueID,
-		TestType:           domain.TestTypeSubjectLine,
-		VariantName:        "A",
-		VariantValue:       "Subject A",
-		AssignedContacts:   150,
-		Opens:              90,
-		Clicks:             45,
-		IsWinner:           true,
-		WinnerDeclaredAt:   &declaredAt,
+		ID:               winnerID,
+		IssueID:          issueID,
+		TestType:         domain.TestTypeSubjectLine,
+		VariantName:      "A",
+		VariantValue:     "Subject A",
+		AssignedContacts: 150,
+		Opens:            90,
+		Clicks:           45,
+		IsWinner:         true,
+		WinnerDeclaredAt: &declaredAt,
 	}
 
 	variantB := &domain.TestVariant{

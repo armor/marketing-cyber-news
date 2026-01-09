@@ -1,4 +1,4 @@
-.PHONY: build test lint migrate-up migrate-down docker-build docker-up docker-down clean
+.PHONY: build test lint migrate-up migrate-down docker-build docker-up docker-down clean seed-admin
 
 # Build configuration
 BINARY_NAME=aci-backend
@@ -98,6 +98,11 @@ dev-deps:
 	@go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 	@echo "Development dependencies installed"
 
+# Seed super admin user
+seed-admin:
+	@echo "Seeding super admin user..."
+	@go run ./cmd/seed-admin
+
 # Show help
 help:
 	@echo "Available targets:"
@@ -118,3 +123,4 @@ help:
 	@echo "  run            - Run the application locally"
 	@echo "  clean          - Clean build artifacts"
 	@echo "  dev-deps       - Install development dependencies"
+	@echo "  seed-admin     - Seed super admin user (interactive or via env vars)"

@@ -130,11 +130,11 @@ func (s *ApprovalService) ApproveIssue(ctx context.Context, issueID uuid.UUID, a
 		ResourceID:   &approvalResourceID,
 		UserID:       &approverID,
 		NewValue: map[string]interface{}{
-			"issue_id":          issueID.String(),
-			"issue_number":      issue.IssueNumber,
-			"configuration_id":  issue.ConfigurationID.String(),
-			"approval_tier":     config.ApprovalTier,
-			"notes":             notes,
+			"issue_id":         issueID.String(),
+			"issue_number":     issue.IssueNumber,
+			"configuration_id": issue.ConfigurationID.String(),
+			"approval_tier":    config.ApprovalTier,
+			"notes":            notes,
 		},
 		CreatedAt: now,
 	}
@@ -233,11 +233,11 @@ func (s *ApprovalService) RejectIssue(ctx context.Context, issueID uuid.UUID, ap
 		ResourceID:   &rejectionResourceID,
 		UserID:       &approverID,
 		NewValue: map[string]interface{}{
-			"issue_id":          issueID.String(),
-			"issue_number":      issue.IssueNumber,
-			"configuration_id":  issue.ConfigurationID.String(),
-			"approval_tier":     config.ApprovalTier,
-			"rejection_reason":  reason,
+			"issue_id":         issueID.String(),
+			"issue_number":     issue.IssueNumber,
+			"configuration_id": issue.ConfigurationID.String(),
+			"approval_tier":    config.ApprovalTier,
+			"rejection_reason": reason,
 		},
 		CreatedAt: now,
 	}
@@ -352,10 +352,10 @@ func (s *ApprovalService) SubmitForApproval(ctx context.Context, issueID uuid.UU
 		ResourceID:   &submissionResourceID,
 		UserID:       creatorID,
 		NewValue: map[string]interface{}{
-			"issue_id":          issueID.String(),
-			"issue_number":      issue.IssueNumber,
-			"configuration_id":  issue.ConfigurationID.String(),
-			"approval_tier":     config.ApprovalTier,
+			"issue_id":         issueID.String(),
+			"issue_number":     issue.IssueNumber,
+			"configuration_id": issue.ConfigurationID.String(),
+			"approval_tier":    config.ApprovalTier,
 		},
 		CreatedAt: now,
 	}

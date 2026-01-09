@@ -118,9 +118,9 @@ func (m *Message) UnmarshalPayload(target interface{}) error {
 
 const (
 	// Channel prefixes
-	ChannelPrefixArticles  = "articles:"
-	ChannelPrefixAlerts    = "alerts:"
-	ChannelPrefixSystem    = "system"
+	ChannelPrefixArticles = "articles:"
+	ChannelPrefixAlerts   = "alerts:"
+	ChannelPrefixSystem   = "system"
 
 	// Predefined channels
 	ChannelArticlesAll      = "articles:all"

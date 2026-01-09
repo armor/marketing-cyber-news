@@ -385,10 +385,10 @@ func TestTestVariantRepository_BulkCreate(t *testing.T) {
 	// Test: Invalid variant in batch should fail entire transaction
 	invalidBatch := []*domain.TestVariant{
 		{
-			ID:          uuid.New(),
-			IssueID:     issueID,
-			TestType:    domain.TestTypeSubjectLine,
-			VariantName: "D",
+			ID:           uuid.New(),
+			IssueID:      issueID,
+			TestType:     domain.TestTypeSubjectLine,
+			VariantName:  "D",
 			VariantValue: "Valid",
 		},
 		{

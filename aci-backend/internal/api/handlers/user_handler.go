@@ -54,15 +54,15 @@ type UpdateProfileRequest struct {
 
 // UserStats represents user engagement statistics
 type UserStats struct {
-	TotalArticlesRead    int     `json:"total_articles_read"`
-	TotalReadingTime     int     `json:"total_reading_time_seconds"`
-	BookmarkCount        int     `json:"bookmark_count"`
-	AlertCount           int     `json:"alert_count"`
-	AlertMatchCount      int     `json:"alert_match_count"`
-	FavoriteCategory     string  `json:"favorite_category,omitempty"`
-	ArticlesThisWeek     int     `json:"articles_this_week"`
-	ArticlesThisMonth    int     `json:"articles_this_month"`
-	AverageReadingTime   float64 `json:"average_reading_time_seconds"`
+	TotalArticlesRead  int     `json:"total_articles_read"`
+	TotalReadingTime   int     `json:"total_reading_time_seconds"`
+	BookmarkCount      int     `json:"bookmark_count"`
+	AlertCount         int     `json:"alert_count"`
+	AlertMatchCount    int     `json:"alert_match_count"`
+	FavoriteCategory   string  `json:"favorite_category,omitempty"`
+	ArticlesThisWeek   int     `json:"articles_this_week"`
+	ArticlesThisMonth  int     `json:"articles_this_month"`
+	AverageReadingTime float64 `json:"average_reading_time_seconds"`
 }
 
 // GetCurrentUser handles GET /v1/users/me - returns current user profile
@@ -332,4 +332,3 @@ func (h *UserHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 
 	response.Success(w, userStats)
 }
-

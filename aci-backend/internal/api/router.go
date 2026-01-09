@@ -61,10 +61,15 @@ func (s *Server) setupRoutesWithWebSocket(wsHandler WebSocketHandler) {
 		// Auth routes (no authentication required but rate limited)
 		r.Route("/auth", func(r chi.Router) {
 			r.Use(middleware.AuthRateLimiter()) // SEC-001: Strict rate limiting for auth endpoints
-			r.Post("/register", s.handlers.Auth.Register)
-			r.Post("/login", s.handlers.Auth.Login)
+			r.Post("/register", s.handlers.Auth.RegisterWithMode)
+			r.Post("/login", s.handlers.Auth.LoginEnhanced)
 			r.Post("/refresh", s.handlers.Auth.Refresh)
 			r.Post("/logout", s.handlers.Auth.Logout)
+
+			// Enhanced auth endpoints
+			r.Get("/signup-mode", s.handlers.Auth.GetSignupMode)
+			r.Post("/verify-email", s.handlers.Auth.VerifyEmail)
+			r.Post("/register/invitation", s.handlers.Auth.RegisterFromInvitation)
 		})
 
 		// Category routes (no authentication required)
@@ -170,6 +175,7 @@ func (s *Server) setupRoutesWithWebSocket(wsHandler WebSocketHandler) {
 				r.Get("/me/bookmarks", s.handlers.User.GetBookmarks)
 				r.Get("/me/history", s.handlers.User.GetReadingHistory)
 				r.Get("/me/stats", s.handlers.User.GetStats)
+				r.Post("/me/change-password", s.handlers.Auth.ChangePassword)
 			})
 
 			// Admin routes (require admin role)
@@ -194,13 +200,44 @@ func (s *Server) setupRoutesWithWebSocket(wsHandler WebSocketHandler) {
 				r.Put("/sources/{id}", s.handlers.Admin.UpdateSource)
 				r.Delete("/sources/{id}", s.handlers.Admin.DeleteSource)
 
-				// User management
+				// User management (legacy - kept for backwards compatibility)
 				r.Get("/users", s.handlers.Admin.ListUsers)
 				r.Put("/users/{id}", s.handlers.Admin.UpdateUser)
 				r.Delete("/users/{id}", s.handlers.Admin.DeleteUser)
 
 				// Audit logs
 				r.Get("/audit-logs", s.handlers.Admin.ListAuditLogs)
+
+				// Enhanced User Administration (requires UserAdmin handler)
+				if s.handlers.UserAdmin != nil {
+					// User CRUD
+					r.Get("/user-management", s.handlers.UserAdmin.ListUsers)
+					r.Post("/user-management", s.handlers.UserAdmin.CreateUser)
+					r.Get("/user-management/{id}", s.handlers.UserAdmin.GetUser)
+					r.Put("/user-management/{id}", s.handlers.UserAdmin.UpdateUser)
+					r.Delete("/user-management/{id}", s.handlers.UserAdmin.DeleteUser)
+
+					// User actions
+					r.Post("/user-management/{id}/deactivate", s.handlers.UserAdmin.DeactivateUser)
+					r.Post("/user-management/{id}/role", s.handlers.UserAdmin.AssignRole)
+					r.Post("/user-management/{id}/reset-password", s.handlers.UserAdmin.ResetUserPassword)
+					r.Post("/user-management/{id}/unlock", s.handlers.UserAdmin.UnlockUser)
+					r.Post("/user-management/{id}/revoke-sessions", s.handlers.UserAdmin.RevokeUserSessions)
+
+					// Invitations
+					r.Get("/invitations", s.handlers.UserAdmin.ListInvitations)
+					r.Post("/invitations", s.handlers.UserAdmin.CreateInvitation)
+					r.Delete("/invitations/{id}", s.handlers.UserAdmin.RevokeInvitation)
+
+					// Approval requests
+					r.Get("/approvals", s.handlers.UserAdmin.ListPendingApprovals)
+					r.Post("/approvals/{id}/approve", s.handlers.UserAdmin.ApproveUser)
+					r.Post("/approvals/{id}/reject", s.handlers.UserAdmin.RejectUser)
+
+					// System settings (super_admin only enforced in handler)
+					r.Get("/settings/signup-mode", s.handlers.UserAdmin.GetSignupMode)
+					r.Put("/settings/signup-mode", s.handlers.UserAdmin.SetSignupMode)
+				}
 			})
 
 			// Newsletter routes

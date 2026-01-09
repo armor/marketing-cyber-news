@@ -10,26 +10,26 @@ import (
 
 // CreateNewsletterConfigRequest represents the request body for creating a newsletter configuration
 type CreateNewsletterConfigRequest struct {
-	Name                 string                      `json:"name" validate:"required,min=1,max=200"`
-	Description          *string                     `json:"description,omitempty" validate:"omitempty,max=1000"`
-	SegmentID            *string                     `json:"segment_id,omitempty" validate:"omitempty,uuid"`
-	Cadence              string                      `json:"cadence" validate:"required,oneof=weekly bi-weekly monthly"`
-	SendDayOfWeek        *int                        `json:"send_day_of_week,omitempty" validate:"omitempty,min=0,max=6"`
-	SendTimeUTC          *string                     `json:"send_time_utc,omitempty" validate:"omitempty"`
-	Timezone             string                      `json:"timezone" validate:"required"`
-	MaxBlocks            int                         `json:"max_blocks" validate:"required,min=1,max=10"`
-	EducationRatioMin    float64                     `json:"education_ratio_min" validate:"required,min=0,max=1"`
-	ContentFreshnessDays int                         `json:"content_freshness_days" validate:"required,min=1"`
-	HeroTopicPriority    *string                     `json:"hero_topic_priority,omitempty" validate:"omitempty,max=200"`
-	FrameworkFocus       *string                     `json:"framework_focus,omitempty" validate:"omitempty,max=200"`
-	SubjectLineStyle     string                      `json:"subject_line_style" validate:"required,oneof=pain_first opportunity_first visionary"`
-	MaxMetaphors         int                         `json:"max_metaphors" validate:"required,min=0"`
-	BannedPhrases        []string                    `json:"banned_phrases,omitempty"`
-	ApprovalTier         string                      `json:"approval_tier" validate:"required,oneof=tier1 tier2"`
-	RiskLevel            string                      `json:"risk_level" validate:"required,oneof=standard high experimental"`
-	AIProvider           string                      `json:"ai_provider" validate:"required,min=1,max=100"`
-	AIModel              string                      `json:"ai_model" validate:"required,min=1,max=100"`
-	PromptVersion        int                         `json:"prompt_version" validate:"required,min=1"`
+	Name                 string   `json:"name" validate:"required,min=1,max=200"`
+	Description          *string  `json:"description,omitempty" validate:"omitempty,max=1000"`
+	SegmentID            *string  `json:"segment_id,omitempty" validate:"omitempty,uuid"`
+	Cadence              string   `json:"cadence" validate:"required,oneof=weekly bi-weekly monthly"`
+	SendDayOfWeek        *int     `json:"send_day_of_week,omitempty" validate:"omitempty,min=0,max=6"`
+	SendTimeUTC          *string  `json:"send_time_utc,omitempty" validate:"omitempty"`
+	Timezone             string   `json:"timezone" validate:"required"`
+	MaxBlocks            int      `json:"max_blocks" validate:"required,min=1,max=10"`
+	EducationRatioMin    float64  `json:"education_ratio_min" validate:"required,min=0,max=1"`
+	ContentFreshnessDays int      `json:"content_freshness_days" validate:"required,min=1"`
+	HeroTopicPriority    *string  `json:"hero_topic_priority,omitempty" validate:"omitempty,max=200"`
+	FrameworkFocus       *string  `json:"framework_focus,omitempty" validate:"omitempty,max=200"`
+	SubjectLineStyle     string   `json:"subject_line_style" validate:"required,oneof=pain_first opportunity_first visionary"`
+	MaxMetaphors         int      `json:"max_metaphors" validate:"required,min=0"`
+	BannedPhrases        []string `json:"banned_phrases,omitempty"`
+	ApprovalTier         string   `json:"approval_tier" validate:"required,oneof=tier1 tier2"`
+	RiskLevel            string   `json:"risk_level" validate:"required,oneof=standard high experimental"`
+	AIProvider           string   `json:"ai_provider" validate:"required,min=1,max=100"`
+	AIModel              string   `json:"ai_model" validate:"required,min=1,max=100"`
+	PromptVersion        int      `json:"prompt_version" validate:"required,min=1"`
 }
 
 // UpdateNewsletterConfigRequest represents the request body for updating a newsletter configuration

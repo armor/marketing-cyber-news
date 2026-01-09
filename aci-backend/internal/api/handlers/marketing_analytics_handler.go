@@ -360,4 +360,3 @@ func (h *MarketingAnalyticsHandler) parseDateRange(r *http.Request) (service.Dat
 
 	return dateRange, nil
 }
-

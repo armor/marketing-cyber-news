@@ -11,15 +11,44 @@ import (
 type UserRole string
 
 const (
-	RoleUser  UserRole = "user"
-	RoleAdmin UserRole = "admin"
+	RoleUser       UserRole = "user"
+	RoleAdmin      UserRole = "admin"
+	RoleAnalyst    UserRole = "analyst"
+	RoleViewer     UserRole = "viewer"
+	RoleMarketing  UserRole = "marketing"
+	RoleBranding   UserRole = "branding"
+	RoleSocLevel1  UserRole = "soc_level_1"
+	RoleSocLevel3  UserRole = "soc_level_3"
+	RoleCISO       UserRole = "ciso"
+	RoleSuperAdmin UserRole = "super_admin"
 )
+
+// SubscriptionTier represents user subscription levels
+type SubscriptionTier string
+
+const (
+	SubscriptionFree       SubscriptionTier = "free"
+	SubscriptionPremium    SubscriptionTier = "premium"
+	SubscriptionEnterprise SubscriptionTier = "enterprise"
+)
+
+// IsValid validates the subscription tier
+func (s SubscriptionTier) IsValid() bool {
+	switch s {
+	case SubscriptionFree, SubscriptionPremium, SubscriptionEnterprise:
+		return true
+	default:
+		return false
+	}
+}
 
 // IsValid checks if the user role is valid
 func (r UserRole) IsValid() error {
 	validRoles := map[UserRole]bool{
 		RoleUser:       true,
 		RoleAdmin:      true,
+		RoleAnalyst:    true,
+		RoleViewer:     true,
 		RoleMarketing:  true,
 		RoleBranding:   true,
 		RoleSocLevel1:  true,
@@ -34,6 +63,11 @@ func (r UserRole) IsValid() error {
 	return nil
 }
 
+// IsAdminRole returns true if the role has admin-level permissions
+func (r UserRole) IsAdminRole() bool {
+	return r == RoleAdmin || r == RoleSuperAdmin
+}
+
 // String returns the string representation of the role
 func (r UserRole) String() string {
 	return string(r)
@@ -41,16 +75,20 @@ func (r UserRole) String() string {
 
 // User represents a user in the system
 type User struct {
-	ID               uuid.UUID        `json:"id"`
-	Email            string           `json:"email"`
-	PasswordHash     string           `json:"-"`
-	Name             string           `json:"name"`
-	Role             UserRole         `json:"role"`
-	SubscriptionTier SubscriptionTier `json:"subscription_tier"`
-	CreatedAt        time.Time        `json:"created_at"`
-	UpdatedAt        time.Time        `json:"updated_at"`
-	EmailVerified    bool             `json:"email_verified"`
-	LastLoginAt      *time.Time       `json:"last_login_at,omitempty"`
+	ID                  uuid.UUID        `json:"id"`
+	Email               string           `json:"email"`
+	PasswordHash        string           `json:"-"`
+	Name                string           `json:"name"`
+	Role                UserRole         `json:"role"`
+	Status              UserStatus       `json:"status"`
+	SubscriptionTier    SubscriptionTier `json:"subscription_tier"`
+	CreatedAt           time.Time        `json:"created_at"`
+	UpdatedAt           time.Time        `json:"updated_at"`
+	EmailVerified       bool             `json:"email_verified"`
+	LastLoginAt         *time.Time       `json:"last_login_at,omitempty"`
+	ForcePasswordChange bool             `json:"force_password_change"`
+	LockedUntil         *time.Time       `json:"locked_until,omitempty"`
+	FailedLoginCount    int              `json:"failed_login_count"`
 }
 
 // Validate validates the user entity
@@ -82,9 +120,54 @@ func (u *User) Validate() error {
 	return nil
 }
 
-// IsAdmin returns true if the user has admin role
+// IsAdmin returns true if the user has admin or super_admin role
 func (u *User) IsAdmin() bool {
-	return u.Role == RoleAdmin
+	return u.Role == RoleAdmin || u.Role == RoleSuperAdmin
+}
+
+// IsSuperAdmin returns true if the user has super_admin role
+func (u *User) IsSuperAdmin() bool {
+	return u.Role == RoleSuperAdmin
+}
+
+// IsLocked returns true if the user account is currently locked
+func (u *User) IsLocked() bool {
+	if u.LockedUntil == nil {
+		return false
+	}
+	return time.Now().Before(*u.LockedUntil)
+}
+
+// CanLogin returns true if the user can login (active and not locked)
+func (u *User) CanLogin() bool {
+	return u.Status.CanLogin() && !u.IsLocked()
+}
+
+// Lock locks the user account for the specified duration
+func (u *User) Lock(duration time.Duration) {
+	lockUntil := time.Now().Add(duration)
+	u.LockedUntil = &lockUntil
+	u.FailedLoginCount++
+	u.UpdatedAt = time.Now()
+}
+
+// Unlock unlocks the user account and resets failed login count
+func (u *User) Unlock() {
+	u.LockedUntil = nil
+	u.FailedLoginCount = 0
+	u.UpdatedAt = time.Now()
+}
+
+// IncrementFailedLogin increments the failed login count
+func (u *User) IncrementFailedLogin() {
+	u.FailedLoginCount++
+	u.UpdatedAt = time.Now()
+}
+
+// ResetFailedLogin resets the failed login count
+func (u *User) ResetFailedLogin() {
+	u.FailedLoginCount = 0
+	u.UpdatedAt = time.Now()
 }
 
 // UpdateLastLogin updates the last login timestamp
@@ -96,18 +179,18 @@ func (u *User) UpdateLastLogin() {
 
 // UserPreferences represents user notification preferences
 type UserPreferences struct {
-	ID                     uuid.UUID `json:"id"`
-	UserID                 uuid.UUID `json:"user_id"`
-	EmailNotifications     bool      `json:"email_notifications"`
-	PushNotifications      bool      `json:"push_notifications"`
-	DailyDigest            bool      `json:"daily_digest"`
-	WeeklyDigest           bool      `json:"weekly_digest"`
-	SecurityAlerts         bool      `json:"security_alerts"`
-	TrendingTopics         bool      `json:"trending_topics"`
-	SavedSearchAlerts      bool      `json:"saved_search_alerts"`
-	BreakingNewsAlerts     bool      `json:"breaking_news_alerts"`
-	CreatedAt              time.Time `json:"created_at"`
-	UpdatedAt              time.Time `json:"updated_at"`
+	ID                 uuid.UUID `json:"id"`
+	UserID             uuid.UUID `json:"user_id"`
+	EmailNotifications bool      `json:"email_notifications"`
+	PushNotifications  bool      `json:"push_notifications"`
+	DailyDigest        bool      `json:"daily_digest"`
+	WeeklyDigest       bool      `json:"weekly_digest"`
+	SecurityAlerts     bool      `json:"security_alerts"`
+	TrendingTopics     bool      `json:"trending_topics"`
+	SavedSearchAlerts  bool      `json:"saved_search_alerts"`
+	BreakingNewsAlerts bool      `json:"breaking_news_alerts"`
+	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
 }
 
 // Validate validates the user preferences
@@ -135,32 +218,32 @@ func (p *UserPreferences) Validate() error {
 func NewDefaultPreferences(userID uuid.UUID) *UserPreferences {
 	now := time.Now()
 	return &UserPreferences{
-		ID:                     uuid.New(),
-		UserID:                 userID,
-		EmailNotifications:     true,
-		PushNotifications:      true,
-		DailyDigest:            false,
-		WeeklyDigest:           true,
-		SecurityAlerts:         true,
-		TrendingTopics:         true,
-		SavedSearchAlerts:      true,
-		BreakingNewsAlerts:     true,
-		CreatedAt:              now,
-		UpdatedAt:              now,
+		ID:                 uuid.New(),
+		UserID:             userID,
+		EmailNotifications: true,
+		PushNotifications:  true,
+		DailyDigest:        false,
+		WeeklyDigest:       true,
+		SecurityAlerts:     true,
+		TrendingTopics:     true,
+		SavedSearchAlerts:  true,
+		BreakingNewsAlerts: true,
+		CreatedAt:          now,
+		UpdatedAt:          now,
 	}
 }
 
 // RefreshToken represents a refresh token for authentication
 type RefreshToken struct {
-	ID           uuid.UUID  `json:"id"`
-	UserID       uuid.UUID  `json:"user_id"`
-	Token        string     `json:"token"`
-	ExpiresAt    time.Time  `json:"expires_at"`
-	CreatedAt    time.Time  `json:"created_at"`
-	RevokedAt    *time.Time `json:"revoked_at,omitempty"`
-	LastUsedAt   *time.Time `json:"last_used_at,omitempty"`
-	IPAddress    string     `json:"ip_address"`
-	UserAgent    string     `json:"user_agent"`
+	ID         uuid.UUID  `json:"id"`
+	UserID     uuid.UUID  `json:"user_id"`
+	Token      string     `json:"token"`
+	ExpiresAt  time.Time  `json:"expires_at"`
+	CreatedAt  time.Time  `json:"created_at"`
+	RevokedAt  *time.Time `json:"revoked_at,omitempty"`
+	LastUsedAt *time.Time `json:"last_used_at,omitempty"`
+	IPAddress  string     `json:"ip_address"`
+	UserAgent  string     `json:"user_agent"`
 }
 
 // Validate validates the refresh token

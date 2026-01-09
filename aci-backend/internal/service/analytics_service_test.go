@@ -98,10 +98,10 @@ func TestGetOverview_HappyPath(t *testing.T) {
 	assert.Equal(t, 1, metrics.SpamComplaints)
 
 	// Check calculated rates
-	assert.InDelta(t, 0.2, metrics.OpenRate, 0.01)     // 2/1000 * 100 = 0.2%
-	assert.InDelta(t, 0.1, metrics.ClickRate, 0.01)    // 1/1000 * 100 = 0.1%
-	assert.InDelta(t, 50.0, metrics.CTOR, 0.01)        // 1/2 * 100 = 50%
-	assert.InDelta(t, 0.5, metrics.BounceRate, 0.01)   // 5/1000 * 100 = 0.5%
+	assert.InDelta(t, 0.2, metrics.OpenRate, 0.01)        // 2/1000 * 100 = 0.2%
+	assert.InDelta(t, 0.1, metrics.ClickRate, 0.01)       // 1/1000 * 100 = 0.1%
+	assert.InDelta(t, 50.0, metrics.CTOR, 0.01)           // 1/2 * 100 = 50%
+	assert.InDelta(t, 0.5, metrics.BounceRate, 0.01)      // 5/1000 * 100 = 0.5%
 	assert.InDelta(t, 0.2, metrics.UnsubscribeRate, 0.01) // 2/1000 * 100 = 0.2%
 
 	mockIssue.AssertExpectations(t)
@@ -1272,19 +1272,19 @@ func TestGetOverview_MultipleIssuesAggregation(t *testing.T) {
 	// Verify aggregation
 	assert.NoError(t, err)
 	assert.NotNil(t, metrics)
-	assert.Equal(t, 3000, metrics.TotalSent)        // 1000 + 2000
-	assert.Equal(t, 2985, metrics.TotalDelivered)   // 995 + 1990
-	assert.Equal(t, 15, metrics.Bounces)            // 5 + 10
-	assert.Equal(t, 5, metrics.Unsubscribes)        // 2 + 3
-	assert.Equal(t, 1, metrics.SpamComplaints)      // 0 + 1
-	assert.Equal(t, 3, metrics.UniqueOpens)         // contactID1, contactID2, contactID3
-	assert.Equal(t, 2, metrics.UniqueClicks)        // contactID1, contactID3
+	assert.Equal(t, 3000, metrics.TotalSent)      // 1000 + 2000
+	assert.Equal(t, 2985, metrics.TotalDelivered) // 995 + 1990
+	assert.Equal(t, 15, metrics.Bounces)          // 5 + 10
+	assert.Equal(t, 5, metrics.Unsubscribes)      // 2 + 3
+	assert.Equal(t, 1, metrics.SpamComplaints)    // 0 + 1
+	assert.Equal(t, 3, metrics.UniqueOpens)       // contactID1, contactID2, contactID3
+	assert.Equal(t, 2, metrics.UniqueClicks)      // contactID1, contactID3
 
 	// Verify rate calculations
-	assert.InDelta(t, 0.1, metrics.OpenRate, 0.01)        // 3/3000 * 100 = 0.1%
-	assert.InDelta(t, 0.067, metrics.ClickRate, 0.01)     // 2/3000 * 100 = 0.067%
-	assert.InDelta(t, 66.67, metrics.CTOR, 0.1)           // 2/3 * 100 = 66.67%
-	assert.InDelta(t, 0.5, metrics.BounceRate, 0.01)      // 15/3000 * 100 = 0.5%
+	assert.InDelta(t, 0.1, metrics.OpenRate, 0.01)          // 3/3000 * 100 = 0.1%
+	assert.InDelta(t, 0.067, metrics.ClickRate, 0.01)       // 2/3000 * 100 = 0.067%
+	assert.InDelta(t, 66.67, metrics.CTOR, 0.1)             // 2/3 * 100 = 66.67%
+	assert.InDelta(t, 0.5, metrics.BounceRate, 0.01)        // 15/3000 * 100 = 0.5%
 	assert.InDelta(t, 0.167, metrics.UnsubscribeRate, 0.01) // 5/3000 * 100 = 0.167%
 
 	mockIssue.AssertExpectations(t)
@@ -1294,79 +1294,79 @@ func TestGetOverview_MultipleIssuesAggregation(t *testing.T) {
 // TestGetOverview_RateCalculations tests all rate calculation edge cases
 func TestGetOverview_RateCalculations(t *testing.T) {
 	tests := []struct {
-		name                string
-		totalSent           int
-		uniqueOpens         int
-		uniqueClicks        int
-		bounces             int
-		unsubscribes        int
-		spamComplaints      int
-		expectedOpenRate    float64
-		expectedClickRate   float64
-		expectedCTOR        float64
-		expectedBounceRate  float64
-		expectedUnsubRate   float64
-		expectedSpamRate    float64
+		name               string
+		totalSent          int
+		uniqueOpens        int
+		uniqueClicks       int
+		bounces            int
+		unsubscribes       int
+		spamComplaints     int
+		expectedOpenRate   float64
+		expectedClickRate  float64
+		expectedCTOR       float64
+		expectedBounceRate float64
+		expectedUnsubRate  float64
+		expectedSpamRate   float64
 	}{
 		{
-			name:              "zero opens zero clicks",
-			totalSent:         1000,
-			uniqueOpens:       0,
-			uniqueClicks:      0,
-			bounces:           5,
-			unsubscribes:      2,
-			spamComplaints:    1,
-			expectedOpenRate:  0.0,
-			expectedClickRate: 0.0,
-			expectedCTOR:      0.0,
+			name:               "zero opens zero clicks",
+			totalSent:          1000,
+			uniqueOpens:        0,
+			uniqueClicks:       0,
+			bounces:            5,
+			unsubscribes:       2,
+			spamComplaints:     1,
+			expectedOpenRate:   0.0,
+			expectedClickRate:  0.0,
+			expectedCTOR:       0.0,
 			expectedBounceRate: 0.5,
-			expectedUnsubRate: 0.2,
-			expectedSpamRate:  0.1,
+			expectedUnsubRate:  0.2,
+			expectedSpamRate:   0.1,
 		},
 		{
-			name:              "opens without clicks",
-			totalSent:         1000,
-			uniqueOpens:       100,
-			uniqueClicks:      0,
-			bounces:           5,
-			unsubscribes:      2,
-			spamComplaints:    0,
-			expectedOpenRate:  10.0,
-			expectedClickRate: 0.0,
-			expectedCTOR:      0.0,
+			name:               "opens without clicks",
+			totalSent:          1000,
+			uniqueOpens:        100,
+			uniqueClicks:       0,
+			bounces:            5,
+			unsubscribes:       2,
+			spamComplaints:     0,
+			expectedOpenRate:   10.0,
+			expectedClickRate:  0.0,
+			expectedCTOR:       0.0,
 			expectedBounceRate: 0.5,
-			expectedUnsubRate: 0.2,
-			expectedSpamRate:  0.0,
+			expectedUnsubRate:  0.2,
+			expectedSpamRate:   0.0,
 		},
 		{
-			name:              "high engagement",
-			totalSent:         1000,
-			uniqueOpens:       400,
-			uniqueClicks:      80,
-			bounces:           3,
-			unsubscribes:      1,
-			spamComplaints:    0,
-			expectedOpenRate:  40.0,
-			expectedClickRate: 8.0,
-			expectedCTOR:      20.0,
+			name:               "high engagement",
+			totalSent:          1000,
+			uniqueOpens:        400,
+			uniqueClicks:       80,
+			bounces:            3,
+			unsubscribes:       1,
+			spamComplaints:     0,
+			expectedOpenRate:   40.0,
+			expectedClickRate:  8.0,
+			expectedCTOR:       20.0,
 			expectedBounceRate: 0.3,
-			expectedUnsubRate: 0.1,
-			expectedSpamRate:  0.0,
+			expectedUnsubRate:  0.1,
+			expectedSpamRate:   0.0,
 		},
 		{
-			name:              "all clicks are opens",
-			totalSent:         1000,
-			uniqueOpens:       100,
-			uniqueClicks:      100, // Same as opens
-			bounces:           0,
-			unsubscribes:      0,
-			spamComplaints:    0,
-			expectedOpenRate:  10.0,
-			expectedClickRate: 10.0,
-			expectedCTOR:      100.0, // 100% CTOR
+			name:               "all clicks are opens",
+			totalSent:          1000,
+			uniqueOpens:        100,
+			uniqueClicks:       100, // Same as opens
+			bounces:            0,
+			unsubscribes:       0,
+			spamComplaints:     0,
+			expectedOpenRate:   10.0,
+			expectedClickRate:  10.0,
+			expectedCTOR:       100.0, // 100% CTOR
 			expectedBounceRate: 0.0,
-			expectedUnsubRate: 0.0,
-			expectedSpamRate:  0.0,
+			expectedUnsubRate:  0.0,
+			expectedSpamRate:   0.0,
 		},
 	}
 
@@ -1489,9 +1489,9 @@ func TestGetSegmentAnalytics_RepositoryTimeout(t *testing.T) {
 // TestGetTopPerforming_DifferentMetricTypes tests ranking by different metric types
 func TestGetTopPerforming_DifferentMetricTypes(t *testing.T) {
 	tests := []struct {
-		name           string
-		metricType     MetricType
-		expectedRanks  []string // Subject lines in expected rank order
+		name          string
+		metricType    MetricType
+		expectedRanks []string // Subject lines in expected rank order
 	}{
 		{
 			name:          "rank by opens",
@@ -1820,9 +1820,9 @@ func TestGetTrendData_RepositoryFailure(t *testing.T) {
 // TestCompareToTargets_EdgeCases tests target comparison edge cases
 func TestCompareToTargets_EdgeCases(t *testing.T) {
 	tests := []struct {
-		name         string
-		metrics      *OverviewMetrics
-		metricIdx    int // Index in comparisons array
+		name           string
+		metrics        *OverviewMetrics
+		metricIdx      int // Index in comparisons array
 		expectedStatus TargetStatus
 	}{
 		{

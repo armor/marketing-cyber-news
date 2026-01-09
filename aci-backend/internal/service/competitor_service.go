@@ -14,9 +14,9 @@ import (
 
 // CompetitorService handles competitor monitoring operations
 type CompetitorService struct {
-	profileRepo repository.CompetitorProfileRepository
-	contentRepo repository.CompetitorContentRepository
-	alertRepo   repository.CompetitorAlertRepository
+	profileRepo  repository.CompetitorProfileRepository
+	contentRepo  repository.CompetitorContentRepository
+	alertRepo    repository.CompetitorAlertRepository
 	campaignRepo repository.CampaignRepository
 }
 

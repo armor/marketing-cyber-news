@@ -95,15 +95,15 @@ func (r *CompetitorContentRepo) GetByID(ctx context.Context, id uuid.UUID) (*dom
 
 	var content struct {
 		ID                uuid.UUID
-		CompetitorID      uuid.UUID      `db:"competitor_id"`
+		CompetitorID      uuid.UUID `db:"competitor_id"`
 		Channel           string
 		Title             string
 		URL               string
-		PublishedAt       time.Time      `db:"published_at"`
+		PublishedAt       time.Time `db:"published_at"`
 		Summary           *string
-		EngagementMetrics []byte         `db:"engagement_metrics"`
-		CreatedAt         time.Time      `db:"created_at"`
-		UpdatedAt         time.Time      `db:"updated_at"`
+		EngagementMetrics []byte    `db:"engagement_metrics"`
+		CreatedAt         time.Time `db:"created_at"`
+		UpdatedAt         time.Time `db:"updated_at"`
 	}
 
 	err := r.db.GetContext(ctx, &content, query, id)

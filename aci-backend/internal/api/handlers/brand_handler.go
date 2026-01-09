@@ -289,8 +289,8 @@ func (h *BrandHandler) GetTerminology(w http.ResponseWriter, r *http.Request) {
 
 // UpdateTerminologyRequest represents a request to update terminology
 type UpdateTerminologyRequest struct {
-	ApprovedTerms []string            `json:"approved_terms"`
-	BannedTerms   []domain.TermEntry  `json:"banned_terms"`
+	ApprovedTerms []string           `json:"approved_terms"`
+	BannedTerms   []domain.TermEntry `json:"banned_terms"`
 }
 
 // UpdateTerminology handles PUT /v1/brand/terminology - Update terminology

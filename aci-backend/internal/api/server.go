@@ -29,6 +29,7 @@ type Handlers struct {
 	Webhook            *handlers.WebhookHandler
 	User               *handlers.UserHandler
 	Admin              *handlers.AdminHandler
+	UserAdmin          *handlers.UserAdminHandler
 	Category           *handlers.CategoryHandler
 	Dashboard          *handlers.DashboardHandler
 	DeepDive           *handlers.DeepDiveHandler

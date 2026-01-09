@@ -15,18 +15,18 @@ import (
 
 // ContentSelectionCriteria defines the criteria for selecting content for a segment
 type ContentSelectionCriteria struct {
-	SegmentID        uuid.UUID   `json:"segment_id"`
-	ConfigurationID  uuid.UUID   `json:"configuration_id"`
-	TopicTags        []string    `json:"topic_tags,omitempty"`
-	FrameworkTags    []string    `json:"framework_tags,omitempty"`
-	IndustryTags     []string    `json:"industry_tags,omitempty"`
-	ContentTypes     []string    `json:"content_types,omitempty"`
-	FreshnessDays    int         `json:"freshness_days"`
-	MaxBlocks        int         `json:"max_blocks"`
-	EducationRatioMin float64    `json:"education_ratio_min"`
-	MinTrustScore    float64     `json:"min_trust_score"`
-	MinRelevanceScore float64    `json:"min_relevance_score"`
-	ExcludeItemIDs   []uuid.UUID `json:"exclude_item_ids,omitempty"`
+	SegmentID         uuid.UUID   `json:"segment_id"`
+	ConfigurationID   uuid.UUID   `json:"configuration_id"`
+	TopicTags         []string    `json:"topic_tags,omitempty"`
+	FrameworkTags     []string    `json:"framework_tags,omitempty"`
+	IndustryTags      []string    `json:"industry_tags,omitempty"`
+	ContentTypes      []string    `json:"content_types,omitempty"`
+	FreshnessDays     int         `json:"freshness_days"`
+	MaxBlocks         int         `json:"max_blocks"`
+	EducationRatioMin float64     `json:"education_ratio_min"`
+	MinTrustScore     float64     `json:"min_trust_score"`
+	MinRelevanceScore float64     `json:"min_relevance_score"`
+	ExcludeItemIDs    []uuid.UUID `json:"exclude_item_ids,omitempty"`
 }
 
 // ContentRecommendation represents a recommended content item with scoring
@@ -43,21 +43,21 @@ type ContentRecommendation struct {
 
 // ContentSelectionResult contains the result of content selection
 type ContentSelectionResult struct {
-	Recommendations    []*ContentRecommendation `json:"recommendations"`
-	TotalAvailable     int                      `json:"total_available"`
-	EducationalCount   int                      `json:"educational_count"`
-	PromotionalCount   int                      `json:"promotional_count"`
-	EducationRatio     float64                  `json:"education_ratio"`
-	SelectionCriteria  *ContentSelectionCriteria `json:"selection_criteria"`
+	Recommendations   []*ContentRecommendation  `json:"recommendations"`
+	TotalAvailable    int                       `json:"total_available"`
+	EducationalCount  int                       `json:"educational_count"`
+	PromotionalCount  int                       `json:"promotional_count"`
+	EducationRatio    float64                   `json:"education_ratio"`
+	SelectionCriteria *ContentSelectionCriteria `json:"selection_criteria"`
 }
 
 // ContentService handles content selection and management for newsletters
 type ContentService struct {
-	contentItemRepo  repository.ContentItemRepository
+	contentItemRepo   repository.ContentItemRepository
 	contentSourceRepo repository.ContentSourceRepository
-	segmentRepo      repository.SegmentRepository
-	configRepo       repository.NewsletterConfigRepository
-	auditLogRepo     repository.AuditLogRepository
+	segmentRepo       repository.SegmentRepository
+	configRepo        repository.NewsletterConfigRepository
+	auditLogRepo      repository.AuditLogRepository
 }
 
 // NewContentService creates a new content service
@@ -229,14 +229,14 @@ func (s *ContentService) buildContentFilter(criteria *ContentSelectionCriteria) 
 	publishedAfter := time.Now().AddDate(0, 0, -criteria.FreshnessDays)
 
 	filter := &domain.ContentItemFilter{
-		TopicTags:       criteria.TopicTags,
-		FrameworkTags:   criteria.FrameworkTags,
-		IndustryTags:    criteria.IndustryTags,
-		IsActive:        &isActive,
-		PublishedAfter:  &publishedAfter,
-		FreshnessDays:   &criteria.FreshnessDays,
-		Limit:           criteria.MaxBlocks * 5, // Fetch more to allow for filtering
-		Offset:          0,
+		TopicTags:      criteria.TopicTags,
+		FrameworkTags:  criteria.FrameworkTags,
+		IndustryTags:   criteria.IndustryTags,
+		IsActive:       &isActive,
+		PublishedAfter: &publishedAfter,
+		FreshnessDays:  &criteria.FreshnessDays,
+		Limit:          criteria.MaxBlocks * 5, // Fetch more to allow for filtering
+		Offset:         0,
 	}
 
 	if criteria.MinTrustScore > 0 {

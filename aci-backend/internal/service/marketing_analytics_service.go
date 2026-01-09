@@ -44,78 +44,78 @@ func NewMarketingAnalyticsService(
 
 // CampaignAnalytics represents aggregated analytics for a campaign
 type CampaignAnalytics struct {
-	CampaignID         uuid.UUID                    `json:"campaign_id"`
-	CampaignName       string                       `json:"campaign_name"`
-	TotalContent       int                          `json:"total_content"`
-	PublishedContent   int                          `json:"published_content"`
-	ScheduledContent   int                          `json:"scheduled_content"`
-	DraftContent       int                          `json:"draft_content"`
-	TotalEngagement    int                          `json:"total_engagement"`
-	TotalImpressions   int                          `json:"total_impressions"`
-	TotalClicks        int                          `json:"total_clicks"`
-	TotalShares        int                          `json:"total_shares"`
-	AvgBrandScore      float64                      `json:"avg_brand_score"`
-	AvgEngagementRate  float64                      `json:"avg_engagement_rate"`
-	ChannelBreakdown   map[domain.Channel]int       `json:"channel_breakdown"`
-	ContentStyleMix    map[domain.ContentStyle]int  `json:"content_style_mix"`
+	CampaignID        uuid.UUID                   `json:"campaign_id"`
+	CampaignName      string                      `json:"campaign_name"`
+	TotalContent      int                         `json:"total_content"`
+	PublishedContent  int                         `json:"published_content"`
+	ScheduledContent  int                         `json:"scheduled_content"`
+	DraftContent      int                         `json:"draft_content"`
+	TotalEngagement   int                         `json:"total_engagement"`
+	TotalImpressions  int                         `json:"total_impressions"`
+	TotalClicks       int                         `json:"total_clicks"`
+	TotalShares       int                         `json:"total_shares"`
+	AvgBrandScore     float64                     `json:"avg_brand_score"`
+	AvgEngagementRate float64                     `json:"avg_engagement_rate"`
+	ChannelBreakdown  map[domain.Channel]int      `json:"channel_breakdown"`
+	ContentStyleMix   map[domain.ContentStyle]int `json:"content_style_mix"`
 }
 
 // ChannelPerformance represents performance metrics for a specific channel
 type ChannelPerformance struct {
-	Channel         domain.Channel `json:"channel"`
-	TotalContent    int            `json:"total_content"`
-	PublishedCount  int            `json:"published_count"`
-	TotalEngagement int            `json:"total_engagement"`
-	TotalImpressions int           `json:"total_impressions"`
-	EngagementRate  float64        `json:"engagement_rate"`
-	AvgBrandScore   float64        `json:"avg_brand_score"`
-	TopContent      []ContentPerformance `json:"top_content"`
+	Channel          domain.Channel       `json:"channel"`
+	TotalContent     int                  `json:"total_content"`
+	PublishedCount   int                  `json:"published_count"`
+	TotalEngagement  int                  `json:"total_engagement"`
+	TotalImpressions int                  `json:"total_impressions"`
+	EngagementRate   float64              `json:"engagement_rate"`
+	AvgBrandScore    float64              `json:"avg_brand_score"`
+	TopContent       []ContentPerformance `json:"top_content"`
 }
 
 // ContentPerformance represents performance metrics for individual content
 type ContentPerformance struct {
-	ContentID       uuid.UUID      `json:"content_id"`
-	Title           string         `json:"title"`
-	Channel         domain.Channel `json:"channel"`
-	ContentStyle    domain.ContentStyle `json:"content_style"`
-	PublishedAt     *time.Time     `json:"published_at,omitempty"`
-	Engagement      int            `json:"engagement"`
-	Impressions     int            `json:"impressions"`
-	Clicks          int            `json:"clicks"`
-	Shares          int            `json:"shares"`
-	EngagementRate  float64        `json:"engagement_rate"`
-	BrandScore      int            `json:"brand_score"`
-	PublishedURL    string         `json:"published_url,omitempty"`
+	ContentID      uuid.UUID           `json:"content_id"`
+	Title          string              `json:"title"`
+	Channel        domain.Channel      `json:"channel"`
+	ContentStyle   domain.ContentStyle `json:"content_style"`
+	PublishedAt    *time.Time          `json:"published_at,omitempty"`
+	Engagement     int                 `json:"engagement"`
+	Impressions    int                 `json:"impressions"`
+	Clicks         int                 `json:"clicks"`
+	Shares         int                 `json:"shares"`
+	EngagementRate float64             `json:"engagement_rate"`
+	BrandScore     int                 `json:"brand_score"`
+	PublishedURL   string              `json:"published_url,omitempty"`
 }
 
 // EngagementTrend represents engagement metrics over time
 type EngagementTrend struct {
-	Timestamp       time.Time `json:"timestamp"`
-	Engagement      int       `json:"engagement"`
-	Impressions     int       `json:"impressions"`
-	EngagementRate  float64   `json:"engagement_rate"`
-	ContentCount    int       `json:"content_count"`
-	Label           string    `json:"label,omitempty"`
+	Timestamp      time.Time `json:"timestamp"`
+	Engagement     int       `json:"engagement"`
+	Impressions    int       `json:"impressions"`
+	EngagementRate float64   `json:"engagement_rate"`
+	ContentCount   int       `json:"content_count"`
+	Label          string    `json:"label,omitempty"`
 }
 
 // AudienceGrowth represents audience growth metrics
 type AudienceGrowth struct {
-	Channel         domain.Channel `json:"channel"`
-	Timestamp       time.Time      `json:"timestamp"`
-	FollowerCount   int            `json:"follower_count"`
-	Growth          int            `json:"growth"`
-	GrowthRate      float64        `json:"growth_rate"`
-	Label           string         `json:"label,omitempty"`
+	Channel       domain.Channel `json:"channel"`
+	Timestamp     time.Time      `json:"timestamp"`
+	FollowerCount int            `json:"follower_count"`
+	Growth        int            `json:"growth"`
+	GrowthRate    float64        `json:"growth_rate"`
+	Label         string         `json:"label,omitempty"`
 }
 
 // ContentFilter represents filters for content performance queries
 type ContentFilter struct {
-	Channel      *domain.Channel
-	ContentStyle *domain.ContentStyle
-	StartDate    *time.Time
-	EndDate      *time.Time
+	Channel       *domain.Channel
+	ContentStyle  *domain.ContentStyle
+	StartDate     *time.Time
+	EndDate       *time.Time
 	MinBrandScore *int
-	Limit        int
+	Limit         int
 }
 
 // GetCampaignAnalytics retrieves aggregated analytics for a specific campaign

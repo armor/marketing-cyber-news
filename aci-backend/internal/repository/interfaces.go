@@ -132,15 +132,15 @@ type ArticleRead struct {
 
 // UserReadStats represents user reading statistics
 type UserReadStats struct {
-	TotalArticlesRead      int
-	TotalReadingTime       int
-	TotalBookmarks         int
-	TotalAlerts            int
-	TotalAlertMatches      int
-	FavoriteCategory       string
-	ArticlesThisWeek       int
-	ArticlesThisMonth      int
-	AverageReadingTime     float64
+	TotalArticlesRead  int
+	TotalReadingTime   int
+	TotalBookmarks     int
+	TotalAlerts        int
+	TotalAlertMatches  int
+	FavoriteCategory   string
+	ArticlesThisWeek   int
+	ArticlesThisMonth  int
+	AverageReadingTime float64
 }
 
 // =============================================================================
@@ -376,4 +376,58 @@ type CompetitorAlertRepository interface {
 	MarkRead(ctx context.Context, id uuid.UUID) error
 	MarkAllRead(ctx context.Context, campaignID uuid.UUID) error
 	GetUnreadCount(ctx context.Context, campaignID uuid.UUID) (int, error)
+}
+
+// =============================================================================
+// Enhanced Authentication Repositories
+// =============================================================================
+
+// InvitationRepository defines operations for user invitation persistence
+type InvitationRepository interface {
+	Create(ctx context.Context, invitation *domain.UserInvitation) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.UserInvitation, error)
+	GetByToken(ctx context.Context, tokenHash string) (*domain.UserInvitation, error)
+	GetByEmail(ctx context.Context, email string) (*domain.UserInvitation, error)
+	MarkAccepted(ctx context.Context, id uuid.UUID) error
+	DeleteExpired(ctx context.Context) (int, error)
+	List(ctx context.Context, limit, offset int) ([]*domain.UserInvitation, int, error)
+	ListPending(ctx context.Context, limit, offset int) ([]*domain.UserInvitation, int, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+}
+
+// VerificationTokenRepository defines operations for email verification token persistence
+type VerificationTokenRepository interface {
+	Create(ctx context.Context, token *domain.EmailVerificationToken) error
+	GetByToken(ctx context.Context, tokenHash string) (*domain.EmailVerificationToken, error)
+	GetByUserID(ctx context.Context, userID uuid.UUID) (*domain.EmailVerificationToken, error)
+	MarkVerified(ctx context.Context, id uuid.UUID) error
+	DeleteForUser(ctx context.Context, userID uuid.UUID) error
+	DeleteExpired(ctx context.Context) (int, error)
+}
+
+// ApprovalRequestRepository defines operations for user approval request persistence
+type ApprovalRequestRepository interface {
+	Create(ctx context.Context, request *domain.UserApprovalRequest) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.UserApprovalRequest, error)
+	GetByUserID(ctx context.Context, userID uuid.UUID) (*domain.UserApprovalRequest, error)
+	Update(ctx context.Context, request *domain.UserApprovalRequest) error
+	ListPending(ctx context.Context, limit, offset int) ([]*domain.UserApprovalRequest, int, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+}
+
+// LoginAttemptRepository defines operations for login attempt tracking
+type LoginAttemptRepository interface {
+	Create(ctx context.Context, attempt *domain.LoginAttempt) error
+	GetRecentFailures(ctx context.Context, email string, since time.Time) (int, error)
+	GetRecentFailuresByIP(ctx context.Context, ipAddress string, since time.Time) (int, error)
+	DeleteOld(ctx context.Context, before time.Time) (int, error)
+}
+
+// SystemSettingsRepository defines operations for system settings persistence
+type SystemSettingsRepository interface {
+	Get(ctx context.Context, key string) (*domain.SystemSetting, error)
+	Set(ctx context.Context, key string, value interface{}, updatedBy *uuid.UUID) error
+	GetSignupMode(ctx context.Context) (domain.SignupMode, error)
+	SetSignupMode(ctx context.Context, mode domain.SignupMode, updatedBy uuid.UUID) error
+	GetAll(ctx context.Context) ([]*domain.SystemSetting, error)
 }

@@ -109,16 +109,8 @@ func (g ApprovalGate) String() string {
 	return string(g)
 }
 
-// UserRole extensions for approval workflow
-// These extend the UserRole type defined in user.go
-const (
-	RoleMarketing  UserRole = "marketing"
-	RoleBranding   UserRole = "branding"
-	RoleSocLevel1  UserRole = "soc_level_1"
-	RoleSocLevel3  UserRole = "soc_level_3"
-	RoleCISO       UserRole = "ciso"
-	RoleSuperAdmin UserRole = "super_admin"
-)
+// Note: UserRole constants (RoleMarketing, RoleBranding, RoleSocLevel1, RoleSocLevel3,
+// RoleCISO, RoleSuperAdmin) are defined in user.go
 
 // CanApproveGate checks if a user role can approve a specific gate
 func (r UserRole) CanApproveGate(gate ApprovalGate) bool {

@@ -111,9 +111,9 @@ func (s SubjectLineStyle) String() string {
 // NewsletterConfiguration represents global and segment-level settings
 // controlling newsletter generation and delivery
 type NewsletterConfiguration struct {
-	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"name"`
-	Description *string   `json:"description,omitempty"`
+	ID          uuid.UUID  `json:"id"`
+	Name        string     `json:"name"`
+	Description *string    `json:"description,omitempty"`
 	SegmentID   *uuid.UUID `json:"segment_id,omitempty"`
 
 	// Cadence Settings
@@ -219,12 +219,12 @@ func (n *NewsletterConfiguration) Validate() error {
 
 // NewsletterConfigFilter represents filters for querying newsletter configurations
 type NewsletterConfigFilter struct {
-	SegmentID  *uuid.UUID `json:"segment_id,omitempty"`
-	IsActive   *bool      `json:"is_active,omitempty"`
-	Cadence    *CadenceType `json:"cadence,omitempty"`
-	RiskLevel  *RiskLevel `json:"risk_level,omitempty"`
-	Limit      int        `json:"limit"`
-	Page       int        `json:"page"`
+	SegmentID *uuid.UUID   `json:"segment_id,omitempty"`
+	IsActive  *bool        `json:"is_active,omitempty"`
+	Cadence   *CadenceType `json:"cadence,omitempty"`
+	RiskLevel *RiskLevel   `json:"risk_level,omitempty"`
+	Limit     int          `json:"limit"`
+	Page      int          `json:"page"`
 }
 
 // Validate validates the filter parameters

@@ -24,32 +24,32 @@ type ABTestService struct {
 
 // TestResult represents the results of an A/B test
 type TestResult struct {
-	IssueID            uuid.UUID              `json:"issue_id"`
-	TestType           domain.TestType        `json:"test_type"`
-	Variants           []VariantStats         `json:"variants"`
-	Winner             *VariantStats          `json:"winner,omitempty"`
-	Confidence         float64                `json:"confidence"`
-	IsSignificant      bool                   `json:"is_significant"`
-	MinSampleSizeMet   bool                   `json:"min_sample_size_met"`
-	TotalSampleSize    int                    `json:"total_sample_size"`
-	WinnerDeclaredAt   *time.Time             `json:"winner_declared_at,omitempty"`
+	IssueID          uuid.UUID       `json:"issue_id"`
+	TestType         domain.TestType `json:"test_type"`
+	Variants         []VariantStats  `json:"variants"`
+	Winner           *VariantStats   `json:"winner,omitempty"`
+	Confidence       float64         `json:"confidence"`
+	IsSignificant    bool            `json:"is_significant"`
+	MinSampleSizeMet bool            `json:"min_sample_size_met"`
+	TotalSampleSize  int             `json:"total_sample_size"`
+	WinnerDeclaredAt *time.Time      `json:"winner_declared_at,omitempty"`
 }
 
 // VariantStats represents statistics for a single variant
 type VariantStats struct {
-	VariantID        uuid.UUID  `json:"variant_id"`
-	VariantName      string     `json:"variant_name"`
-	VariantValue     string     `json:"variant_value"`
-	AssignedContacts int        `json:"assigned_contacts"`
-	Opens            int        `json:"opens"`
-	Clicks           int        `json:"clicks"`
-	OpenRate         float64    `json:"open_rate"`
-	ClickRate        float64    `json:"click_rate"`
-	PrimaryMetric    float64    `json:"primary_metric"`
-	ZScore           *float64   `json:"z_score,omitempty"`
-	PValue           *float64   `json:"p_value,omitempty"`
-	ConfidenceLevel  *float64   `json:"confidence_level,omitempty"`
-	IsWinner         bool       `json:"is_winner"`
+	VariantID        uuid.UUID `json:"variant_id"`
+	VariantName      string    `json:"variant_name"`
+	VariantValue     string    `json:"variant_value"`
+	AssignedContacts int       `json:"assigned_contacts"`
+	Opens            int       `json:"opens"`
+	Clicks           int       `json:"clicks"`
+	OpenRate         float64   `json:"open_rate"`
+	ClickRate        float64   `json:"click_rate"`
+	PrimaryMetric    float64   `json:"primary_metric"`
+	ZScore           *float64  `json:"z_score,omitempty"`
+	PValue           *float64  `json:"p_value,omitempty"`
+	ConfidenceLevel  *float64  `json:"confidence_level,omitempty"`
+	IsWinner         bool      `json:"is_winner"`
 }
 
 const (

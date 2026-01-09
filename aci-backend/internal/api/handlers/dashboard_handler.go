@@ -48,15 +48,15 @@ type TimelineEntry struct {
 
 // DashboardSummary represents aggregated threat statistics
 type DashboardSummary struct {
-	TotalThreats           int                  `json:"totalThreats"`
-	CriticalCount          int                  `json:"criticalCount"`
-	HighCount              int                  `json:"highCount"`
-	MediumCount            int                  `json:"mediumCount"`
-	LowCount               int                  `json:"lowCount"`
-	NewToday               int                  `json:"newToday"`
-	ActiveAlerts           int                  `json:"activeAlerts"`
-	SeverityDistribution   SeverityDistribution `json:"severityDistribution"`
-	Timeline               []TimelineEntry      `json:"timeline"`
+	TotalThreats         int                  `json:"totalThreats"`
+	CriticalCount        int                  `json:"criticalCount"`
+	HighCount            int                  `json:"highCount"`
+	MediumCount          int                  `json:"mediumCount"`
+	LowCount             int                  `json:"lowCount"`
+	NewToday             int                  `json:"newToday"`
+	ActiveAlerts         int                  `json:"activeAlerts"`
+	SeverityDistribution SeverityDistribution `json:"severityDistribution"`
+	Timeline             []TimelineEntry      `json:"timeline"`
 }
 
 // RecentActivity represents a recent threat activity item
@@ -118,12 +118,12 @@ func (h *DashboardHandler) GetRecentActivity(w http.ResponseWriter, r *http.Requ
 	for _, article := range articles {
 		threatID := article.ID.String()
 		activity := RecentActivity{
-			ID:          article.ID.String(),
-			Type:        "new_threat",
-			Title:       article.Title,
-			Severity:    string(article.Severity),
-			Timestamp:   article.PublishedAt.Format(time.RFC3339),
-			ThreatID:    &threatID,
+			ID:        article.ID.String(),
+			Type:      "new_threat",
+			Title:     article.Title,
+			Severity:  string(article.Severity),
+			Timestamp: article.PublishedAt.Format(time.RFC3339),
+			ThreatID:  &threatID,
 		}
 
 		// Use summary as description if available, otherwise truncate content
@@ -226,4 +226,3 @@ func (h *DashboardHandler) calculateSummary(ctx context.Context, articles []*dom
 
 	return summary
 }
-

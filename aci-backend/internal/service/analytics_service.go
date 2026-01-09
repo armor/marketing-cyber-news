@@ -14,15 +14,15 @@ import (
 
 // Target metrics constants (FR-042, SC-001 through SC-006)
 const (
-	TargetOpenRateMin     = 0.28   // 28% minimum open rate
-	TargetOpenRateMax     = 0.35   // 35% maximum open rate
-	TargetCTRMin          = 0.035  // 3.5% minimum click-through rate
-	TargetCTRMax          = 0.055  // 5.5% maximum click-through rate
-	TargetCTORMin         = 0.12   // 12% minimum click-to-open rate
-	TargetCTORMax         = 0.18   // 18% maximum click-to-open rate
-	TargetUnsubscribeMax  = 0.002  // 0.2% maximum unsubscribe rate
-	TargetBounceMax       = 0.005  // 0.5% maximum bounce rate
-	TargetSpamMax         = 0.001  // 0.1% maximum spam complaint rate
+	TargetOpenRateMin    = 0.28  // 28% minimum open rate
+	TargetOpenRateMax    = 0.35  // 35% maximum open rate
+	TargetCTRMin         = 0.035 // 3.5% minimum click-through rate
+	TargetCTRMax         = 0.055 // 5.5% maximum click-through rate
+	TargetCTORMin        = 0.12  // 12% minimum click-to-open rate
+	TargetCTORMax        = 0.18  // 18% maximum click-to-open rate
+	TargetUnsubscribeMax = 0.002 // 0.2% maximum unsubscribe rate
+	TargetBounceMax      = 0.005 // 0.5% maximum bounce rate
+	TargetSpamMax        = 0.001 // 0.1% maximum spam complaint rate
 )
 
 // Granularity represents the time granularity for trend data
@@ -38,9 +38,9 @@ const (
 type MetricType string
 
 const (
-	MetricTypeOpens  MetricType = "opens"
-	MetricTypeClicks MetricType = "clicks"
-	MetricTypeCTR    MetricType = "ctr"
+	MetricTypeOpens    MetricType = "opens"
+	MetricTypeClicks   MetricType = "clicks"
+	MetricTypeCTR      MetricType = "ctr"
 	MetricTypeOpenRate MetricType = "open_rate"
 )
 
@@ -78,40 +78,40 @@ func (dr *DateRange) Validate() error {
 
 // OverviewMetrics represents high-level newsletter performance metrics
 type OverviewMetrics struct {
-	TotalSent        int     `json:"total_sent"`
-	TotalDelivered   int     `json:"total_delivered"`
-	TotalOpens       int     `json:"total_opens"`
-	UniqueOpens      int     `json:"unique_opens"`
-	TotalClicks      int     `json:"total_clicks"`
-	UniqueClicks     int     `json:"unique_clicks"`
-	Bounces          int     `json:"bounces"`
-	Unsubscribes     int     `json:"unsubscribes"`
-	SpamComplaints   int     `json:"spam_complaints"`
-	OpenRate         float64 `json:"open_rate"`
-	ClickRate        float64 `json:"click_rate"`
-	CTOR             float64 `json:"ctor"`
-	BounceRate       float64 `json:"bounce_rate"`
-	UnsubscribeRate  float64 `json:"unsubscribe_rate"`
+	TotalSent         int     `json:"total_sent"`
+	TotalDelivered    int     `json:"total_delivered"`
+	TotalOpens        int     `json:"total_opens"`
+	UniqueOpens       int     `json:"unique_opens"`
+	TotalClicks       int     `json:"total_clicks"`
+	UniqueClicks      int     `json:"unique_clicks"`
+	Bounces           int     `json:"bounces"`
+	Unsubscribes      int     `json:"unsubscribes"`
+	SpamComplaints    int     `json:"spam_complaints"`
+	OpenRate          float64 `json:"open_rate"`
+	ClickRate         float64 `json:"click_rate"`
+	CTOR              float64 `json:"ctor"`
+	BounceRate        float64 `json:"bounce_rate"`
+	UnsubscribeRate   float64 `json:"unsubscribe_rate"`
 	SpamComplaintRate float64 `json:"spam_complaint_rate"`
 }
 
 // SegmentMetrics represents metrics for a specific segment
 type SegmentMetrics struct {
-	SegmentID        uuid.UUID              `json:"segment_id"`
-	SegmentName      string                 `json:"segment_name"`
-	Metrics          *OverviewMetrics       `json:"metrics"`
-	Trends           []TrendPoint           `json:"trends"`
-	TopContent       []TopPerformer         `json:"top_content"`
+	SegmentID   uuid.UUID        `json:"segment_id"`
+	SegmentName string           `json:"segment_name"`
+	Metrics     *OverviewMetrics `json:"metrics"`
+	Trends      []TrendPoint     `json:"trends"`
+	TopContent  []TopPerformer   `json:"top_content"`
 }
 
 // TopPerformer represents a top-performing newsletter issue
 type TopPerformer struct {
-	IssueID      uuid.UUID  `json:"issue_id"`
-	Subject      string     `json:"subject"`
-	SentAt       time.Time  `json:"sent_at"`
-	MetricValue  float64    `json:"metric_value"`
-	MetricType   MetricType `json:"metric_type"`
-	Rank         int        `json:"rank"`
+	IssueID     uuid.UUID  `json:"issue_id"`
+	Subject     string     `json:"subject"`
+	SentAt      time.Time  `json:"sent_at"`
+	MetricValue float64    `json:"metric_value"`
+	MetricType  MetricType `json:"metric_type"`
+	Rank        int        `json:"rank"`
 }
 
 // TrendPoint represents a single data point in a time series
@@ -123,14 +123,14 @@ type TrendPoint struct {
 
 // TargetComparison represents how a metric compares to its target
 type TargetComparison struct {
-	MetricName         string       `json:"metric_name"`
-	TargetMin          float64      `json:"target_min"`
-	TargetMax          float64      `json:"target_max"`
-	ActualValue        float64      `json:"actual_value"`
-	Status             TargetStatus `json:"status"`
-	PercentageDiff     float64      `json:"percentage_diff"`
-	IsAboveMinimum     bool         `json:"is_above_minimum"`
-	IsBelowMaximum     bool         `json:"is_below_maximum"`
+	MetricName     string       `json:"metric_name"`
+	TargetMin      float64      `json:"target_min"`
+	TargetMax      float64      `json:"target_max"`
+	ActualValue    float64      `json:"actual_value"`
+	Status         TargetStatus `json:"status"`
+	PercentageDiff float64      `json:"percentage_diff"`
+	IsAboveMinimum bool         `json:"is_above_minimum"`
+	IsBelowMaximum bool         `json:"is_below_maximum"`
 }
 
 // AnalyticsService handles analytics and reporting for newsletter performance

@@ -17,62 +17,62 @@ import (
 
 // DeliveryService handles newsletter issue delivery and scheduling
 type DeliveryService struct {
-	issueRepo      repository.NewsletterIssueRepository
-	configRepo     repository.NewsletterConfigRepository
-	contactRepo    repository.ContactRepository
-	n8nWebhookURL  string
-	httpClient     *http.Client
+	issueRepo     repository.NewsletterIssueRepository
+	configRepo    repository.NewsletterConfigRepository
+	contactRepo   repository.ContactRepository
+	n8nWebhookURL string
+	httpClient    *http.Client
 }
 
 // DeliveryStatus represents the current delivery status of an issue
 type DeliveryStatus struct {
-	IssueID        uuid.UUID              `json:"issue_id"`
-	Status         domain.IssueStatus     `json:"status"`
-	SentCount      int                    `json:"sent_count"`
-	OpenCount      int                    `json:"open_count"`
-	ClickCount     int                    `json:"click_count"`
-	BounceCount    int                    `json:"bounce_count"`
-	UnsubCount     int                    `json:"unsub_count"`
-	ComplaintCount int                    `json:"complaint_count"`
-	ESPCampaignID  *string                `json:"esp_campaign_id,omitempty"`
-	ScheduledFor   *time.Time             `json:"scheduled_for,omitempty"`
-	SentAt         *time.Time             `json:"sent_at,omitempty"`
+	IssueID        uuid.UUID          `json:"issue_id"`
+	Status         domain.IssueStatus `json:"status"`
+	SentCount      int                `json:"sent_count"`
+	OpenCount      int                `json:"open_count"`
+	ClickCount     int                `json:"click_count"`
+	BounceCount    int                `json:"bounce_count"`
+	UnsubCount     int                `json:"unsub_count"`
+	ComplaintCount int                `json:"complaint_count"`
+	ESPCampaignID  *string            `json:"esp_campaign_id,omitempty"`
+	ScheduledFor   *time.Time         `json:"scheduled_for,omitempty"`
+	SentAt         *time.Time         `json:"sent_at,omitempty"`
 }
 
 // DeliveryMetrics represents metrics to update for an issue
 type DeliveryMetrics struct {
-	Recipients   int     `json:"recipients"`
-	Delivered    int     `json:"delivered"`
-	Opens        int     `json:"opens"`
-	Clicks       int     `json:"clicks"`
-	Bounces      int     `json:"bounces"`
-	Unsubscribes int     `json:"unsubscribes"`
-	Complaints   int     `json:"complaints"`
+	Recipients    int     `json:"recipients"`
+	Delivered     int     `json:"delivered"`
+	Opens         int     `json:"opens"`
+	Clicks        int     `json:"clicks"`
+	Bounces       int     `json:"bounces"`
+	Unsubscribes  int     `json:"unsubscribes"`
+	Complaints    int     `json:"complaints"`
 	ESPCampaignID *string `json:"esp_campaign_id,omitempty"`
 }
 
 // WebhookPayload represents the payload sent to n8n webhook
 type WebhookPayload struct {
-	IssueID          uuid.UUID            `json:"issue_id"`
-	IssueNumber      int                  `json:"issue_number"`
-	ConfigurationID  uuid.UUID            `json:"configuration_id"`
-	SegmentID        uuid.UUID            `json:"segment_id"`
-	SubjectLine      string               `json:"subject_line"`
-	Preheader        *string              `json:"preheader,omitempty"`
-	IntroTemplate    *string              `json:"intro_template,omitempty"`
-	Blocks           []domain.NewsletterBlock `json:"blocks"`
-	Contacts         []ContactPayload     `json:"contacts"`
-	ScheduledFor     *time.Time           `json:"scheduled_for,omitempty"`
-	SendImmediately  bool                 `json:"send_immediately"`
+	IssueID         uuid.UUID                `json:"issue_id"`
+	IssueNumber     int                      `json:"issue_number"`
+	ConfigurationID uuid.UUID                `json:"configuration_id"`
+	SegmentID       uuid.UUID                `json:"segment_id"`
+	SubjectLine     string                   `json:"subject_line"`
+	Preheader       *string                  `json:"preheader,omitempty"`
+	IntroTemplate   *string                  `json:"intro_template,omitempty"`
+	Blocks          []domain.NewsletterBlock `json:"blocks"`
+	Contacts        []ContactPayload         `json:"contacts"`
+	ScheduledFor    *time.Time               `json:"scheduled_for,omitempty"`
+	SendImmediately bool                     `json:"send_immediately"`
 }
 
 // ContactPayload represents contact data in the webhook payload
 type ContactPayload struct {
-	Email       string  `json:"email"`
-	FirstName   *string `json:"first_name,omitempty"`
-	LastName    *string `json:"last_name,omitempty"`
-	Company     *string `json:"company,omitempty"`
-	JobTitle    *string `json:"job_title,omitempty"`
+	Email     string  `json:"email"`
+	FirstName *string `json:"first_name,omitempty"`
+	LastName  *string `json:"last_name,omitempty"`
+	Company   *string `json:"company,omitempty"`
+	JobTitle  *string `json:"job_title,omitempty"`
 }
 
 // NewDeliveryService creates a new delivery service
@@ -182,17 +182,17 @@ func (s *DeliveryService) SendIssue(ctx context.Context, issueID uuid.UUID, sche
 	}
 
 	payload := WebhookPayload{
-		IssueID:          issue.ID,
-		IssueNumber:      issue.IssueNumber,
-		ConfigurationID:  issue.ConfigurationID,
-		SegmentID:        issue.SegmentID,
-		SubjectLine:      *issue.SelectedSubjectLine,
-		Preheader:        issue.Preheader,
-		IntroTemplate:    issue.IntroTemplate,
-		Blocks:           issue.Blocks,
-		Contacts:         contactPayloads,
-		ScheduledFor:     scheduledFor,
-		SendImmediately:  scheduledFor == nil,
+		IssueID:         issue.ID,
+		IssueNumber:     issue.IssueNumber,
+		ConfigurationID: issue.ConfigurationID,
+		SegmentID:       issue.SegmentID,
+		SubjectLine:     *issue.SelectedSubjectLine,
+		Preheader:       issue.Preheader,
+		IntroTemplate:   issue.IntroTemplate,
+		Blocks:          issue.Blocks,
+		Contacts:        contactPayloads,
+		ScheduledFor:    scheduledFor,
+		SendImmediately: scheduledFor == nil,
 	}
 
 	// Trigger n8n webhook

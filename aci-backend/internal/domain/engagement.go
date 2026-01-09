@@ -109,18 +109,18 @@ type EngagementEventFilter struct {
 
 // EngagementMetrics represents aggregated engagement metrics
 type EngagementMetrics struct {
-	TotalOpens       int     `json:"total_opens"`
-	UniqueOpens      int     `json:"unique_opens"`
-	TotalClicks      int     `json:"total_clicks"`
-	UniqueClicks     int     `json:"unique_clicks"`
-	Bounces          int     `json:"bounces"`
-	Unsubscribes     int     `json:"unsubscribes"`
-	Complaints       int     `json:"complaints"`
-	OpenRate         float64 `json:"open_rate"`
-	ClickRate        float64 `json:"click_rate"`
-	CTOR             float64 `json:"ctor"`
-	BounceRate       float64 `json:"bounce_rate"`
-	UnsubscribeRate  float64 `json:"unsubscribe_rate"`
+	TotalOpens      int     `json:"total_opens"`
+	UniqueOpens     int     `json:"unique_opens"`
+	TotalClicks     int     `json:"total_clicks"`
+	UniqueClicks    int     `json:"unique_clicks"`
+	Bounces         int     `json:"bounces"`
+	Unsubscribes    int     `json:"unsubscribes"`
+	Complaints      int     `json:"complaints"`
+	OpenRate        float64 `json:"open_rate"`
+	ClickRate       float64 `json:"click_rate"`
+	CTOR            float64 `json:"ctor"`
+	BounceRate      float64 `json:"bounce_rate"`
+	UnsubscribeRate float64 `json:"unsubscribe_rate"`
 }
 
 // TopicEngagement represents engagement metrics for a specific topic
