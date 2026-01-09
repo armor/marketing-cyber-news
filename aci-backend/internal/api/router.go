@@ -346,6 +346,38 @@ func (s *Server) setupRoutesWithWebSocket(wsHandler WebSocketHandler) {
 				r.Post("/{id}/recalculate", s.handlers.Segment.RecalculateContacts)
 			})
 
+			// Claims Library routes (Compliance management)
+			r.Route("/claims", func(r chi.Router) {
+				// Handle case where ClaimsLibrary handler is not initialized
+				if s.handlers.ClaimsLibrary == nil {
+					r.HandleFunc("/*", func(w http.ResponseWriter, req *http.Request) {
+						response.ServiceUnavailable(w, "Claims library service is not available")
+					})
+					return
+				}
+
+				// Public endpoints (read)
+				r.Get("/", s.handlers.ClaimsLibrary.List)
+				r.Get("/categories", s.handlers.ClaimsLibrary.GetCategories)
+				r.Get("/search", s.handlers.ClaimsLibrary.Search)
+				r.Get("/{id}", s.handlers.ClaimsLibrary.Get)
+
+				// Create/Update (requires authentication - already in protected group)
+				r.Post("/", s.handlers.ClaimsLibrary.Create)
+				r.Put("/{id}", s.handlers.ClaimsLibrary.Update)
+				r.Delete("/{id}", s.handlers.ClaimsLibrary.Delete)
+
+				// Content validation endpoint
+				r.Post("/validate", s.handlers.ClaimsLibrary.ValidateContent)
+
+				// Approval workflow - requires compliance access
+				r.With(middleware.RequireComplianceAccess()).Post("/{id}/approve", s.handlers.ClaimsLibrary.Approve)
+				r.With(middleware.RequireComplianceAccess()).Post("/{id}/reject", s.handlers.ClaimsLibrary.Reject)
+
+				// Usage tracking
+				r.Post("/{id}/usage", s.handlers.ClaimsLibrary.RecordUsage)
+			})
+
 			// Engagement tracking routes (webhook for ESP callbacks)
 			r.Route("/engagement", func(r chi.Router) {
 				// Handle case where Engagement handler is not initialized

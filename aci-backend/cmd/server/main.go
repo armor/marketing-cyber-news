@@ -140,6 +140,8 @@ func main() {
 	newsletterBlockRepo := postgres.NewNewsletterBlockRepository(db)
 	testVariantRepo := postgres.NewTestVariantRepository(db)
 	engagementEventRepo := postgres.NewEngagementEventRepository(db)
+	issueApprovalRepo := postgres.NewIssueApprovalRepository(db)
+	claimsLibraryRepo := postgres.NewClaimsLibraryRepository(db)
 
 	// Marketing Autopilot repositories (pgx-based)
 	campaignRepo := postgres.NewCampaignRepository(db)
@@ -195,8 +197,10 @@ func main() {
 		cfg.AI.WebinarResourceURL,
 	)
 	// SEC-003: Pass userRepo for tier-based approval validation
-	newsletterApprovalService := service.NewApprovalService(newsletterIssueRepo, newsletterConfigRepo, auditLogRepo, userRepo)
+	// FR-100: 7-gate approval workflow with issue approval tracking
+	newsletterApprovalService := service.NewApprovalService(newsletterIssueRepo, newsletterConfigRepo, auditLogRepo, userRepo, issueApprovalRepo)
 	analyticsService := service.NewAnalyticsService(engagementEventRepo, newsletterIssueRepo, newsletterConfigRepo, segmentRepo)
+	claimsLibraryService := service.NewClaimsLibraryService(claimsLibraryRepo, auditLogRepo)
 
 	// n8n webhook URL and timeout from configuration (validated at startup)
 	// TODO: Wire deliveryService when newsletter delivery is enabled
@@ -312,6 +316,7 @@ func main() {
 	contentHandler := handlers.NewContentHandler(contentService)
 	issueHandler := handlers.NewIssueHandler(generationService, brandVoiceService, newsletterApprovalService, contactRepo)
 	analyticsHandler := handlers.NewAnalyticsHandler(analyticsService, abTestService)
+	claimsLibraryHandler := handlers.NewClaimsLibraryHandler(claimsLibraryService)
 
 	// Get n8n webhook secret from environment for engagement handler
 	n8nWebhookSecret := os.Getenv("N8N_WEBHOOK_SECRET")
@@ -370,6 +375,7 @@ func main() {
 		Calendar:           calendarHandler,
 		Health:             healthHandler,
 		Metrics:            metricsHandler,
+		ClaimsLibrary:      claimsLibraryHandler,
 	}
 
 	serverConfig := api.Config{

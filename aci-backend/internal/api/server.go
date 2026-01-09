@@ -49,6 +49,7 @@ type Handlers struct {
 	Calendar           *handlers.CalendarHandler
 	Health             *handlers.HealthHandler
 	Metrics            *handlers.MetricsHandler
+	ClaimsLibrary      *handlers.ClaimsLibraryHandler
 }
 
 // Config holds server configuration

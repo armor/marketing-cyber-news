@@ -111,15 +111,44 @@ func RequireRoles(roles ...domain.UserRole) func(http.Handler) http.Handler {
 }
 
 // RequireApprovalAccess checks if user can access approval queue
-// Allows: marketing, branding, soc_level_1, soc_level_3, ciso, admin, super_admin
+// Allows: marketing, branding, designer, voc_expert, soc_level_1, soc_level_3, compliance_sme, ciso, admin, super_admin
 // Denies: user role
 func RequireApprovalAccess() func(http.Handler) http.Handler {
 	allowedRoles := []domain.UserRole{
 		domain.RoleMarketing,
 		domain.RoleBranding,
+		domain.RoleDesigner,
+		domain.RoleVoCExpert,
 		domain.RoleSocLevel1,
 		domain.RoleSocLevel3,
+		domain.RoleComplianceSME,
 		domain.RoleCISO,
+		domain.RoleAdmin,
+		domain.RoleSuperAdmin,
+	}
+
+	return RequireRoles(allowedRoles...)
+}
+
+// RequireComplianceAccess checks if user has compliance or admin permissions
+// Allows: compliance_sme, admin, super_admin
+// Used for: Claims library approval, compliance gate approval
+func RequireComplianceAccess() func(http.Handler) http.Handler {
+	allowedRoles := []domain.UserRole{
+		domain.RoleComplianceSME,
+		domain.RoleAdmin,
+		domain.RoleSuperAdmin,
+	}
+
+	return RequireRoles(allowedRoles...)
+}
+
+// RequireVoCAccess checks if user has VoC expert or admin permissions
+// Allows: voc_expert, admin, super_admin
+// Used for: VoC gate approval, VoC notes management
+func RequireVoCAccess() func(http.Handler) http.Handler {
+	allowedRoles := []domain.UserRole{
+		domain.RoleVoCExpert,
 		domain.RoleAdmin,
 		domain.RoleSuperAdmin,
 	}
