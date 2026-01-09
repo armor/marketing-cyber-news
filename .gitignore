@@ -145,3 +145,4 @@ data/
 # Development Artifacts
 # ===================
 **/HANDOFF*.md
+infrastructure/terraform/.terraform/

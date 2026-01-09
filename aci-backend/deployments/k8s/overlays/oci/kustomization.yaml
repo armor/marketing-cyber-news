@@ -63,5 +63,8 @@ patches:
         path: /data/DATABASE_HOST
         value: "postgres.armor-newsletter.svc.cluster.local"
       - op: replace
+        path: /data/DATABASE_URL
+        value: "postgresql://aci_user:aci_password_dev_only@postgres.armor-newsletter.svc.cluster.local:5432/aci?sslmode=disable"
+      - op: replace
         path: /data/REDIS_HOST
         value: "redis.armor-newsletter.svc.cluster.local"
