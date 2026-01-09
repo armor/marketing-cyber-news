@@ -8,8 +8,8 @@ resources:
 # Override namespace for OCI deployment
 namespace: armor-newsletter
 
-# Common labels for OCI environment
-commonLabels:
+# Common annotations for OCI environment (not labels, to avoid selector issues)
+commonAnnotations:
   environment: production
   platform: oci
 
