@@ -2,10 +2,11 @@ import React from 'react';
 /**
  * Footer Component
  *
- * Simple footer for NEXUS dashboard with copyright and branding.
+ * Simple footer for Armor Cyber News dashboard with copyright and branding.
+ * Styled with Armor-Dash design patterns.
  *
  * DESIGN TOKEN COMPLIANCE:
- * - All colors use Tailwind classes referencing CSS custom properties
+ * - All colors use CSS custom properties from design tokens
  * - All spacing uses token-based spacing scale
  * - Zero hardcoded hex/px values
  *
@@ -24,22 +25,15 @@ export function Footer(): React.ReactElement {
 
   return (
     <footer
-      className="w-full border-t"
+      className="w-full border-t border-border py-4 text-center"
       style={{
-        paddingTop: 'var(--spacing-4)',
-        paddingBottom: 'var(--spacing-4)',
-        paddingLeft: 'var(--spacing-6)',
-        paddingRight: 'var(--spacing-6)',
         background: 'var(--gradient-panel-header)',
-        borderColor: 'var(--color-border-default)',
       }}
       role="contentinfo"
     >
-      <div className="flex items-center justify-center">
-        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-          NEXUS by Armor &copy; {currentYear}
-        </p>
-      </div>
+      <p className="text-sm text-muted-foreground">
+        &copy; {currentYear} Armor. All rights reserved.
+      </p>
     </footer>
   );
 }

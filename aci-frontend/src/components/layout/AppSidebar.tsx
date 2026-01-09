@@ -1,7 +1,8 @@
 /**
  * AppSidebar Component
  *
- * Main navigation sidebar for NEXUS dashboard using MVPBlocks sidebar primitives.
+ * Main navigation sidebar for Armor Cyber News dashboard.
+ * Styled with Armor-Dash design patterns using sidebar primitives.
  * Features role-based menu items and collapsible sidebar.
  */
 
@@ -28,6 +29,7 @@ import {
   Calendar,
   Palette,
   TrendingUp,
+  FileText,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -138,6 +140,11 @@ const NAV_ITEMS: NavItem[] = [
         to: '/newsletter/content',
         icon: FileStack,
         label: 'Content',
+      },
+      {
+        to: '/newsletter/claims',
+        icon: FileText,
+        label: 'Claims Library',
       },
     ],
   },

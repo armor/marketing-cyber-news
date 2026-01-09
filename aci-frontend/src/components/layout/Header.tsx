@@ -1,8 +1,8 @@
 /**
  * Header Component
  *
- * Top navigation bar for NEXUS dashboard with branding, user menu, and notifications.
- * Now works within the SidebarInset layout.
+ * Top navigation bar for Armor Cyber News dashboard with user menu and notifications.
+ * Styled with Armor-Dash design patterns within the SidebarInset layout.
  */
 
 import { useState } from 'react';
