@@ -56,3 +56,12 @@ patches:
       - op: replace
         path: /data/LOG_LEVEL
         value: "info"
+      - op: add
+        path: /data/N8N_WEBHOOK_URL
+        value: "http://n8n.armor-newsletter.svc.cluster.local:5678"
+      - op: replace
+        path: /data/DATABASE_HOST
+        value: "postgres.armor-newsletter.svc.cluster.local"
+      - op: replace
+        path: /data/REDIS_HOST
+        value: "redis.armor-newsletter.svc.cluster.local"
