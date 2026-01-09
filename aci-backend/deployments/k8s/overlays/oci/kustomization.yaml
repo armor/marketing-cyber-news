@@ -45,10 +45,14 @@ patches:
         path: /metadata/annotations/oci.oraclecloud.com~1load-balancer-type
         value: "lb"
 
-# ConfigMap patches for OCI environment
-configMapGenerator:
-  - name: aci-backend-config
-    behavior: merge
-    literals:
-      - ENVIRONMENT=production
-      - LOG_LEVEL=info
+  # ConfigMap patches for OCI environment
+  - target:
+      kind: ConfigMap
+      name: aci-backend-config
+    patch: |-
+      - op: add
+        path: /data/ENVIRONMENT
+        value: "production"
+      - op: replace
+        path: /data/LOG_LEVEL
+        value: "info"
