@@ -1,0 +1,66 @@
+---
+# Frontend LoadBalancer - Port 80
+# Uses static IP reservation via OCI annotation
+apiVersion: v1
+kind: Service
+metadata:
+  name: armor-frontend-lb
+  namespace: armor-newsletter
+  labels:
+    app.kubernetes.io/component: loadbalancer
+    app.kubernetes.io/name: armor-newsletter-frontend
+  annotations:
+    # OCI LoadBalancer configuration
+    oci.oraclecloud.com/load-balancer-type: "lb"
+    service.beta.kubernetes.io/oci-load-balancer-shape: "flexible"
+    service.beta.kubernetes.io/oci-load-balancer-shape-flex-min: "10"
+    service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "100"
+    # Reserved static IP (IMPORTANT: keeps same IP across LB recreation)
+    oci.oraclecloud.com/oci-load-balancer-reserved-public-ip: "ocid1.floatingip.oc1.iad.aaaaaaaapromx47ltswdrbkvpez5rsqh3hskbu52tvhop7bjlohihtodrclq"
+    platform: "oci"
+    environment: "production"
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: aci-frontend
+    app.kubernetes.io/component: web
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+
+---
+# Backend API LoadBalancer - Port 8080
+apiVersion: v1
+kind: Service
+metadata:
+  name: armor-backend-lb
+  namespace: armor-newsletter
+  labels:
+    app.kubernetes.io/component: loadbalancer
+    app.kubernetes.io/name: armor-newsletter-backend
+  annotations:
+    # OCI LoadBalancer configuration
+    oci.oraclecloud.com/load-balancer-type: "lb"
+    service.beta.kubernetes.io/oci-load-balancer-shape: "flexible"
+    service.beta.kubernetes.io/oci-load-balancer-shape-flex-min: "10"
+    service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "100"
+    # Reserved static IP (IMPORTANT: keeps same IP across LB recreation)
+    oci.oraclecloud.com/oci-load-balancer-reserved-public-ip: "ocid1.floatingip.oc1.iad.aaaaaaaanz4kvvexwl6d3qeojz6y3kbumcq7o35g2s3pyudcpym4e6hgliza"
+    platform: "oci"
+    environment: "production"
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: aci-backend
+    app.kubernetes.io/component: api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: api
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
