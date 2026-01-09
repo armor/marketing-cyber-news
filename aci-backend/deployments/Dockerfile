@@ -47,6 +47,13 @@ RUN CGO_ENABLED=0 GOOS=linux go build \
     -o /build/aci-backend \
     ./cmd/server
 
+# Build seed-admin CLI tool
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -ldflags="-s -w" \
+    -trimpath \
+    -o /build/seed-admin \
+    ./cmd/seed-admin
+
 # Optional: Run tests during build (uncomment to enable)
 # RUN go test -v ./...
 
@@ -72,8 +79,9 @@ RUN mkdir -p /app/cache /tmp && \
 # Set working directory
 WORKDIR /app
 
-# Copy binary from builder stage
+# Copy binaries from builder stage
 COPY --from=builder --chown=appuser:appuser /build/aci-backend /app/aci-backend
+COPY --from=builder --chown=appuser:appuser /build/seed-admin /app/seed-admin
 
 # Copy configuration files if needed
 # COPY --from=builder --chown=appuser:appuser /build/configs /app/configs
