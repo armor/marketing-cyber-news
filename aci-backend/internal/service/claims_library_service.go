@@ -129,6 +129,9 @@ func (s *ClaimsLibraryService) Update(ctx context.Context, claim *domain.ClaimsL
 	claim.UsageCount = existing.UsageCount
 	claim.LastUsedAt = existing.LastUsedAt
 	claim.UpdatedAt = time.Now()
+	claim.ApprovalStatus = existing.ApprovalStatus
+	claim.ApprovedBy = existing.ApprovedBy
+	claim.ApprovedAt = existing.ApprovedAt
 
 	// If claim is approved and text changed, reset to pending
 	if existing.ApprovalStatus == domain.ClaimStatusApproved && claim.ClaimText != existing.ClaimText {
