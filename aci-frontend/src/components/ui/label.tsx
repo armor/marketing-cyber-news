@@ -19,8 +19,8 @@ const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
         className={className}
         style={{
           display: 'block',
-          fontSize: 'var(--font-size-sm)',
-          fontWeight: 'var(--font-weight-medium)',
+          fontSize: 'var(--typography-font-size-sm)',
+          fontWeight: 'var(--typography-font-weight-medium)',
           color: 'var(--color-text-primary)',
           marginBottom: 'var(--spacing-gap-xs)',
           ...props.style,
@@ -31,7 +31,7 @@ const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
         {required && (
           <span
             style={{
-              color: 'var(--color-destructive)',
+              color: 'var(--color-semantic-error)',
               marginLeft: 'var(--spacing-gap-xs)',
             }}
             aria-label="required"

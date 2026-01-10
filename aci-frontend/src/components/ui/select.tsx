@@ -224,7 +224,7 @@ const SelectSeparator = React.forwardRef<
       marginRight: 'calc(-1 * var(--spacing-1))',
       marginTop: 'var(--spacing-1)',
       marginBottom: 'var(--spacing-1)',
-      height: '1px',
+      height: 'var(--border-width-thin)',
       backgroundColor: 'var(--color-border-default)',
       ...style,
     }}

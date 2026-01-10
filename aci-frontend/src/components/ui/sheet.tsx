@@ -34,15 +34,20 @@ function SheetPortal({
 
 function SheetOverlay({
   className,
+  style,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Overlay>) {
   return (
     <SheetPrimitive.Overlay
       data-slot="sheet-overlay"
       className={cn(
-        'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/80',
+        'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50',
         className,
       )}
+      style={{
+        backgroundColor: 'var(--color-overlay-heavy)',
+        ...style,
+      }}
       {...props}
     />
   );
@@ -78,7 +83,7 @@ function SheetContent({
           gap: 'var(--spacing-4)',
           background: 'var(--gradient-card)',
           borderColor: 'var(--color-border-default)',
-          boxShadow: 'var(--shadow-elevated)',
+          boxShadow: 'var(--shadow-card)',
           ...style,
         }}
         {...props}

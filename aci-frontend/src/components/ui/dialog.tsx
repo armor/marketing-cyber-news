@@ -17,13 +17,17 @@ const DialogClose = DialogPrimitive.Close
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
+>(({ className, style, ...props }, ref) => (
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
+    style={{
+      backgroundColor: 'var(--color-overlay-heavy)',
+      ...style,
+    }}
     {...props}
   />
 ))
@@ -49,7 +53,7 @@ const DialogContent = React.forwardRef<
         borderColor: 'var(--color-border-default)',
         background: 'var(--gradient-card)',
         color: 'var(--color-text-primary)',
-        boxShadow: 'var(--shadow-elevated)',
+        boxShadow: 'var(--shadow-card)',
         maxWidth: 'min(90vw, 32rem)',
         maxHeight: '90vh',
         overflowY: 'auto',
