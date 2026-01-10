@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# Pre-push hook: Run build and tests before pushing
+# Blocks push if build or tests fail
+
+echo "Running pre-push checks..."
+
+# Frontend: TypeScript build check
+echo "Checking frontend build..."
+cd aci-frontend
+if ! npm run build > /dev/null 2>&1; then
+  echo "Frontend build failed! Fix TypeScript errors before pushing."
+  exit 1
+fi
+cd ..
+
+# Backend: Go build check
+echo "Checking backend build..."
+cd aci-backend
+if ! go build ./... > /dev/null 2>&1; then
+  echo "Backend build failed! Fix Go errors before pushing."
+  exit 1
+fi
+
+# Backend: Run unit tests
+echo "Running backend unit tests..."
+if ! go test -race -short ./... > /dev/null 2>&1; then
+  echo "Backend tests failed! Fix failing tests before pushing."
+  exit 1
+fi
+cd ..
+
+echo "Pre-push checks passed!"

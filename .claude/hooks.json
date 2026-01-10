@@ -1,0 +1,45 @@
+{
+  "description": "Armor Newsletter - Claude Code Quality Hooks",
+  "hooks": {
+    "PreToolCall": [
+      {
+        "matcher": {
+          "tool_name": "Write|Edit"
+        },
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'PRE-START GATE: Have you defined how to test this change? (Given/When/Then + verification command)'",
+            "timeout": 2
+          }
+        ]
+      }
+    ],
+    "PostToolCall": [
+      {
+        "matcher": {
+          "tool_name": "Write|Edit"
+        },
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'CODE CHANGED: Run verification to confirm the change works as expected.'",
+            "timeout": 2
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "description": "Remind to run tests before ending session",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'SESSION END: Did you verify all changes with tests? (npm run test:e2e or make test)'",
+            "timeout": 2
+          }
+        ]
+      }
+    ]
+  }
+}

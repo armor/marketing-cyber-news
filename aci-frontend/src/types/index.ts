@@ -62,3 +62,6 @@ export interface ApiResponse<T> {
 
 // Export all approval workflow types
 export * from './approval';
+
+// Export all voice transformation types
+export * from './voice';

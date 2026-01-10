@@ -1,0 +1,27 @@
+{
+  "name": "n8n-cyber-news",
+  "version": "1.0.0",
+  "description": "Armor Newsletter - AI-powered cybersecurity newsletter automation",
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "lint:frontend": "cd aci-frontend && npm run lint",
+    "lint:backend": "cd aci-backend && make lint",
+    "test:frontend": "cd aci-frontend && npm run test:run",
+    "test:backend": "cd aci-backend && make test",
+    "build:frontend": "cd aci-frontend && npm run build",
+    "build:backend": "cd aci-backend && make build"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.0"
+  },
+  "lint-staged": {
+    "aci-frontend/**/*.{ts,tsx,js,jsx}": [
+      "bash -c 'cd aci-frontend && npx eslint --fix'"
+    ],
+    "aci-backend/**/*.go": [
+      "bash -c 'cd aci-backend && gofmt -w'"
+    ]
+  }
+}

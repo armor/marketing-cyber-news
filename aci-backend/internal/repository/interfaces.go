@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/phillipboles/aci-backend/internal/domain"
 	"github.com/phillipboles/aci-backend/internal/domain/entities"
+	voiceDomain "github.com/phillipboles/aci-backend/internal/domain/voice"
 )
 
 // Repository interfaces define contracts for data persistence layer
@@ -485,3 +486,74 @@ type IssueApprovalRepository interface {
 	DeleteByIssueID(ctx context.Context, issueID uuid.UUID) error
 	GetLatestByIssueAndGate(ctx context.Context, issueID uuid.UUID, gate domain.ApprovalGate) (*domain.IssueApproval, error)
 }
+
+// =============================================================================
+// Voice Transformation Repositories
+// =============================================================================
+
+// VoiceAgentRepository defines operations for voice agent persistence
+type VoiceAgentRepository interface {
+	// CRUD operations
+	Create(ctx context.Context, agent *VoiceAgent) error
+	GetByID(ctx context.Context, id uuid.UUID) (*VoiceAgent, error)
+	GetByName(ctx context.Context, name string) (*VoiceAgent, error)
+	List(ctx context.Context, filter *VoiceAgentFilter) ([]*VoiceAgent, int, error)
+	Update(ctx context.Context, agent *VoiceAgent) error
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// Status management
+	ListActive(ctx context.Context) ([]*VoiceAgent, error)
+	UpdateStatus(ctx context.Context, id uuid.UUID, status VoiceAgentStatus) error
+
+	// With related entities
+	GetWithRulesAndExamples(ctx context.Context, id uuid.UUID) (*VoiceAgent, error)
+}
+
+// StyleRuleRepository defines operations for style rule persistence
+type StyleRuleRepository interface {
+	Create(ctx context.Context, rule *StyleRule) error
+	GetByID(ctx context.Context, id uuid.UUID) (*StyleRule, error)
+	GetByAgentID(ctx context.Context, agentID uuid.UUID) ([]StyleRule, error)
+	Update(ctx context.Context, rule *StyleRule) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	DeleteByAgentID(ctx context.Context, agentID uuid.UUID) error
+	BulkCreate(ctx context.Context, rules []StyleRule) error
+	UpdateSortOrder(ctx context.Context, agentID uuid.UUID, positions map[uuid.UUID]int) error
+}
+
+// ExampleRepository defines operations for transformation example persistence
+type ExampleRepository interface {
+	Create(ctx context.Context, example *Example) error
+	GetByID(ctx context.Context, id uuid.UUID) (*Example, error)
+	GetByAgentID(ctx context.Context, agentID uuid.UUID) ([]Example, error)
+	Update(ctx context.Context, example *Example) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	DeleteByAgentID(ctx context.Context, agentID uuid.UUID) error
+	BulkCreate(ctx context.Context, examples []Example) error
+	UpdateSortOrder(ctx context.Context, agentID uuid.UUID, positions map[uuid.UUID]int) error
+}
+
+// TransformationRepository defines operations for text transformation audit persistence
+type TransformationRepository interface {
+	// CRUD operations
+	Create(ctx context.Context, transformation *TextTransformation) error
+	GetByID(ctx context.Context, id uuid.UUID) (*TextTransformation, error)
+	GetByRequestID(ctx context.Context, requestID uuid.UUID) ([]*TextTransformation, error)
+	List(ctx context.Context, filter *TransformationFilter) ([]*TextTransformation, int, error)
+
+	// Metrics and analytics
+	CountByAgent(ctx context.Context, agentID uuid.UUID) (int, error)
+	CountByUser(ctx context.Context, userID uuid.UUID) (int, error)
+	GetRecentByUser(ctx context.Context, userID uuid.UUID, limit int) ([]*TextTransformation, error)
+}
+
+// Voice domain types re-exported for interface definitions
+type (
+	VoiceAgent           = voiceDomain.VoiceAgent
+	VoiceAgentStatus     = voiceDomain.VoiceAgentStatus
+	VoiceAgentFilter     = voiceDomain.VoiceAgentFilter
+	StyleRule            = voiceDomain.StyleRule
+	Example              = voiceDomain.Example
+	TextTransformation   = voiceDomain.TextTransformation
+	TransformationFilter = voiceDomain.TransformationFilter
+)

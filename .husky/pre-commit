@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# Pre-commit hook: Run lint-staged on staged files
+# Blocks commit if linting fails
+
+echo "Running pre-commit checks..."
+
+# Run lint-staged for frontend TypeScript files
+npx lint-staged
+
+# Check for Go file changes and run go fmt
+STAGED_GO_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$' || true)
+if [ -n "$STAGED_GO_FILES" ]; then
+  echo "Formatting Go files..."
+  cd aci-backend
+
+  for file in $STAGED_GO_FILES; do
+    # Only process files in aci-backend
+    if [[ "$file" == aci-backend/* ]]; then
+      relative_file="${file#aci-backend/}"
+      go fmt "./$relative_file" 2>/dev/null || true
+      git add "../$file"
+    fi
+  done
+
+  cd ..
+fi
+
+echo "Pre-commit checks passed!"

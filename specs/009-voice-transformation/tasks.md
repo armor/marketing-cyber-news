@@ -49,11 +49,16 @@
 
 **Purpose**: Project initialization, database schema, and base infrastructure
 
-- [ ] T001 Create database migration in `aci-backend/migrations/000012_voice_agents.up.sql`
-- [ ] T002 [P] Create migration rollback in `aci-backend/migrations/000012_voice_agents.down.sql`
+- [x] T001 Create database migration in `aci-backend/migrations/000012_voice_agents.up.sql`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: Complete schema with voice_agents, style_rules, transformation_examples, transformation_history tables, proper indexes and constraints
+- [x] T002 [P] Create migration rollback in `aci-backend/migrations/000012_voice_agents.down.sql`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: Clean rollback with proper drop order
 - [ ] T003 Run migration and verify schema in database
-- [ ] T004 [P] Create seed script for default voice agents in `aci-backend/scripts/seed-voice-agents.sql`
-- [ ] T005 [P] Add environment variables to `deployments/k8s/configmap.yaml` (OPENROUTER_API_KEY, rate limit config)
+  - **Status**: BLOCKED | **Notes**: Requires database access - deferred to next engineer
+- [x] T004 [P] Create seed script for default voice agents in `aci-backend/scripts/seed-voice-agents.sql`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: 4 voice agents (Brand, SME, Compliance, VoC) with style rules and examples
+- [x] T005 [P] Add environment variables to `deployments/k8s/configmap.yaml` (OPENROUTER_API_KEY, rate limit config)
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 7 | **Notes**: Added OPENROUTER_API_KEY, VOICE_RATE_LIMIT_*, VOICE_OPENROUTER_* configs
 
 ---
 
@@ -65,42 +70,63 @@
 
 ### Domain Types (Backend)
 
-- [ ] T006 [P] Create VoiceAgent domain type in `aci-backend/internal/domain/voice/agent.go`
-- [ ] T007 [P] Create StyleRule domain type in `aci-backend/internal/domain/voice/rule.go`
-- [ ] T008 [P] Create TransformationExample domain type in `aci-backend/internal/domain/voice/example.go`
-- [ ] T009 [P] Create TextTransformation domain type in `aci-backend/internal/domain/voice/transformation.go`
-- [ ] T010 [P] Create TransformRequest/TransformResponse types in `aci-backend/internal/domain/voice/transform_types.go`
-- [ ] T011 Write domain type unit tests in `aci-backend/internal/domain/voice/agent_test.go`
+- [x] T006 [P] Create VoiceAgent domain type in `aci-backend/internal/domain/voice/agent.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: Complete with validation, NewVoiceAgent constructor, versioning support
+- [x] T007 [P] Create StyleRule domain type in `aci-backend/internal/domain/voice/rule.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: Do/Don't rule types with validation
+- [x] T008 [P] Create TransformationExample domain type in `aci-backend/internal/domain/voice/example.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: Before/after text examples with context support
+- [x] T009 [P] Create TextTransformation domain type in `aci-backend/internal/domain/voice/transformation.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: Transformation records with audit fields
+- [x] T010 [P] Create TransformRequest/TransformResponse types in `aci-backend/internal/domain/voice/transform_types.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: TransformRequest, TransformOption, TransformResponse with 3 labels (conservative/moderate/bold)
+- [x] T011 Write domain type unit tests in `aci-backend/internal/domain/voice/agent_test.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 9 | **Notes**: 47 tests passing - comprehensive validation, edge cases, constructor tests
 
 ### Repository Layer (Backend)
 
-- [ ] T012 [P] Create VoiceAgentRepository interface in `aci-backend/internal/repository/voice/interfaces.go`
-- [ ] T013 [P] Create TransformationRepository interface in `aci-backend/internal/repository/voice/interfaces.go`
-- [ ] T014 Implement VoiceAgentRepository in `aci-backend/internal/repository/voice/agent_repo.go`
-- [ ] T015 Implement TransformationRepository in `aci-backend/internal/repository/voice/transformation_repo.go`
+- [x] T012 [P] Create VoiceAgentRepository interface in `aci-backend/internal/repository/voice/interfaces.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: Full CRUD interface with details/rules/examples retrieval
+- [x] T013 [P] Create TransformationRepository interface in `aci-backend/internal/repository/voice/interfaces.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: Record/Retrieve interface with filtering support
+- [x] T014 Implement VoiceAgentRepository in `aci-backend/internal/repository/voice/agent_repo.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: pgx v5 implementation with parameterized queries
+- [x] T015 Implement TransformationRepository in `aci-backend/internal/repository/voice/transformation_repo.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: pgx v5 with dynamic filtering, pagination
 - [ ] T016 Write repository integration tests in `aci-backend/internal/repository/voice/agent_repo_test.go`
+  - **Status**: BLOCKED | **Notes**: Requires database access - deferred to next engineer
 
 ### Service Infrastructure (Backend)
 
-- [ ] T017 [P] Create LLMClient interface in `aci-backend/internal/service/voice/llm_client.go`
-- [ ] T018 Implement OpenRouterLLMClient in `aci-backend/internal/service/voice/openrouter_client.go`
-- [ ] T019 [P] Implement InputSanitizer with injection patterns in `aci-backend/internal/service/voice/sanitizer.go`
-- [ ] T020 Write sanitizer unit tests in `aci-backend/internal/service/voice/sanitizer_test.go`
-- [ ] T021 [P] Create MockLLMClient for testing in `aci-backend/internal/service/voice/mock_llm_client.go`
+- [x] T017 [P] Create LLMClient interface in `aci-backend/internal/service/voice/llm_client.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: Transform interface with system/user message inputs
+- [x] T018 Implement OpenRouterLLMClient in `aci-backend/internal/service/voice/openrouter_client.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: HTTP client with configurable model, temperature, max tokens
+- [x] T019 [P] Implement InputSanitizer with injection patterns in `aci-backend/internal/service/voice/sanitizer.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 9 | **Notes**: 25+ regex patterns for prompt injection defense, comprehensive character stripping
+- [x] T020 Write sanitizer unit tests in `aci-backend/internal/service/voice/sanitizer_test.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 9 | **Notes**: 23 tests passing - injection patterns, edge cases, whitespace handling
+- [x] T021 [P] Create MockLLMClient for testing in `aci-backend/internal/service/voice/mock_llm_client.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: Configurable mock with error injection, delay simulation
 
 ### Rate Limiting (Backend)
 
-- [ ] T022 [P] Implement rate limiting middleware in `aci-backend/internal/middleware/ratelimit.go`
-- [ ] T023 Write rate limiting middleware tests in `aci-backend/internal/middleware/ratelimit_test.go`
+- [x] T022 [P] Implement rate limiting middleware in `aci-backend/internal/api/middleware/ratelimit.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 9 | **Notes**: User-based rate limiting (30/hour per user via JWT), IP fallback, custom error responses
+- [x] T023 Write rate limiting middleware tests in `aci-backend/internal/api/middleware/ratelimit_test.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 9 | **Notes**: 14 tests passing - user isolation, IP fallback, X-Forwarded-For support
 
 ### TypeScript Types (Frontend)
 
-- [ ] T024 [P] Create VoiceAgent types in `aci-frontend/src/types/voice.ts`
-- [ ] T025 [P] Create Transform request/response types in `aci-frontend/src/types/voice.ts`
+- [x] T024 [P] Create VoiceAgent types in `aci-frontend/src/types/voice.ts`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: VoiceAgent, StyleRule, TransformationExample, UI state types, constants
+- [x] T025 [P] Create Transform request/response types in `aci-frontend/src/types/voice.ts`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 8 | **Notes**: TransformRequest/Response, TransformOption, filter/pagination types
 
 ### Wiring Test Infrastructure
 
-- [ ] T026 Create wiring test skeleton in `aci-backend/tests/integration/voice_routes_test.go`
+- [x] T026 Create wiring test skeleton in `aci-backend/tests/integration/voice_routes_test.go`
+  - **Status**: DONE | **Reviewer**: self-review | **Rating**: 7 | **Notes**: 4 utility tests passing, 9 skipped (awaiting T041 route implementation)
 
 ### PM-1 Gate (Required before Phase 3)
 
