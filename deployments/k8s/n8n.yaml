@@ -46,7 +46,7 @@ spec:
             - sh
             - -c
             - |
-              until nc -z postgres.armor-newsletter.svc.cluster.local 5432; do
+              until nc -z postgres-external.armor-newsletter.svc.cluster.local 5432; do
                 echo "Waiting for PostgreSQL..."
                 sleep 2
               done

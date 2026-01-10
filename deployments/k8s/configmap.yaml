@@ -65,7 +65,7 @@ data:
   AUTH_ALLOWED_EMAIL_DOMAIN: "armor.com"
   AUTH_LOCKOUT_THRESHOLD: "5"
   AUTH_LOCKOUT_DURATION_MINUTES: "30"
-  AUTH_PASSWORD_RESET_WEBHOOK_URL: "http://n8n.armor-newsletter.svc.cluster.local:5678/webhook/auth/password-reset"
+  AUTH_PASSWORD_RESET_WEBHOOK_URL: "http://n8n.armor-newsletter.svc.cluster.local:5678/webhook/password-reset"
   AUTH_PASSWORD_RESET_FRONTEND_URL: "http://129.158.205.38/reset-password"
 
 ---
