@@ -59,12 +59,14 @@ type LoggerConfig struct {
 }
 
 type AuthConfig struct {
-	SignupMode              string // open, email_verification, admin_approval, invitation_only
-	AllowedEmailDomain      string // Required email domain (default: armor.com)
-	LockoutThreshold        int    // Failed attempts before lockout
-	LockoutDurationMinutes  int    // Lockout duration in minutes
-	InvitationExpiryHours   int    // Hours until invitation expires
-	VerificationExpiryHours int    // Hours until verification link expires
+	SignupMode               string // open, email_verification, admin_approval, invitation_only
+	AllowedEmailDomain       string // Required email domain (default: armor.com)
+	LockoutThreshold         int    // Failed attempts before lockout
+	LockoutDurationMinutes   int    // Lockout duration in minutes
+	InvitationExpiryHours    int    // Hours until invitation expires
+	VerificationExpiryHours  int    // Hours until verification link expires
+	PasswordResetWebhookURL  string // n8n webhook URL for password reset emails
+	PasswordResetFrontendURL string // Frontend URL for password reset page
 }
 
 // Load loads configuration from environment variables
@@ -106,12 +108,14 @@ func Load() (*Config, error) {
 			Level: getEnvString("LOG_LEVEL", "info"),
 		},
 		Auth: AuthConfig{
-			SignupMode:              getEnvString("AUTH_SIGNUP_MODE", "open"),
-			AllowedEmailDomain:      getEnvString("AUTH_ALLOWED_EMAIL_DOMAIN", "armor.com"),
-			LockoutThreshold:        getEnvInt("AUTH_LOCKOUT_THRESHOLD", 5),
-			LockoutDurationMinutes:  getEnvInt("AUTH_LOCKOUT_DURATION_MINUTES", 30),
-			InvitationExpiryHours:   getEnvInt("AUTH_INVITATION_EXPIRY_HOURS", 72),
-			VerificationExpiryHours: getEnvInt("AUTH_VERIFICATION_EXPIRY_HOURS", 24),
+			SignupMode:               getEnvString("AUTH_SIGNUP_MODE", "open"),
+			AllowedEmailDomain:       getEnvString("AUTH_ALLOWED_EMAIL_DOMAIN", "armor.com"),
+			LockoutThreshold:         getEnvInt("AUTH_LOCKOUT_THRESHOLD", 5),
+			LockoutDurationMinutes:   getEnvInt("AUTH_LOCKOUT_DURATION_MINUTES", 30),
+			InvitationExpiryHours:    getEnvInt("AUTH_INVITATION_EXPIRY_HOURS", 72),
+			VerificationExpiryHours:  getEnvInt("AUTH_VERIFICATION_EXPIRY_HOURS", 24),
+			PasswordResetWebhookURL:  getEnvString("AUTH_PASSWORD_RESET_WEBHOOK_URL", ""),
+			PasswordResetFrontendURL: getEnvString("AUTH_PASSWORD_RESET_FRONTEND_URL", ""),
 		},
 	}
 

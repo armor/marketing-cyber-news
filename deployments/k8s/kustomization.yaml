@@ -47,6 +47,7 @@ configMapGenerator:
       - newsletter-approval.json=workflows/newsletter-approval.json
       - newsletter-delivery-smtp.json=workflows/newsletter-delivery-smtp.json
       - engagement-webhook.json=workflows/engagement-webhook.json
+      - password-reset-email.json=workflows/password-reset-email.json
 
 # Images to customize
 images:

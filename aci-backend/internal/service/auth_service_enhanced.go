@@ -1,13 +1,17 @@
 package service
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 
 	"github.com/phillipboles/aci-backend/internal/config"
 	"github.com/phillipboles/aci-backend/internal/domain"
@@ -28,6 +32,7 @@ type EnhancedAuthService struct {
 	settingsRepo       repository.SystemSettingsRepository
 	passwordResetRepo  repository.PasswordResetTokenRepository
 	authConfig         config.AuthConfig
+	httpClient         *http.Client
 }
 
 // NewEnhancedAuthService creates a new enhanced authentication service
@@ -54,6 +59,9 @@ func NewEnhancedAuthService(
 		settingsRepo:      settingsRepo,
 		passwordResetRepo: passwordResetRepo,
 		authConfig:        authConfig,
+		httpClient: &http.Client{
+			Timeout: 30 * time.Second,
+		},
 	}
 }
 
@@ -571,7 +579,70 @@ func (s *EnhancedAuthService) RequestPasswordReset(ctx context.Context, email st
 		return nil, fmt.Errorf("failed to store reset token: %w", err)
 	}
 
+	// Send password reset email via n8n (fire and forget - errors are logged)
+	s.sendPasswordResetEmail(ctx, email, resetToken.Token, resetToken.ExpiresAt)
+
 	return resetToken, nil
+}
+
+// sendPasswordResetEmail sends password reset email via n8n webhook
+func (s *EnhancedAuthService) sendPasswordResetEmail(ctx context.Context, email, rawToken string, expiresAt time.Time) {
+	webhookURL := s.authConfig.PasswordResetWebhookURL
+	frontendURL := s.authConfig.PasswordResetFrontendURL
+
+	if webhookURL == "" {
+		log.Warn().Msg("Password reset webhook URL not configured, skipping email")
+		return
+	}
+
+	if frontendURL == "" {
+		log.Warn().Msg("Password reset frontend URL not configured, skipping email")
+		return
+	}
+
+	// Build the reset URL
+	resetURL := fmt.Sprintf("%s?token=%s", frontendURL, rawToken)
+
+	// Build webhook payload
+	payload := map[string]interface{}{
+		"email":      email,
+		"token":      rawToken,
+		"reset_url":  resetURL,
+		"expires_at": expiresAt.Format(time.RFC3339),
+	}
+
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to marshal password reset email payload")
+		return
+	}
+
+	// Send to n8n webhook (fire and forget)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, webhookURL, bytes.NewReader(payloadBytes))
+	if err != nil {
+		log.Error().Err(err).Str("webhook_url", webhookURL).Msg("Failed to create password reset webhook request")
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := s.httpClient.Do(req)
+	if err != nil {
+		log.Error().Err(err).Str("webhook_url", webhookURL).Msg("Failed to send password reset email via webhook")
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		log.Error().
+			Int("status_code", resp.StatusCode).
+			Str("webhook_url", webhookURL).
+			Str("email", email).
+			Msg("Password reset webhook returned error status")
+		return
+	}
+
+	log.Info().Str("email", email).Msg("Password reset email sent successfully via n8n")
 }
 
 // ResetPassword resets the user's password using a valid reset token
