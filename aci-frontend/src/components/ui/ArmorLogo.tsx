@@ -2,7 +2,12 @@
  * ArmorLogo Component
  *
  * Theme-aware logo that automatically switches between dark/light variants
- * based on the current theme.
+ * based on the current theme or explicit background context.
+ *
+ * @param backgroundContext - Override theme detection:
+ *   - 'auto' (default): Uses theme context to determine logo variant
+ *   - 'dark': Always use white logo (for dark containers like Header)
+ *   - 'light': Always use black logo (for light containers)
  */
 
 import { useTheme } from '@/stores/ThemeContext';
@@ -12,6 +17,8 @@ export interface ArmorLogoProps {
   readonly width?: number;
   readonly height?: number;
   readonly variant?: 'default' | 'with-tagline';
+  /** Override theme-based logo selection for containers with fixed backgrounds */
+  readonly backgroundContext?: 'auto' | 'dark' | 'light';
 }
 
 export function ArmorLogo({
@@ -19,14 +26,20 @@ export function ArmorLogo({
   width = 80,
   height = 34,
   variant = 'default',
+  backgroundContext = 'auto',
 }: ArmorLogoProps): React.ReactElement {
   const { resolvedTheme } = useTheme();
 
+  // Determine if we need the white or black logo
+  // Dark background = white logo, Light background = black logo
+  const needsWhiteLogo = backgroundContext === 'dark'
+    || (backgroundContext === 'auto' && resolvedTheme === 'dark');
+
   const logoPath = variant === 'with-tagline'
-    ? resolvedTheme === 'dark'
+    ? needsWhiteLogo
       ? '/branding/logos/armor-with-tagline-white.svg'
       : '/branding/logos/armor-with-tagline-black.svg'
-    : resolvedTheme === 'dark'
+    : needsWhiteLogo
       ? '/branding/logos/armor-dash-white-logo.svg'
       : '/branding/logos/armor-dash-black-logo.svg';
 

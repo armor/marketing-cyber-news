@@ -30,7 +30,7 @@ export function Header(): React.ReactElement {
       {/* Left: Logo and Title */}
       <div className="flex items-center gap-4 min-w-0">
         <Link to="/dashboard" className="flex-shrink-0">
-          <ArmorLogo width={100} height={42} />
+          <ArmorLogo width={100} height={42} backgroundContext="dark" />
         </Link>
         <div className="hidden md:block min-w-0">
           <h1 className="text-lg font-bold text-foreground tracking-tight">
