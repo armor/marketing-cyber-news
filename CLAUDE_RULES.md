@@ -317,6 +317,25 @@ port := cfg.Server.Port
 
 ---
 
+## 17. Admin Credentials on Deployment. Strict.
+
+**NEVER change the admin password during deployment.**
+
+The admin account (`admin@test.com`) has a known password (`TestPass123`) used for:
+- Local development testing
+- E2E test authentication
+- Production seed data consistency
+
+**Rules:**
+- Do NOT modify seed-admin scripts to change passwords
+- Do NOT regenerate passwords during deployment
+- Do NOT add password randomization to deployment workflows
+- If password changes are needed, they MUST be done manually by the user post-deployment
+
+**Rationale:** E2E tests and deployment pipelines depend on consistent credentials. Changing passwords breaks automated testing and locks users out of freshly deployed instances.
+
+---
+
 ## Anti-Pattern Registry
 
 Patterns that MUST be avoided.
