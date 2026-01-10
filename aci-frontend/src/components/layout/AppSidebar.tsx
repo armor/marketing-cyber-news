@@ -38,7 +38,6 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -51,12 +50,6 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import type { UserRole } from '@/types/approval';
 
-// ============================================================================
-// Constants - Logo paths
-// ============================================================================
-
-const LOGO_DARK = '/branding/logos/armor-white-logo.svg';
-const LOGO_LIGHT = '/branding/logos/armor-black-logo.svg';
 
 // ============================================================================
 // Types
@@ -310,70 +303,14 @@ export const AppSidebar = memo(function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      {/* Logo Header */}
-      <SidebarHeader
-        style={{
-          padding: 'var(--spacing-4)',
-          borderBottom: '1px solid var(--color-border-default)',
-        }}
-      >
-        <NavLink
-          to="/"
-          className="flex items-center transition-opacity hover:opacity-80"
-          style={{ gap: 'var(--spacing-3)' }}
-        >
-          {/* Logo - shows full in expanded, icon only in collapsed */}
-          <img
-            src={LOGO_LIGHT}
-            alt="Armor Cyber News"
-            className="dark:hidden group-data-[collapsible=icon]:hidden"
-            style={{
-              height: 'var(--spacing-8)',
-              width: 'auto',
-            }}
-          />
-          <img
-            src={LOGO_DARK}
-            alt="Armor Cyber News"
-            className="hidden dark:block dark:group-data-[collapsible=icon]:hidden"
-            style={{
-              height: 'var(--spacing-8)',
-              width: 'auto',
-            }}
-          />
-          {/* Shield icon for collapsed state */}
-          <div
-            className="hidden group-data-[collapsible=icon]:flex items-center justify-center"
-            style={{
-              width: 'var(--spacing-8)',
-              height: 'var(--spacing-8)',
-              borderRadius: 'var(--border-radius-md)',
-              background: 'var(--gradient-btn-primary)',
-              color: 'var(--color-bg-elevated)',
-            }}
-          >
-            <Shield style={{ width: 'var(--spacing-5)', height: 'var(--spacing-5)' }} />
-          </div>
-        </NavLink>
-      </SidebarHeader>
-
       {/* Navigation Content */}
-      <SidebarContent style={{ padding: 'var(--spacing-2)' }}>
-        <SidebarGroup style={{ padding: 0 }}>
-          <SidebarGroupLabel
-            style={{
-              padding: 'var(--spacing-2) var(--spacing-3)',
-              fontSize: 'var(--typography-font-size-xs)',
-              fontWeight: 'var(--typography-font-weight-medium)',
-              color: 'var(--color-text-secondary)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-            }}
-          >
+      <SidebarContent className="p-2">
+        <SidebarGroup className="p-0">
+          <SidebarGroupLabel className="px-3 py-2 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu style={{ gap: 'var(--spacing-1)' }}>
+            <SidebarMenu className="gap-1">
               {visibleNavItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.to);
@@ -386,10 +323,7 @@ export const AppSidebar = memo(function AppSidebar() {
                         asChild
                         isActive={active}
                         tooltip={item.label}
-                        style={{
-                          padding: 'var(--spacing-2) var(--spacing-3)',
-                          borderRadius: 'var(--border-radius-md)',
-                        }}
+                        className="px-3 py-2 rounded-md"
                       >
                         <NavLink to={item.to}>
                           <Icon className="size-4 shrink-0" />
@@ -405,10 +339,7 @@ export const AppSidebar = memo(function AppSidebar() {
                               <SidebarMenuSubButton
                                 asChild
                                 isActive={childActive}
-                                style={{
-                                  padding: 'var(--spacing-2) var(--spacing-3)',
-                                  borderRadius: 'var(--border-radius-md)',
-                                }}
+                                className="px-3 py-2 rounded-md"
                               >
                                 <NavLink to={child.to}>
                                   <ChildIcon className="size-4 shrink-0" />
@@ -430,10 +361,7 @@ export const AppSidebar = memo(function AppSidebar() {
                       asChild
                       isActive={active}
                       tooltip={item.label}
-                      style={{
-                        padding: 'var(--spacing-2) var(--spacing-3)',
-                        borderRadius: 'var(--border-radius-md)',
-                      }}
+                      className="px-3 py-2 rounded-md"
                     >
                       <NavLink to={item.to} end={item.to === '/'}>
                         <Icon className="size-4 shrink-0" />
@@ -449,68 +377,30 @@ export const AppSidebar = memo(function AppSidebar() {
       </SidebarContent>
 
       {/* Footer with User Info */}
-      <SidebarFooter
-        style={{
-          padding: 'var(--spacing-3)',
-          borderTop: '1px solid var(--color-border-default)',
-        }}
-      >
-        <SidebarMenu style={{ gap: 'var(--spacing-1)' }}>
+      <SidebarFooter className="p-3 border-t border-sidebar-border">
+        <SidebarMenu className="gap-1">
           {user && (
             <SidebarMenuItem>
-              <SidebarMenuButton
-                style={{
-                  padding: 'var(--spacing-2) var(--spacing-3)',
-                  borderRadius: 'var(--border-radius-md)',
-                }}
-              >
-                <div
-                  className="flex items-center justify-center shrink-0"
-                  style={{
-                    width: 'var(--spacing-8)',
-                    height: 'var(--spacing-8)',
-                    borderRadius: 'var(--border-radius-full)',
-                    background: 'var(--gradient-btn-primary)',
-                    color: 'var(--color-bg-elevated)',
-                    fontSize: 'var(--typography-font-size-sm)',
-                    fontWeight: 'var(--typography-font-weight-semibold)',
-                  }}
-                >
+              <SidebarMenuButton className="px-3 py-2 rounded-md">
+                <div className="flex items-center justify-center shrink-0 w-8 h-8 rounded-full bg-sidebar-primary text-sidebar-primary-foreground text-sm font-semibold">
                   {(user.name || user.email || 'U').charAt(0).toUpperCase()}
                 </div>
                 <div className="flex flex-col text-left leading-tight group-data-[collapsible=icon]:hidden">
-                  <span
-                    className="truncate"
-                    style={{
-                      fontSize: 'var(--typography-font-size-sm)',
-                      fontWeight: 'var(--typography-font-weight-medium)',
-                      color: 'var(--color-text-primary)',
-                    }}
-                  >
+                  <span className="truncate text-sm font-medium text-sidebar-foreground">
                     {user.name || user.email}
                   </span>
-                  <span
-                    className="truncate capitalize"
-                    style={{
-                      fontSize: 'var(--typography-font-size-xs)',
-                      color: 'var(--color-text-secondary)',
-                    }}
-                  >
+                  <span className="truncate capitalize text-xs text-sidebar-foreground/70">
                     {user.role?.replace('_', ' ')}
                   </span>
                 </div>
               </SidebarMenuButton>
             </SidebarMenuItem>
           )}
-          <SidebarSeparator style={{ margin: 'var(--spacing-2) 0' }} />
+          <SidebarSeparator className="my-2" />
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={logout}
-              style={{
-                padding: 'var(--spacing-2) var(--spacing-3)',
-                borderRadius: 'var(--border-radius-md)',
-                color: 'var(--color-text-primary)',
-              }}
+              className="px-3 py-2 rounded-md text-sidebar-foreground hover:text-destructive"
             >
               <LogOut className="size-4" />
               <span className="group-data-[collapsible=icon]:hidden">Logout</span>
