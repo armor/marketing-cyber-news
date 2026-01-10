@@ -431,8 +431,11 @@
      SPACING - Base Scale (4px/0.25rem grid)
      --------------------------------------------------------------- */
   --spacing-0: 0;           /* 0px */
+  --spacing-0-5: 0.125rem;  /* 2px */
   --spacing-1: 0.25rem;     /* 4px */
+  --spacing-1-5: 0.375rem;  /* 6px */
   --spacing-2: 0.5rem;      /* 8px */
+  --spacing-2-5: 0.625rem;  /* 10px */
   --spacing-3: 0.75rem;     /* 12px */
   --spacing-4: 1rem;        /* 16px */
   --spacing-5: 1.25rem;     /* 20px */
@@ -557,9 +560,17 @@
      FORTIFIED HORIZON - Accent Colors
      --------------------------------------------------------------- */
   --color-signal-orange: #f97316;
+  --color-signal-orange-light: #fb923c;
   --color-armor-blue: #2563eb;
   --color-shield-cyan: #06b6d4;
   --color-compliant: #8b5cf6;
+
+  /* ---------------------------------------------------------------
+     FORTIFIED HORIZON - Amber Accent Colors (Login/Brand)
+     --------------------------------------------------------------- */
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #d97706;
 
   /* ---------------------------------------------------------------
      FORTIFIED HORIZON - Semantic Colors
@@ -688,6 +699,24 @@
     #60a5fa 25%,
     #2563eb 60%,
     #1d4ed8 100%);
+
+  /* ---------------------------------------------------------------
+     GRADIENTS - Login/Brand Text
+     --------------------------------------------------------------- */
+  --gradient-brand-text: linear-gradient(to right, #fb923c, #fbbf24);
+  --gradient-brand-text-alt: linear-gradient(to right, #f97316, #f59e0b);
+
+  /* ---------------------------------------------------------------
+     LOGIN - Form Panel Background
+     --------------------------------------------------------------- */
+  --color-login-panel-bg: rgba(10, 10, 16, 0.95);
+  --color-login-input-bg: #27272a;
+  --color-login-input-border: #3f3f46;
+  --color-login-input-border-focus: #f59e0b;
+  --color-login-focus-ring: rgba(245, 158, 11, 0.15);
+  --color-login-divider: #3f3f46;
+  --color-login-muted-text: #a1a1aa;
+  --color-login-subtle-text: #71717a;
 
   /* ---------------------------------------------------------------
      GRADIENTS - Badges
@@ -878,6 +907,12 @@
   --color-semantic-warning: var(--color-warning);
   --color-semantic-error: var(--color-critical);
   --color-semantic-info: var(--color-armor-blue);
+
+  /* Semantic Background Variants (alpha transparency for alerts/messages) */
+  --color-semantic-error-bg: rgba(239, 68, 68, 0.1);
+  --color-semantic-warning-bg: rgba(234, 179, 8, 0.1);
+  --color-semantic-success-bg: rgba(34, 197, 94, 0.1);
+  --color-semantic-info-bg: rgba(59, 130, 246, 0.1);
 
   /* Mapped Backgrounds */
   --color-bg-primary: var(--color-obsidian);

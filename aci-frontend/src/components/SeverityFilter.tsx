@@ -103,7 +103,7 @@ export function SeverityFilter({ selected, onSelect }: SeverityFilterProps) {
                 fontSize: 'var(--typography-font-size-sm)',
                 transitionDuration: 'var(--motion-duration-fast)',
                 backgroundColor: isSelected ? sev.colorVar : 'transparent',
-                color: isSelected ? '#ffffff' : 'var(--color-text-muted)',
+                color: isSelected ? 'var(--color-snow)' : 'var(--color-text-muted)',
                 fontWeight: isSelected ? 'var(--typography-font-weight-medium)' : 'var(--typography-font-weight-normal)',
               }}
               aria-pressed={isSelected}

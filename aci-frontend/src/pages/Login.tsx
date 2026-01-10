@@ -5,6 +5,11 @@
  * Left side: Marketing hero with features and stats (desktop only)
  * Right side: Login form with responsive design
  *
+ * DESIGN SYSTEM MIGRATION:
+ * - All colors use CSS custom properties from variables.css
+ * - No hardcoded hex values
+ * - Theme-aware styling via CSS variables
+ *
  * Content is tailored for the Armor Cyber News newsletter automation platform,
  * not a direct copy of Armor-Dash.
  */
@@ -26,26 +31,6 @@ import {
   ExternalLink,
   Mail,
 } from 'lucide-react';
-
-// Armor-Dash color palette
-const colors = {
-  amber400: '#fbbf24',
-  amber500: '#f59e0b',
-  orange400: '#fb923c',
-  orange500: '#f97316',
-  zinc400: '#a1a1aa',
-  zinc500: '#71717a',
-  zinc600: '#52525b',
-  zinc700: '#3f3f46',
-  zinc800: '#27272a',
-  zinc900: '#18181b',
-  white: '#ffffff',
-  black: '#000000',
-  red500: '#ef4444',
-};
-
-// System font stack (matches Geist fallback)
-const fontFamily = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
 // Features specific to Armor Cyber News platform
 const features = [
@@ -89,7 +74,15 @@ export function Login(): React.JSX.Element {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', position: 'relative', fontFamily }}>
+    <div
+      data-theme="dark"
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        position: 'relative',
+        fontFamily: 'var(--typography-font-family-sans)',
+      }}
+    >
       {/* Full-page background image */}
       <div
         style={{
@@ -131,8 +124,8 @@ export function Login(): React.JSX.Element {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            padding: '48px',
-            color: colors.white,
+            padding: 'var(--spacing-12)',
+            color: 'var(--color-snow)',
             width: '100%',
           }}
         >
@@ -146,14 +139,22 @@ export function Login(): React.JSX.Element {
           </div>
 
           {/* Main Content */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h1 style={{ fontSize: '52px', fontWeight: 700, lineHeight: 1.1, margin: 0, letterSpacing: '-0.02em' }}>
-                <span style={{ color: colors.white }}>AI-Powered</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-6)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4)' }}>
+              <h1
+                style={{
+                  fontSize: '52px',
+                  fontWeight: 'var(--typography-font-weight-bold)',
+                  lineHeight: 1.1,
+                  margin: 0,
+                  letterSpacing: 'var(--typography-letter-spacing-tight)',
+                }}
+              >
+                <span style={{ color: 'var(--color-snow)' }}>AI-Powered</span>
                 <br />
                 <span
                   style={{
-                    background: `linear-gradient(to right, ${colors.orange400}, ${colors.amber400})`,
+                    background: 'var(--gradient-brand-text)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
@@ -162,7 +163,15 @@ export function Login(): React.JSX.Element {
                   Cyber News Platform
                 </span>
               </h1>
-              <p style={{ fontSize: '16px', color: 'rgba(255, 255, 255, 0.7)', maxWidth: '440px', margin: 0, lineHeight: 1.5 }}>
+              <p
+                style={{
+                  fontSize: 'var(--typography-font-size-base)',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  maxWidth: '440px',
+                  margin: 0,
+                  lineHeight: 'var(--typography-line-height-normal)',
+                }}
+              >
                 Automate your cybersecurity newsletter with intelligent threat curation,
                 AI-generated content, and seamless multi-channel delivery.
               </p>
@@ -170,23 +179,23 @@ export function Login(): React.JSX.Element {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 12px',
+                  gap: 'var(--spacing-1-5)',
+                  padding: 'var(--spacing-1-5) var(--spacing-3)',
                   backgroundColor: 'rgba(255, 255, 255, 0.08)',
                   border: '1px solid rgba(255, 255, 255, 0.12)',
-                  borderRadius: '9999px',
-                  fontSize: '13px',
+                  borderRadius: 'var(--border-radius-full)',
+                  fontSize: 'var(--typography-font-size-xs)',
                   color: 'rgba(255, 255, 255, 0.85)',
                   width: 'fit-content',
                 }}
               >
-                <Sparkles style={{ width: '14px', height: '14px', color: colors.amber400 }} />
+                <Sparkles style={{ width: '14px', height: '14px', color: 'var(--color-amber-400)' }} />
                 <span>Powered by Claude AI</span>
               </div>
             </div>
 
             {/* Features */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2-5)' }}>
               {features.map((feature, idx) => {
                 const Icon = feature.icon;
                 return (
@@ -195,7 +204,7 @@ export function Login(): React.JSX.Element {
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '10px',
+                      gap: 'var(--spacing-2-5)',
                       color: 'rgba(255, 255, 255, 0.9)',
                     }}
                   >
@@ -207,24 +216,41 @@ export function Login(): React.JSX.Element {
                         alignItems: 'center',
                         justifyContent: 'center',
                         backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                        borderRadius: '6px',
+                        borderRadius: 'var(--border-radius-md)',
                         flexShrink: 0,
                       }}
                     >
-                      <Icon size={16} color={colors.amber400} strokeWidth={2} />
+                      <Icon size={16} color="var(--color-amber-400)" strokeWidth={2} />
                     </div>
-                    <span style={{ fontSize: '14px' }}>{feature.text}</span>
+                    <span style={{ fontSize: 'var(--typography-font-size-sm)' }}>{feature.text}</span>
                   </div>
                 );
               })}
             </div>
 
             {/* Stats */}
-            <div style={{ display: 'flex', gap: '40px', paddingTop: '16px' }}>
+            <div style={{ display: 'flex', gap: 'var(--spacing-10)', paddingTop: 'var(--spacing-4)' }}>
               {stats.map((stat, idx) => (
                 <div key={idx}>
-                  <div style={{ fontSize: '42px', fontWeight: 800, color: colors.white, letterSpacing: '-0.02em' }}>{stat.value}</div>
-                  <div style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '2px' }}>{stat.label}</div>
+                  <div
+                    style={{
+                      fontSize: '42px',
+                      fontWeight: 'var(--typography-font-weight-bold)',
+                      color: 'var(--color-snow)',
+                      letterSpacing: 'var(--typography-letter-spacing-tight)',
+                    }}
+                  >
+                    {stat.value}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 'var(--typography-font-size-xs)',
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      marginTop: 'var(--spacing-0-5)',
+                    }}
+                  >
+                    {stat.label}
+                  </div>
                 </div>
               ))}
             </div>
@@ -234,34 +260,60 @@ export function Login(): React.JSX.Element {
           <div>
             <div
               style={{
-                padding: '20px',
+                padding: 'var(--spacing-5)',
                 backgroundColor: 'rgba(255, 255, 255, 0.06)',
-                borderRadius: '10px',
+                borderRadius: 'var(--border-radius-lg)',
                 border: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
-              <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontStyle: 'italic', margin: '0 0 12px 0', fontSize: '14px', lineHeight: 1.5 }}>
+              <p
+                style={{
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  fontStyle: 'italic',
+                  margin: '0 0 var(--spacing-3) 0',
+                  fontSize: 'var(--typography-font-size-sm)',
+                  lineHeight: 'var(--typography-line-height-normal)',
+                }}
+              >
                 "Reduced our newsletter production time from 8 hours to under 2.
                 The AI curation is remarkably accurate at identifying relevant threats."
               </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-2-5)' }}>
                 <div
                   style={{
                     width: '36px',
                     height: '36px',
-                    borderRadius: '50%',
+                    borderRadius: 'var(--border-radius-full)',
                     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    border: `1px solid rgba(251, 191, 36, 0.4)`,
+                    border: '1px solid rgba(251, 191, 36, 0.4)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: colors.amber400 }}>SOC</span>
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: 'var(--typography-font-weight-bold)',
+                      color: 'var(--color-amber-400)',
+                    }}
+                  >
+                    SOC
+                  </span>
                 </div>
                 <div>
-                  <div style={{ fontWeight: 500, color: colors.white, fontSize: '14px' }}>Sarah Chen</div>
-                  <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)' }}>SOC Manager, Enterprise Client</div>
+                  <div
+                    style={{
+                      fontWeight: 'var(--typography-font-weight-medium)',
+                      color: 'var(--color-snow)',
+                      fontSize: 'var(--typography-font-size-sm)',
+                    }}
+                  >
+                    Sarah Chen
+                  </div>
+                  <div style={{ fontSize: 'var(--typography-font-size-xs)', color: 'rgba(255, 255, 255, 0.5)' }}>
+                    SOC Manager, Enterprise Client
+                  </div>
                 </div>
               </div>
             </div>
@@ -276,8 +328,8 @@ export function Login(): React.JSX.Element {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '48px 24px',
-          backgroundColor: 'rgba(10, 10, 16, 0.95)',
+          padding: 'var(--spacing-12) var(--spacing-6)',
+          backgroundColor: 'var(--color-login-panel-bg)',
           backdropFilter: 'blur(12px)',
           position: 'relative',
           zIndex: 2,
@@ -285,7 +337,7 @@ export function Login(): React.JSX.Element {
       >
         <div style={{ width: '100%', maxWidth: '360px' }}>
           {/* Mobile Logo */}
-          <div className="lg:hidden" style={{ marginBottom: '24px', textAlign: 'center' }}>
+          <div className="lg:hidden" style={{ marginBottom: 'var(--spacing-6)', textAlign: 'center' }}>
             <img
               src="/branding/logos/armor-dash-white-logo.svg"
               alt="Armor"
@@ -293,13 +345,21 @@ export function Login(): React.JSX.Element {
             />
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-5)' }}>
             <div>
-              <h2 style={{ fontSize: '26px', fontWeight: 700, color: colors.white, margin: 0, letterSpacing: '-0.01em' }}>
+              <h2
+                style={{
+                  fontSize: '26px',
+                  fontWeight: 'var(--typography-font-weight-bold)',
+                  color: 'var(--color-snow)',
+                  margin: 0,
+                  letterSpacing: '-0.01em',
+                }}
+              >
                 Welcome to{' '}
                 <span
                   style={{
-                    background: `linear-gradient(to right, ${colors.orange500}, ${colors.amber500})`,
+                    background: 'var(--gradient-brand-text-alt)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
@@ -308,7 +368,13 @@ export function Login(): React.JSX.Element {
                   Cyber News
                 </span>
               </h2>
-              <p style={{ color: colors.zinc400, margin: '6px 0 0 0', fontSize: '14px' }}>
+              <p
+                style={{
+                  color: 'var(--color-login-muted-text)',
+                  margin: 'var(--spacing-1-5) 0 0 0',
+                  fontSize: 'var(--typography-font-size-sm)',
+                }}
+              >
                 Sign in to manage your newsletter
               </p>
             </div>
@@ -317,26 +383,34 @@ export function Login(): React.JSX.Element {
             {error && (
               <div
                 style={{
-                  padding: '12px',
+                  padding: 'var(--spacing-3)',
                   backgroundColor: 'rgba(239, 68, 68, 0.1)',
                   border: '1px solid rgba(239, 68, 68, 0.2)',
-                  borderRadius: '8px',
+                  borderRadius: 'var(--border-radius-md)',
                 }}
               >
-                <p style={{ fontSize: '13px', color: colors.red500, margin: 0 }}>{error}</p>
+                <p
+                  style={{
+                    fontSize: 'var(--typography-font-size-xs)',
+                    color: 'var(--color-critical)',
+                    margin: 0,
+                  }}
+                >
+                  {error}
+                </p>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4)' }}>
               <div>
                 <label
                   htmlFor="email"
                   style={{
                     display: 'block',
-                    fontSize: '13px',
-                    fontWeight: 500,
-                    color: colors.white,
-                    marginBottom: '6px',
+                    fontSize: 'var(--typography-font-size-xs)',
+                    fontWeight: 'var(--typography-font-weight-medium)',
+                    color: 'var(--color-snow)',
+                    marginBottom: 'var(--spacing-1-5)',
                   }}
                 >
                   Email Address
@@ -348,39 +422,47 @@ export function Login(): React.JSX.Element {
                   onChange={(e) => setEmail(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '10px 12px',
-                    backgroundColor: colors.zinc800,
-                    border: `1px solid ${colors.zinc700}`,
-                    borderRadius: '6px',
-                    color: colors.white,
-                    fontSize: '14px',
+                    padding: 'var(--spacing-2-5) var(--spacing-3)',
+                    backgroundColor: 'var(--color-login-input-bg)',
+                    border: '1px solid var(--color-login-input-border)',
+                    borderRadius: 'var(--border-radius-md)',
+                    color: 'var(--color-snow)',
+                    fontSize: 'var(--typography-font-size-sm)',
                     outline: 'none',
                     boxSizing: 'border-box',
-                    fontFamily,
+                    fontFamily: 'var(--typography-font-family-sans)',
+                    transition: 'border-color var(--motion-duration-fast), box-shadow var(--motion-duration-fast)',
                   }}
                   placeholder="you@company.com"
                   required
                   autoFocus
                   onFocus={(e) => {
-                    e.target.style.borderColor = colors.amber500;
-                    e.target.style.boxShadow = `0 0 0 2px rgba(245, 158, 11, 0.15)`;
+                    e.target.style.borderColor = 'var(--color-login-input-border-focus)';
+                    e.target.style.boxShadow = '0 0 0 2px var(--color-login-focus-ring)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = colors.zinc700;
+                    e.target.style.borderColor = 'var(--color-login-input-border)';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
               </div>
 
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 'var(--spacing-1-5)',
+                  }}
+                >
                   <label
                     htmlFor="password"
                     style={{
                       display: 'block',
-                      fontSize: '13px',
-                      fontWeight: 500,
-                      color: colors.white,
+                      fontSize: 'var(--typography-font-size-xs)',
+                      fontWeight: 'var(--typography-font-weight-medium)',
+                      color: 'var(--color-snow)',
                     }}
                   >
                     Password
@@ -388,8 +470,8 @@ export function Login(): React.JSX.Element {
                   <Link
                     to="/forgot-password"
                     style={{
-                      fontSize: '13px',
-                      color: colors.amber500,
+                      fontSize: 'var(--typography-font-size-xs)',
+                      color: 'var(--color-amber-500)',
                       textDecoration: 'none',
                     }}
                     onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
@@ -405,24 +487,25 @@ export function Login(): React.JSX.Element {
                   onChange={(e) => setPassword(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '10px 12px',
-                    backgroundColor: colors.zinc800,
-                    border: `1px solid ${colors.zinc700}`,
-                    borderRadius: '6px',
-                    color: colors.white,
-                    fontSize: '14px',
+                    padding: 'var(--spacing-2-5) var(--spacing-3)',
+                    backgroundColor: 'var(--color-login-input-bg)',
+                    border: '1px solid var(--color-login-input-border)',
+                    borderRadius: 'var(--border-radius-md)',
+                    color: 'var(--color-snow)',
+                    fontSize: 'var(--typography-font-size-sm)',
                     outline: 'none',
                     boxSizing: 'border-box',
-                    fontFamily,
+                    fontFamily: 'var(--typography-font-family-sans)',
+                    transition: 'border-color var(--motion-duration-fast), box-shadow var(--motion-duration-fast)',
                   }}
                   placeholder="••••••••"
                   required
                   onFocus={(e) => {
-                    e.target.style.borderColor = colors.amber500;
-                    e.target.style.boxShadow = `0 0 0 2px rgba(245, 158, 11, 0.15)`;
+                    e.target.style.borderColor = 'var(--color-login-input-border-focus)';
+                    e.target.style.boxShadow = '0 0 0 2px var(--color-login-focus-ring)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = colors.zinc700;
+                    e.target.style.borderColor = 'var(--color-login-input-border)';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
@@ -433,21 +516,21 @@ export function Login(): React.JSX.Element {
                 disabled={isLoading}
                 style={{
                   width: '100%',
-                  padding: '10px 16px',
-                  backgroundColor: colors.white,
-                  color: colors.zinc900,
+                  padding: 'var(--spacing-2-5) var(--spacing-4)',
+                  backgroundColor: 'var(--color-snow)',
+                  color: 'var(--color-obsidian)',
                   border: 'none',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  fontWeight: 600,
+                  borderRadius: 'var(--border-radius-md)',
+                  fontSize: 'var(--typography-font-size-sm)',
+                  fontWeight: 'var(--typography-font-weight-semibold)',
                   cursor: isLoading ? 'not-allowed' : 'pointer',
                   opacity: isLoading ? 0.5 : 1,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '6px',
-                  transition: 'opacity 0.15s',
-                  fontFamily,
+                  gap: 'var(--spacing-1-5)',
+                  transition: 'opacity var(--motion-duration-fast)',
+                  fontFamily: 'var(--typography-font-family-sans)',
                 }}
                 onMouseEnter={(e) => !isLoading && (e.currentTarget.style.opacity = '0.9')}
                 onMouseLeave={(e) => !isLoading && (e.currentTarget.style.opacity = '1')}
@@ -459,8 +542,8 @@ export function Login(): React.JSX.Element {
                         width: '16px',
                         height: '16px',
                         border: '2px solid rgba(24, 24, 27, 0.3)',
-                        borderTopColor: colors.zinc900,
-                        borderRadius: '50%',
+                        borderTopColor: 'var(--color-obsidian)',
+                        borderRadius: 'var(--border-radius-full)',
                         animation: 'spin 1s linear infinite',
                       }}
                     />
@@ -476,19 +559,19 @@ export function Login(): React.JSX.Element {
             </form>
 
             {/* Divider */}
-            <div style={{ position: 'relative', margin: '4px 0' }}>
+            <div style={{ position: 'relative', margin: 'var(--spacing-1) 0' }}>
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
-                <div style={{ width: '100%', borderTop: `1px solid ${colors.zinc700}` }} />
+                <div style={{ width: '100%', borderTop: '1px solid var(--color-login-divider)' }} />
               </div>
               <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
                 <span
                   style={{
-                    padding: '0 8px',
+                    padding: '0 var(--spacing-2)',
                     fontSize: '11px',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    color: colors.zinc500,
-                    backgroundColor: 'rgba(10, 10, 16, 0.95)',
+                    letterSpacing: 'var(--typography-letter-spacing-wide)',
+                    color: 'var(--color-login-subtle-text)',
+                    backgroundColor: 'var(--color-login-panel-bg)',
                   }}
                 >
                   New to Armor?
@@ -504,18 +587,18 @@ export function Login(): React.JSX.Element {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '6px',
-                padding: '10px 16px',
-                border: `1px solid ${colors.zinc700}`,
-                borderRadius: '6px',
-                color: colors.white,
-                fontSize: '14px',
-                fontWeight: 500,
+                gap: 'var(--spacing-1-5)',
+                padding: 'var(--spacing-2-5) var(--spacing-4)',
+                border: '1px solid var(--color-login-divider)',
+                borderRadius: 'var(--border-radius-md)',
+                color: 'var(--color-snow)',
+                fontSize: 'var(--typography-font-size-sm)',
+                fontWeight: 'var(--typography-font-weight-medium)',
                 textDecoration: 'none',
-                transition: 'background-color 0.15s',
+                transition: 'background-color var(--motion-duration-fast)',
                 boxSizing: 'border-box',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.zinc800)}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-login-input-bg)')}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
             >
               <Lock size={14} />
@@ -523,22 +606,45 @@ export function Login(): React.JSX.Element {
             </Link>
 
             {/* Security Badges */}
-            <div style={{ paddingTop: '12px', textAlign: 'center', fontSize: '11px', color: colors.zinc500 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '6px' }}>
+            <div
+              style={{
+                paddingTop: 'var(--spacing-3)',
+                textAlign: 'center',
+                fontSize: '11px',
+                color: 'var(--color-login-subtle-text)',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 'var(--spacing-1-5)',
+                  marginBottom: 'var(--spacing-1-5)',
+                }}
+              >
                 <Shield size={14} />
                 <span>Enterprise-Grade Security</span>
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 'var(--spacing-2)',
+                }}
+              >
                 <span>SOC 2 Type II</span>
-                <span style={{ color: colors.zinc600 }}>•</span>
+                <span style={{ color: 'var(--color-slate)' }}>•</span>
                 <span>ISO 27001</span>
-                <span style={{ color: colors.zinc600 }}>•</span>
+                <span style={{ color: 'var(--color-slate)' }}>•</span>
                 <span>GDPR Compliant</span>
               </div>
             </div>
 
             {/* Armor Website Link */}
-            <div style={{ paddingTop: '12px', textAlign: 'center' }}>
+            <div style={{ paddingTop: 'var(--spacing-3)', textAlign: 'center' }}>
               <a
                 href="https://www.armor.com"
                 target="_blank"
@@ -546,14 +652,14 @@ export function Login(): React.JSX.Element {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '4px',
-                  fontSize: '13px',
-                  fontWeight: 500,
-                  color: colors.amber500,
+                  gap: 'var(--spacing-1)',
+                  fontSize: 'var(--typography-font-size-xs)',
+                  fontWeight: 'var(--typography-font-weight-medium)',
+                  color: 'var(--color-amber-500)',
                   textDecoration: 'none',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = colors.amber400)}
-                onMouseLeave={(e) => (e.currentTarget.style.color = colors.amber500)}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-amber-400)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-amber-500)')}
               >
                 Visit Armor.com
                 <ExternalLink size={12} />

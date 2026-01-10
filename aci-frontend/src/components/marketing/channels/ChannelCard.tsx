@@ -25,26 +25,32 @@ const CHANNEL_ICONS: Record<ChannelType, React.ComponentType<{ className?: strin
   instagram: Instagram,
 };
 
+/**
+ * Channel brand colors
+ * Note: Social media brand colors (LinkedIn blue, Twitter blue, etc.) are intentionally
+ * hardcoded to match official brand guidelines. These are external brand standards,
+ * not part of our design system.
+ */
 const CHANNEL_COLORS: Record<ChannelType, { bg: string; icon: string }> = {
   linkedin: {
-    bg: '#0077B5',
-    icon: '#FFFFFF',
+    bg: '#0077B5', // LinkedIn brand blue
+    icon: 'var(--color-snow)',
   },
   twitter: {
-    bg: '#1DA1F2',
-    icon: '#FFFFFF',
+    bg: '#1DA1F2', // Twitter brand blue
+    icon: 'var(--color-snow)',
   },
   email: {
     bg: 'var(--color-brand-primary)',
     icon: 'var(--color-bg-elevated)',
   },
   facebook: {
-    bg: '#1877F2',
-    icon: '#FFFFFF',
+    bg: '#1877F2', // Facebook brand blue
+    icon: 'var(--color-snow)',
   },
   instagram: {
-    bg: '#E4405F',
-    icon: '#FFFFFF',
+    bg: '#E4405F', // Instagram brand pink
+    icon: 'var(--color-snow)',
   },
 };
 
@@ -136,7 +142,7 @@ export function ChannelCard({ channel }: ChannelCardProps) {
           <div
             className="flex items-start gap-2 p-3 rounded-md"
             style={{
-              backgroundColor: 'rgba(220, 38, 38, 0.1)',
+              backgroundColor: 'var(--color-semantic-error-bg)',
               border: '1px solid var(--color-semantic-error)',
             }}
           >
