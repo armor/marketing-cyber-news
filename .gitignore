@@ -146,3 +146,6 @@ data/
 # ===================
 **/HANDOFF*.md
 infrastructure/terraform/.terraform/
+
+# Git worktrees
+.worktrees/
