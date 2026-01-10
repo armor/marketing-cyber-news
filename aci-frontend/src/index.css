@@ -97,6 +97,24 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  /* Fortified Horizon Gradient Backgrounds for Tailwind 4 */
+  --background-image-gradient-btn-primary: var(--gradient-btn-primary);
+  --background-image-gradient-btn-secondary: var(--gradient-btn-secondary);
+  --background-image-gradient-btn-alert: var(--gradient-btn-alert);
+  --background-image-gradient-btn-trust: var(--gradient-btn-trust);
+  --background-image-gradient-page: var(--gradient-page);
+  --background-image-gradient-hero: var(--gradient-hero);
+  --background-image-gradient-card: var(--gradient-card);
+  --background-image-gradient-component: var(--gradient-component);
+  --background-image-gradient-panel-header: var(--gradient-panel-header);
+  --background-image-gradient-dashboard-body: var(--gradient-dashboard-body);
+  --background-image-gradient-diagonal: var(--gradient-diagonal);
+
+  /* Button shadows */
+  --shadow-btn-primary: var(--shadow-btn-primary);
+  --shadow-btn-primary-hover: var(--shadow-btn-primary-hover);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -132,77 +150,77 @@
 
 :root {
   --radius: 0.625rem;
-  /* Fortified Horizon Light Theme - Warm Grays */
-  --background: #d8d8d0;           /* pearl - page background */
-  --foreground: #282820;           /* iron - primary text */
-  --card: #f0f0e8;                 /* cream - card surface */
-  --card-foreground: #282820;      /* iron - card text */
-  --popover: #f0f0e8;              /* cream - popover surface */
-  --popover-foreground: #282820;   /* iron - popover text */
-  --primary: #2563eb;              /* armor-blue - primary actions */
-  --primary-foreground: #f0f0e8;   /* cream - primary button text */
-  --secondary: #e5e5dc;            /* bone - secondary surface */
-  --secondary-foreground: #303028; /* steel - secondary text */
-  --muted: #c8c8c0;                /* stone - muted surface */
-  --muted-foreground: #686860;     /* ash - muted text */
-  --accent: #0891b2;               /* shield-cyan - accent */
-  --accent-foreground: #f0f0e8;    /* cream - accent text */
+  /* Armor-Dash Light Theme - Pure Neutral Grays (NO beige/cream undertones) */
+  --background: #fafafa;           /* hsl(0 0% 98%) - Page background */
+  --foreground: #0a0a0a;           /* hsl(0 0% 4%) - Primary text */
+  --card: #ffffff;                 /* hsl(0 0% 100%) - Card surface */
+  --card-foreground: #0a0a0a;      /* hsl(0 0% 4%) - Card text */
+  --popover: #ffffff;              /* hsl(0 0% 100%) - Popover surface */
+  --popover-foreground: #0a0a0a;   /* hsl(0 0% 4%) - Popover text */
+  --primary: #171717;              /* hsl(0 0% 9%) - Primary actions */
+  --primary-foreground: #fafafa;   /* hsl(0 0% 98%) - Primary button text */
+  --secondary: #f5f5f5;            /* hsl(0 0% 96%) - Secondary surface */
+  --secondary-foreground: #171717; /* hsl(0 0% 9%) - Secondary text */
+  --muted: #e5e5e5;                /* hsl(0 0% 90%) - Muted surface */
+  --muted-foreground: #737373;     /* hsl(0 0% 45%) - Muted text */
+  --accent: #f97316;               /* signal-orange - Armor accent */
+  --accent-foreground: #fafafa;    /* hsl(0 0% 98%) - Accent text */
   --destructive: #dc2626;          /* critical - destructive */
-  --border: #a8a8a0;               /* dove - borders */
-  --input: #b8b8b0;                /* pebble - input borders */
-  --ring: #2563eb;                 /* armor-blue - focus ring */
+  --border: #e5e5e5;               /* hsl(0 0% 90%) - Borders */
+  --input: #e5e5e5;                /* hsl(0 0% 90%) - Input borders */
+  --ring: #f97316;                 /* signal-orange - Focus ring */
   /* Chart colors - Fortified Horizon accent palette */
   --chart-1: #ea580c;              /* signal-orange */
   --chart-2: #0891b2;              /* shield-cyan */
   --chart-3: #2563eb;              /* armor-blue */
   --chart-4: #16a34a;              /* success */
   --chart-5: #7c3aed;              /* compliant */
-  /* Sidebar - Fortified Horizon */
-  --sidebar: #e5e5dc;              /* bone */
-  --sidebar-foreground: #282820;   /* iron */
-  --sidebar-primary: #2563eb;      /* armor-blue */
-  --sidebar-primary-foreground: #f0f0e8; /* cream */
-  --sidebar-accent: #d8d8d0;       /* pearl */
-  --sidebar-accent-foreground: #303028;  /* steel */
-  --sidebar-border: #a8a8a0;       /* dove */
-  --sidebar-ring: #2563eb;         /* armor-blue */
+  /* Sidebar - Armor-Dash Pure Neutral Grays (Light) */
+  --sidebar: #fafafa;              /* hsl(0 0% 98%) - Near white */
+  --sidebar-foreground: #171717;   /* hsl(0 0% 9%) - Near black text */
+  --sidebar-primary: #f97316;      /* signal-orange - Active state */
+  --sidebar-primary-foreground: #fafafa;  /* Pure white text */
+  --sidebar-accent: #f5f5f5;       /* hsl(0 0% 96%) - Hover state */
+  --sidebar-accent-foreground: #262626;   /* hsl(0 0% 15%) */
+  --sidebar-border: #e5e5e5;       /* hsl(0 0% 90%) - Subtle border */
+  --sidebar-ring: #f97316;         /* signal-orange - Focus ring */
 }
 
 .dark {
-  /* Fortified Horizon Dark Theme - Deep Blacks with Warm Undertones */
-  --background: #0a0a10;           /* obsidian - page background */
-  --foreground: #e0e0e8;           /* snow - primary text */
-  --card: #161620;                 /* coal - card surface */
-  --card-foreground: #e0e0e8;      /* snow - card text */
-  --popover: #161620;              /* coal - popover surface */
-  --popover-foreground: #e0e0e8;   /* snow - popover text */
-  --primary: #e0e0e8;              /* snow - primary actions (inverted) */
-  --primary-foreground: #0a0a10;   /* obsidian - primary button text */
-  --secondary: #1c1c28;            /* charcoal - secondary surface */
-  --secondary-foreground: #c4c4d0; /* cloud - secondary text */
-  --muted: #242432;                /* graphite - muted surface */
-  --muted-foreground: #8e8e9e;     /* ash - muted text */
-  --accent: #06b6d4;               /* shield-cyan - accent */
-  --accent-foreground: #e0e0e8;    /* snow - accent text */
+  /* Armor-Dash Dark Theme - Pure Neutral Grays (NO blue undertones) */
+  --background: #0d0d0d;           /* hsl(0 0% 5%) - Main page background */
+  --foreground: #fafafa;           /* hsl(0 0% 98%) - Primary text */
+  --card: #1a1a1a;                 /* hsl(0 0% 10%) - Card surface */
+  --card-foreground: #fafafa;      /* hsl(0 0% 98%) - Card text */
+  --popover: #1a1a1a;              /* hsl(0 0% 10%) - Popover surface */
+  --popover-foreground: #fafafa;   /* hsl(0 0% 98%) - Popover text */
+  --primary: #fafafa;              /* hsl(0 0% 98%) - Primary actions */
+  --primary-foreground: #0d0d0d;   /* hsl(0 0% 5%) - Primary button text */
+  --secondary: #262626;            /* hsl(0 0% 15%) - Secondary surface */
+  --secondary-foreground: #d4d4d4; /* hsl(0 0% 83%) - Secondary text */
+  --muted: #333333;                /* hsl(0 0% 20%) - Muted surface */
+  --muted-foreground: #a3a3a3;     /* hsl(0 0% 64%) - Muted text */
+  --accent: #f97316;               /* signal-orange - Armor accent */
+  --accent-foreground: #fafafa;    /* hsl(0 0% 98%) - Accent text */
   --destructive: #ef4444;          /* critical - destructive */
-  --border: #2e2e3e;               /* slate - borders */
-  --input: #3a3a4a;                /* steel - input borders */
-  --ring: #2563eb;                 /* armor-blue - focus ring */
+  --border: #333333;               /* hsl(0 0% 20%) - Borders */
+  --input: #404040;                /* hsl(0 0% 25%) - Input borders */
+  --ring: #f97316;                 /* signal-orange - Focus ring */
   /* Chart colors - Fortified Horizon accent palette */
   --chart-1: #f97316;              /* signal-orange */
   --chart-2: #06b6d4;              /* shield-cyan */
   --chart-3: #2563eb;              /* armor-blue */
   --chart-4: #22c55e;              /* success */
   --chart-5: #8b5cf6;              /* compliant */
-  /* Sidebar - Fortified Horizon Dark */
-  --sidebar: #101018;              /* onyx */
-  --sidebar-foreground: #e0e0e8;   /* snow */
-  --sidebar-primary: #2563eb;      /* armor-blue */
-  --sidebar-primary-foreground: #e0e0e8; /* snow */
-  --sidebar-accent: #1c1c28;       /* charcoal */
-  --sidebar-accent-foreground: #c4c4d0;  /* cloud */
-  --sidebar-border: #2e2e3e;       /* slate */
-  --sidebar-ring: #2563eb;         /* armor-blue */
+  /* Sidebar - Armor-Dash Pure Neutral Grays */
+  --sidebar: #141414;              /* hsl(0 0% 8%) - Slightly darker than card */
+  --sidebar-foreground: #e5e5e5;   /* hsl(0 0% 90%) - Pure gray text */
+  --sidebar-primary: #f97316;      /* signal-orange - Active state */
+  --sidebar-primary-foreground: #fafafa;  /* Pure white text */
+  --sidebar-accent: #1f1f1f;       /* hsl(0 0% 12%) - Hover state */
+  --sidebar-accent-foreground: #d4d4d4;   /* hsl(0 0% 83%) */
+  --sidebar-border: #333333;       /* hsl(0 0% 20%) - Subtle border */
+  --sidebar-ring: #f97316;         /* signal-orange - Focus ring */
 }
 
 @layer base {

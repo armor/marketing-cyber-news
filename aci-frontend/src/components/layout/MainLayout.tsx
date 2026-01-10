@@ -2,7 +2,9 @@
  * MainLayout Component
  *
  * Main wrapper component that combines Header, Sidebar, and Footer for NEXUS dashboard.
- * Uses MVPBlocks SidebarProvider for collapsible sidebar state management.
+ * Layout structure:
+ * - Full-width header at top (sticky)
+ * - Sidebar + content area below header
  *
  * @example
  * ```tsx
@@ -34,39 +36,45 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps): React.ReactElement {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        {/* Header with sidebar trigger */}
-        <header
-          className="flex shrink-0 items-center"
-          style={{
-            height: 'var(--spacing-16)',
-            gap: 'var(--spacing-2)',
-            borderBottom: '1px solid var(--color-border-default)',
-            paddingLeft: 'var(--spacing-4)',
-            paddingRight: 'var(--spacing-4)',
-            background: 'var(--gradient-panel-header)',
-          }}
-        >
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <Header />
-        </header>
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Full-width Header at top - sticky */}
+      <header
+        className="sticky top-0 z-50 flex shrink-0 items-center h-14 px-4 gap-3"
+        style={{
+          backgroundColor: 'rgba(10, 10, 16, 0.95)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        }}
+      >
+        <Header />
+      </header>
 
-        {/* Main content area */}
-        <main className="flex-1 flex flex-col" role="main">
+      {/* Sidebar + Content area below header */}
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          {/* Sidebar trigger row */}
           <div
-            className="flex-1 overflow-y-auto"
+            className="flex shrink-0 items-center h-10 gap-2 px-4"
             style={{
-              padding: 'var(--spacing-layout-page)',
+              backgroundColor: 'rgba(10, 10, 16, 0.6)',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
             }}
           >
-            {children}
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="h-4" />
+            <span className="text-xs text-muted-foreground">Navigation</span>
           </div>
-          <Footer />
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+
+          {/* Main content area */}
+          <main className="flex-1 flex flex-col" role="main">
+            <div className="flex-1 overflow-y-auto p-6">
+              {children}
+            </div>
+            <Footer />
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    </div>
   );
 }
