@@ -71,6 +71,11 @@ type TestServer struct {
 func SetupTestDB(t *testing.T) *TestDB {
 	t.Helper()
 
+	// Skip integration tests when running with -short flag
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 	defer cancel()
 
