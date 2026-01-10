@@ -10,6 +10,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/stores/AuthContext';
+import { ThemeProvider } from '@/stores/ThemeContext';
 import { queryClient } from '@/services/api/queryClient';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { PublicRoute } from '@/components/layout/PublicRoute';
@@ -186,6 +187,7 @@ function App(): React.ReactElement {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <ThemeProvider>
         <BrowserRouter>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
@@ -505,6 +507,7 @@ function App(): React.ReactElement {
             </Routes>
           </Suspense>
         </BrowserRouter>
+        </ThemeProvider>
         <Toaster
           position="top-right"
           toastOptions={{

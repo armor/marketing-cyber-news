@@ -24,7 +24,7 @@
  * ```
  */
 
-import { type ReactElement, useState, useEffect } from 'react';
+import { type ReactElement, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,6 +41,7 @@ import { useClaim } from '@/hooks/useClaim';
 import { useClaimCategories } from '@/hooks/useClaimCategories';
 import { useCreateClaim, useUpdateClaim } from '@/hooks/useClaimMutations';
 import type {
+  Claim,
   ClaimType,
   CreateClaimRequest,
   UpdateClaimRequest,
@@ -52,6 +53,13 @@ import type {
 
 export interface ClaimFormProps {
   readonly claimId?: string;
+  readonly onSave: () => void;
+  readonly onCancel: () => void;
+}
+
+interface ClaimFormContentProps {
+  readonly existingClaim?: Claim;
+  readonly categories?: string[];
   readonly onSave: () => void;
   readonly onCancel: () => void;
 }
@@ -72,16 +80,6 @@ interface FormErrors {
   category?: string;
 }
 
-const INITIAL_STATE: FormState = {
-  claim_text: '',
-  claim_type: 'claim',
-  category: '',
-  source_reference: '',
-  tags: '',
-  notes: '',
-  expires_at: '',
-};
-
 const CLAIM_TYPES: { value: ClaimType; label: string }[] = [
   { value: 'claim', label: 'Marketing Claim' },
   { value: 'disclaimer', label: 'Disclaimer' },
@@ -89,55 +87,63 @@ const CLAIM_TYPES: { value: ClaimType; label: string }[] = [
 ];
 
 // ============================================================================
-// Component
+// Helper Functions
 // ============================================================================
 
-export function ClaimForm({
-  claimId,
+/**
+ * Create initial form state from an existing claim or return defaults.
+ * This is called once when ClaimFormContent mounts (via key prop reset).
+ */
+function createInitialState(existingClaim?: Claim): FormState {
+  if (!existingClaim) {
+    return {
+      claim_text: '',
+      claim_type: 'claim',
+      category: '',
+      source_reference: '',
+      tags: '',
+      notes: '',
+      expires_at: '',
+    };
+  }
+
+  return {
+    claim_text: existingClaim.claim_text,
+    claim_type: existingClaim.claim_type,
+    category: existingClaim.category,
+    source_reference: existingClaim.source_reference ?? '',
+    tags: existingClaim.tags.join(', '),
+    notes: existingClaim.notes ?? '',
+    expires_at: existingClaim.expires_at
+      ? new Date(existingClaim.expires_at).toISOString().split('T')[0]
+      : '',
+  };
+}
+
+// ============================================================================
+// Inner Form Component (receives data as props, no effects needed)
+// ============================================================================
+
+function ClaimFormContent({
+  existingClaim,
+  categories,
   onSave,
   onCancel,
-}: ClaimFormProps): ReactElement {
-  const [formState, setFormState] = useState<FormState>(INITIAL_STATE);
+}: ClaimFormContentProps): ReactElement {
+  // Initialize state from props - no effect needed since key prop triggers remount
+  const [formState, setFormState] = useState<FormState>(() =>
+    createInitialState(existingClaim)
+  );
   const [errors, setErrors] = useState<FormErrors>({});
   const [showNewCategory, setShowNewCategory] = useState(false);
 
-  const isEditing = Boolean(claimId);
-
-  // Fetch existing claim data if editing
-  const { data: existingClaim, isLoading: isLoadingClaim } = useClaim({
-    id: claimId ?? '',
-    enabled: isEditing,
-  });
-
-  // Fetch categories for dropdown
-  const { data: categories } = useClaimCategories();
+  const isEditing = Boolean(existingClaim);
 
   // Mutations
   const createMutation = useCreateClaim();
   const updateMutation = useUpdateClaim();
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
-
-  // ============================================================================
-  // Effects
-  // ============================================================================
-
-  // Populate form with existing claim data
-  useEffect(() => {
-    if (existingClaim) {
-      setFormState({
-        claim_text: existingClaim.claim_text,
-        claim_type: existingClaim.claim_type,
-        category: existingClaim.category,
-        source_reference: existingClaim.source_reference ?? '',
-        tags: existingClaim.tags.join(', '),
-        notes: existingClaim.notes ?? '',
-        expires_at: existingClaim.expires_at
-          ? new Date(existingClaim.expires_at).toISOString().split('T')[0]
-          : '',
-      });
-    }
-  }, [existingClaim]);
 
   // ============================================================================
   // Event Handlers
@@ -180,7 +186,7 @@ export function ClaimForm({
       .map((t) => t.trim())
       .filter((t) => t.length > 0);
 
-    if (isEditing && claimId) {
+    if (isEditing && existingClaim) {
       const request: UpdateClaimRequest = {
         claim_text: formState.claim_text.trim(),
         claim_type: formState.claim_type,
@@ -192,7 +198,7 @@ export function ClaimForm({
       };
 
       updateMutation.mutate(
-        { id: claimId, request },
+        { id: existingClaim.id, request },
         {
           onSuccess: () => {
             onSave();
@@ -220,25 +226,6 @@ export function ClaimForm({
       );
     }
   };
-
-  // ============================================================================
-  // Loading State
-  // ============================================================================
-
-  if (isEditing && isLoadingClaim) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: 'var(--spacing-12)',
-        }}
-      >
-        <LoadingSpinner />
-      </div>
-    );
-  }
 
   // ============================================================================
   // Render
@@ -511,5 +498,54 @@ export function ClaimForm({
         </div>
       </div>
     </div>
+  );
+}
+
+// ============================================================================
+// Main Component (handles data fetching and loading states)
+// ============================================================================
+
+export function ClaimForm({
+  claimId,
+  onSave,
+  onCancel,
+}: ClaimFormProps): ReactElement {
+  const isEditing = Boolean(claimId);
+
+  // Fetch existing claim data if editing
+  const { data: existingClaim, isLoading: isLoadingClaim } = useClaim({
+    id: claimId ?? '',
+    enabled: isEditing,
+  });
+
+  // Fetch categories for dropdown
+  const { data: categories } = useClaimCategories();
+
+  // Show loading state while fetching claim data
+  if (isEditing && isLoadingClaim) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 'var(--spacing-12)',
+        }}
+      >
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  // Key prop resets ClaimFormContent state when switching between claims
+  // This is the React-recommended pattern for resetting state on prop change
+  return (
+    <ClaimFormContent
+      key={existingClaim?.id ?? 'new'}
+      existingClaim={existingClaim}
+      categories={categories}
+      onSave={onSave}
+      onCancel={onCancel}
+    />
   );
 }

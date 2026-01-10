@@ -4,7 +4,7 @@
  * Settings component for brand voice strictness level and auto-correct toggle.
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useUpdateBrandSettings } from '@/hooks/useBrandMutations';
@@ -73,15 +73,12 @@ export function StrictnessSlider({
 }: StrictnessSliderProps) {
   const [strictness, setStrictness] = useState(initialStrictness);
   const [autoCorrect, setAutoCorrect] = useState(initialAutoCorrect);
-  const [hasChanges, setHasChanges] = useState(false);
 
   const updateMutation = useUpdateBrandSettings();
 
-  useEffect(() => {
-    const changed =
-      strictness !== initialStrictness || autoCorrect !== initialAutoCorrect;
-    setHasChanges(changed);
-  }, [strictness, autoCorrect, initialStrictness, initialAutoCorrect]);
+  // Derive hasChanges directly from current values vs initial - no state needed
+  const hasChanges =
+    strictness !== initialStrictness || autoCorrect !== initialAutoCorrect;
 
   const handleSave = () => {
     updateMutation.mutate({
@@ -91,7 +88,7 @@ export function StrictnessSlider({
         auto_correct_enabled: autoCorrect,
       },
     });
-    setHasChanges(false);
+    // Note: hasChanges will automatically become false when mutation updates initial values
   };
 
   const level = getStrictnessLevel(strictness);

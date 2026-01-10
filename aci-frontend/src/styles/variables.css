@@ -103,6 +103,12 @@
   --color-border-error: var(--color-critical);
 
   /* ---------------------------------------------------------------
+     COLORS - Overlays (Modal/Dialog backdrops)
+     --------------------------------------------------------------- */
+  --color-overlay-default: rgba(0, 0, 0, 0.6);
+  --color-overlay-heavy: rgba(0, 0, 0, 0.8);
+
+  /* ---------------------------------------------------------------
      GRADIENTS - Page & Section Backgrounds
      --------------------------------------------------------------- */
   --gradient-page: linear-gradient(180deg,
@@ -528,33 +534,35 @@
 }
 
 /* ===================================================================
-   DARK THEME - Fortified Horizon Dark
+   DARK THEME - Armor-Dash Neutral Grays
+   Matching Armor-Dash's pure HSL(0, 0%, X%) neutral gray scale
    =================================================================== */
 
 [data-theme="dark"] {
   /* ---------------------------------------------------------------
-     FORTIFIED HORIZON - Background Scale (Deep Blacks)
+     ARMOR-DASH - Background Scale (Pure Neutral Grays)
+     Using HSL(0, 0%, X%) - No color tint
      --------------------------------------------------------------- */
-  --color-void: #000000;
-  --color-abyss: #05050a;
-  --color-obsidian: #0a0a10;
-  --color-onyx: #101018;
-  --color-coal: #161620;
-  --color-charcoal: #1c1c28;
-  --color-graphite: #242432;
+  --color-void: #000000;      /* hsl(0 0% 0%)  */
+  --color-abyss: #080808;     /* hsl(0 0% 3%)  */
+  --color-obsidian: #0d0d0d;  /* hsl(0 0% 5%)  - Main background */
+  --color-onyx: #141414;      /* hsl(0 0% 8%)  */
+  --color-coal: #1a1a1a;      /* hsl(0 0% 10%) - Card background */
+  --color-charcoal: #212121;  /* hsl(0 0% 13%) */
+  --color-graphite: #262626;  /* hsl(0 0% 15%) */
 
   /* ---------------------------------------------------------------
-     FORTIFIED HORIZON - Foreground Scale (Dark Theme)
+     ARMOR-DASH - Foreground Scale (Pure Neutral Grays)
      --------------------------------------------------------------- */
-  --color-slate: #2e2e3e;
-  --color-steel: #3a3a4a;
-  --color-iron: #484858;
-  --color-pewter: #5a5a6a;
-  --color-silver: #727284;
-  --color-ash: #8e8e9e;
-  --color-mist: #a8a8b8;
-  --color-cloud: #c4c4d0;
-  --color-snow: #e0e0e8;
+  --color-slate: #333333;     /* hsl(0 0% 20%) */
+  --color-steel: #404040;     /* hsl(0 0% 25%) - Borders */
+  --color-iron: #4d4d4d;      /* hsl(0 0% 30%) */
+  --color-pewter: #666666;    /* hsl(0 0% 40%) */
+  --color-silver: #808080;    /* hsl(0 0% 50%) */
+  --color-ash: #999999;       /* hsl(0 0% 60%) */
+  --color-mist: #b3b3b3;      /* hsl(0 0% 70%) */
+  --color-cloud: #cccccc;     /* hsl(0 0% 80%) */
+  --color-snow: #f5f5f5;      /* hsl(0 0% 96%) - Primary text */
 
   /* ---------------------------------------------------------------
      FORTIFIED HORIZON - Accent Colors
@@ -624,13 +632,19 @@
   --color-border-error: var(--color-critical);
 
   /* ---------------------------------------------------------------
-     GRADIENTS - Page & Section Backgrounds
+     COLORS - Overlays (Modal/Dialog backdrops)
+     --------------------------------------------------------------- */
+  --color-overlay-default: rgba(0, 0, 0, 0.7);
+  --color-overlay-heavy: rgba(0, 0, 0, 0.85);
+
+  /* ---------------------------------------------------------------
+     GRADIENTS - Page & Section Backgrounds (Armor-Dash Neutral Grays)
      --------------------------------------------------------------- */
   --gradient-page: linear-gradient(180deg,
-    #0a0a10 0%,
-    #101018 30%,
-    #161620 60%,
-    #1c1c28 100%);
+    #0d0d0d 0%,
+    #141414 30%,
+    #1a1a1a 60%,
+    #212121 100%);
 
   --gradient-hero:
     radial-gradient(ellipse at 20% 0%, rgba(37, 99, 235, 0.15) 0%, transparent 50%),
@@ -638,61 +652,59 @@
     radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
     linear-gradient(180deg,
       #000000 0%,
-      #05050a 15%,
-      #0a0a10 35%,
-      #101018 55%,
-      #161620 75%,
-      #1c1c28 100%);
+      #080808 15%,
+      #0d0d0d 35%,
+      #141414 55%,
+      #1a1a1a 75%,
+      #212121 100%);
 
   --gradient-diagonal: linear-gradient(135deg,
-    #0a0a10 0%,
-    #101018 25%,
-    #161620 50%,
-    #1c1c28 75%,
-    #242432 100%);
+    #0d0d0d 0%,
+    #141414 25%,
+    #1a1a1a 50%,
+    #212121 75%,
+    #262626 100%);
 
   /* ---------------------------------------------------------------
-     GRADIENTS - Card & Surface
+     GRADIENTS - Card & Surface (Armor-Dash Neutral Grays)
      --------------------------------------------------------------- */
   --gradient-card: linear-gradient(180deg,
-    #0a0a10 0%,
-    #101018 40%,
-    #161620 100%);
+    #0d0d0d 0%,
+    #141414 40%,
+    #1a1a1a 100%);
 
   --gradient-component: linear-gradient(180deg,
-    #0a0a10 0%,
-    #101018 30%,
-    #161620 70%,
-    #1c1c28 100%);
+    #0d0d0d 0%,
+    #141414 30%,
+    #1a1a1a 70%,
+    #212121 100%);
 
   --gradient-panel-header: linear-gradient(180deg,
-    #05050a 0%,
-    #0a0a10 100%);
+    #080808 0%,
+    #0d0d0d 100%);
 
   --gradient-dashboard-body: linear-gradient(180deg,
-    #161620 0%,
-    #1c1c28 50%,
-    #242432 100%);
+    #1a1a1a 0%,
+    #212121 50%,
+    #262626 100%);
 
   /* ---------------------------------------------------------------
-     GRADIENTS - Buttons
+     GRADIENTS - Buttons (Armor Brand - Amber Primary)
      --------------------------------------------------------------- */
   --gradient-btn-primary: linear-gradient(180deg,
-    #ffffff 0%,
-    #e0e0e8 30%,
-    #c4c4d0 70%,
-    #a8a8b8 100%);
+    #fbbf24 0%,
+    #f59e0b 30%,
+    #d97706 70%,
+    #b45309 100%);
 
   --gradient-btn-secondary: linear-gradient(180deg,
-    #242432 0%,
-    #2e2e3e 40%,
-    #3a3a4a 100%);
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.04) 100%);
 
   --gradient-btn-alert: linear-gradient(180deg,
-    #ffb380 0%,
-    #ff9050 25%,
-    #f97316 60%,
-    #ea580c 100%);
+    #ef4444 0%,
+    #dc2626 50%,
+    #b91c1c 100%);
 
   --gradient-btn-trust: linear-gradient(180deg,
     #93c5fd 0%,
@@ -805,19 +817,19 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
 
   /* ---------------------------------------------------------------
-     SHADOWS - Button Shadows
+     SHADOWS - Button Shadows (Amber glow for primary)
      --------------------------------------------------------------- */
   --shadow-btn-primary:
-    0 4px 8px rgba(255, 255, 255, 0.15),
-    0 8px 16px rgba(255, 255, 255, 0.10),
+    0 4px 8px rgba(245, 158, 11, 0.25),
+    0 8px 16px rgba(245, 158, 11, 0.15),
     0 16px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 
   --shadow-btn-primary-hover:
-    0 8px 16px rgba(255, 255, 255, 0.2),
-    0 16px 32px rgba(255, 255, 255, 0.15),
+    0 8px 16px rgba(245, 158, 11, 0.35),
+    0 16px 32px rgba(245, 158, 11, 0.2),
     0 24px 48px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 
   --shadow-btn-accent:
     0 2px 4px rgba(0, 0, 0, 0.3),
@@ -860,25 +872,25 @@
    =================================================================== */
 
 .dark {
-  /* Fortified Horizon - Background Scale (Deep Blacks) */
-  --color-void: #000000;
-  --color-abyss: #05050a;
-  --color-obsidian: #0a0a10;
-  --color-onyx: #101018;
-  --color-coal: #161620;
-  --color-charcoal: #1c1c28;
-  --color-graphite: #242432;
+  /* Armor-Dash - Background Scale (Pure Neutral Grays) */
+  --color-void: #000000;      /* hsl(0 0% 0%)  */
+  --color-abyss: #080808;     /* hsl(0 0% 3%)  */
+  --color-obsidian: #0d0d0d;  /* hsl(0 0% 5%)  - Main background */
+  --color-onyx: #141414;      /* hsl(0 0% 8%)  */
+  --color-coal: #1a1a1a;      /* hsl(0 0% 10%) - Card background */
+  --color-charcoal: #212121;  /* hsl(0 0% 13%) */
+  --color-graphite: #262626;  /* hsl(0 0% 15%) */
 
-  /* Fortified Horizon - Foreground Scale (Dark Theme) */
-  --color-slate: #2e2e3e;
-  --color-steel: #3a3a4a;
-  --color-iron: #484858;
-  --color-pewter: #5a5a6a;
-  --color-silver: #727284;
-  --color-ash: #8e8e9e;
-  --color-mist: #a8a8b8;
-  --color-cloud: #c4c4d0;
-  --color-snow: #e0e0e8;
+  /* Armor-Dash - Foreground Scale (Pure Neutral Grays) */
+  --color-slate: #333333;     /* hsl(0 0% 20%) */
+  --color-steel: #404040;     /* hsl(0 0% 25%) - Borders */
+  --color-iron: #4d4d4d;      /* hsl(0 0% 30%) */
+  --color-pewter: #666666;    /* hsl(0 0% 40%) */
+  --color-silver: #808080;    /* hsl(0 0% 50%) */
+  --color-ash: #999999;       /* hsl(0 0% 60%) */
+  --color-mist: #b3b3b3;      /* hsl(0 0% 70%) */
+  --color-cloud: #cccccc;     /* hsl(0 0% 80%) */
+  --color-snow: #f5f5f5;      /* hsl(0 0% 96%) - Primary text */
 
   /* Fortified Horizon - Accent Colors */
   --color-signal-orange: #f97316;
@@ -929,49 +941,53 @@
   --color-border-focus: var(--color-armor-blue);
   --color-border-error: var(--color-critical);
 
-  /* Gradients - Page & Section */
-  --gradient-page: linear-gradient(180deg, #0a0a10 0%, #101018 30%, #161620 60%, #1c1c28 100%);
-  --gradient-hero: radial-gradient(ellipse at 20% 0%, rgba(37, 99, 235, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 100%, rgba(6, 182, 212, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%), linear-gradient(180deg, #000000 0%, #05050a 15%, #0a0a10 35%, #101018 55%, #161620 75%, #1c1c28 100%);
-  --gradient-diagonal: linear-gradient(135deg, #0a0a10 0%, #101018 25%, #161620 50%, #1c1c28 75%, #242432 100%);
+  /* Overlays */
+  --color-overlay-default: rgba(0, 0, 0, 0.7);
+  --color-overlay-heavy: rgba(0, 0, 0, 0.85);
 
-  /* Gradients - Card & Surface */
-  --gradient-card: linear-gradient(180deg, #0a0a10 0%, #101018 40%, #161620 100%);
-  --gradient-component: linear-gradient(180deg, #0a0a10 0%, #101018 30%, #161620 70%, #1c1c28 100%);
-  --gradient-panel-header: linear-gradient(180deg, #05050a 0%, #0a0a10 100%);
-  --gradient-dashboard-body: linear-gradient(180deg, #161620 0%, #1c1c28 50%, #242432 100%);
+  /* Gradients - Page & Section (Armor-Dash Neutral Grays) */
+  --gradient-page: linear-gradient(180deg, #0d0d0d 0%, #141414 30%, #1a1a1a 60%, #212121 100%);
+  --gradient-hero: radial-gradient(ellipse at 20% 0%, rgba(37, 99, 235, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 100%, rgba(6, 182, 212, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%), linear-gradient(180deg, #000000 0%, #080808 15%, #0d0d0d 35%, #141414 55%, #1a1a1a 75%, #212121 100%);
+  --gradient-diagonal: linear-gradient(135deg, #0d0d0d 0%, #141414 25%, #1a1a1a 50%, #212121 75%, #262626 100%);
 
-  /* Gradients - Buttons */
-  --gradient-btn-primary: linear-gradient(180deg, #ffffff 0%, #e0e0e8 30%, #c4c4d0 70%, #a8a8b8 100%);
-  --gradient-btn-secondary: linear-gradient(180deg, #242432 0%, #2e2e3e 40%, #3a3a4a 100%);
-  --gradient-btn-alert: linear-gradient(180deg, #ffb380 0%, #ff9050 25%, #f97316 60%, #ea580c 100%);
+  /* Gradients - Card & Surface (Armor-Dash Neutral Grays) */
+  --gradient-card: linear-gradient(180deg, #0d0d0d 0%, #141414 40%, #1a1a1a 100%);
+  --gradient-component: linear-gradient(180deg, #0d0d0d 0%, #141414 30%, #1a1a1a 70%, #212121 100%);
+  --gradient-panel-header: linear-gradient(180deg, #080808 0%, #0d0d0d 100%);
+  --gradient-dashboard-body: linear-gradient(180deg, #1a1a1a 0%, #212121 50%, #262626 100%);
+
+  /* Gradients - Buttons (Armor Brand - Amber Primary) */
+  --gradient-btn-primary: linear-gradient(180deg, #fbbf24 0%, #f59e0b 30%, #d97706 70%, #b45309 100%);
+  --gradient-btn-secondary: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+  --gradient-btn-alert: linear-gradient(180deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
   --gradient-btn-trust: linear-gradient(180deg, #93c5fd 0%, #60a5fa 25%, #2563eb 60%, #1d4ed8 100%);
 
-  /* Gradients - Badges */
-  --gradient-badge-neutral: linear-gradient(180deg, #1c1c28 0%, #242432 50%, #2e2e3e 100%);
+  /* Gradients - Badges (Armor-Dash Neutral Grays) */
+  --gradient-badge-neutral: linear-gradient(180deg, #212121 0%, #262626 50%, #333333 100%);
   --gradient-badge-critical: linear-gradient(180deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.18) 100%);
   --gradient-badge-warning: linear-gradient(180deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.18) 100%);
   --gradient-badge-success: linear-gradient(180deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.18) 100%);
   --gradient-badge-info: linear-gradient(180deg, rgba(37, 99, 235, 0.12) 0%, rgba(37, 99, 235, 0.18) 100%);
 
-  /* Gradients - Icons */
+  /* Gradients - Icons (Armor-Dash Neutral Grays) */
   --gradient-icon-threat: linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(249, 115, 22, 0.25) 100%);
   --gradient-icon-warning: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.25) 100%);
   --gradient-icon-success: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.25) 100%);
-  --gradient-icon-neutral: linear-gradient(135deg, #1c1c28 0%, #242432 50%, #2e2e3e 100%);
+  --gradient-icon-neutral: linear-gradient(135deg, #212121 0%, #262626 50%, #333333 100%);
 
-  /* Gradients - Progress Bars */
-  --gradient-progress-default: linear-gradient(90deg, #a8a8b8 0%, #c4c4d0 50%, #e0e0e8 100%);
+  /* Gradients - Progress Bars (Armor-Dash Neutral Grays) */
+  --gradient-progress-default: linear-gradient(90deg, #b3b3b3 0%, #cccccc 50%, #f5f5f5 100%);
   --gradient-progress-success: linear-gradient(90deg, #86efac 0%, #4ade80 30%, #22c55e 70%, #16a34a 100%);
   --gradient-progress-warning: linear-gradient(90deg, #fde68a 0%, #fcd34d 30%, #f59e0b 70%, #d97706 100%);
-  --gradient-progress-track: linear-gradient(180deg, #2e2e3e 0%, #3a3a4a 50%, #484858 100%);
+  --gradient-progress-track: linear-gradient(180deg, #333333 0%, #404040 50%, #4d4d4d 100%);
 
   /* Shadows - Card */
   --shadow-card: 0 4px 8px rgba(0, 0, 0, 0.4), 0 8px 16px rgba(0, 0, 0, 0.3), 0 16px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --shadow-hero: 0 2px 4px rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.4), 0 8px 16px rgba(0, 0, 0, 0.3), 0 16px 32px rgba(0, 0, 0, 0.3), 0 32px 64px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 
-  /* Shadows - Button */
-  --shadow-btn-primary: 0 4px 8px rgba(255, 255, 255, 0.15), 0 8px 16px rgba(255, 255, 255, 0.10), 0 16px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  --shadow-btn-primary-hover: 0 8px 16px rgba(255, 255, 255, 0.2), 0 16px 32px rgba(255, 255, 255, 0.15), 0 24px 48px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 1);
+  /* Shadows - Button (Amber glow for primary) */
+  --shadow-btn-primary: 0 4px 8px rgba(245, 158, 11, 0.25), 0 8px 16px rgba(245, 158, 11, 0.15), 0 16px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  --shadow-btn-primary-hover: 0 8px 16px rgba(245, 158, 11, 0.35), 0 16px 32px rgba(245, 158, 11, 0.2), 0 24px 48px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
   --shadow-btn-accent: 0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   --shadow-btn-accent-hover: 0 4px 8px rgba(0, 0, 0, 0.35), 0 8px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 
