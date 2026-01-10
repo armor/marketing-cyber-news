@@ -60,7 +60,7 @@ func TestApproveIssue_HappyPath(t *testing.T) {
 	})).Return(nil)
 	mockAuditRepo.On("Create", ctx, mock.AnythingOfType("*domain.AuditLog")).Return(nil)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	err := service.ApproveIssue(ctx, issueID, approverID, notes)
@@ -98,7 +98,7 @@ func TestApproveIssue_InvalidStatusTransition(t *testing.T) {
 
 	mockIssueRepo.On("GetByID", ctx, issueID).Return(issue, nil)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	err := service.ApproveIssue(ctx, issueID, approverID, "notes")
@@ -116,7 +116,7 @@ func TestApproveIssue_NilIssueID(t *testing.T) {
 	mockConfigRepo := new(MockNewsletterConfigRepository)
 	mockAuditRepo := new(MockAuditLogRepository)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	err := service.ApproveIssue(ctx, uuid.Nil, uuid.New(), "notes")
@@ -154,7 +154,7 @@ func TestApproveIssue_IssueNotReady(t *testing.T) {
 
 	mockIssueRepo.On("GetByID", ctx, issueID).Return(issue, nil)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	err := service.ApproveIssue(ctx, issueID, approverID, "notes")
@@ -212,7 +212,7 @@ func TestRejectIssue_HappyPath(t *testing.T) {
 	})).Return(nil)
 	mockAuditRepo.On("Create", ctx, mock.AnythingOfType("*domain.AuditLog")).Return(nil)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	err := service.RejectIssue(ctx, issueID, approverID, reason)
@@ -250,7 +250,7 @@ func TestRejectIssue_InvalidStatusTransition(t *testing.T) {
 
 	mockIssueRepo.On("GetByID", ctx, issueID).Return(issue, nil)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	err := service.RejectIssue(ctx, issueID, approverID, "reason")
@@ -268,7 +268,7 @@ func TestRejectIssue_EmptyReason(t *testing.T) {
 	mockConfigRepo := new(MockNewsletterConfigRepository)
 	mockAuditRepo := new(MockAuditLogRepository)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	err := service.RejectIssue(ctx, uuid.New(), uuid.New(), "")
@@ -285,7 +285,7 @@ func TestRejectIssue_NilApproverID(t *testing.T) {
 	mockConfigRepo := new(MockNewsletterConfigRepository)
 	mockAuditRepo := new(MockAuditLogRepository)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	err := service.RejectIssue(ctx, uuid.New(), uuid.Nil, "reason")
@@ -339,7 +339,7 @@ func TestSubmitForApproval_HappyPath(t *testing.T) {
 	})).Return(nil)
 	mockAuditRepo.On("Create", ctx, mock.AnythingOfType("*domain.AuditLog")).Return(nil)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	err := service.SubmitForApproval(ctx, issueID)
@@ -376,7 +376,7 @@ func TestSubmitForApproval_InvalidStatus(t *testing.T) {
 
 	mockIssueRepo.On("GetByID", ctx, issueID).Return(issue, nil)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	err := service.SubmitForApproval(ctx, issueID)
@@ -394,7 +394,7 @@ func TestSubmitForApproval_NilIssueID(t *testing.T) {
 	mockConfigRepo := new(MockNewsletterConfigRepository)
 	mockAuditRepo := new(MockAuditLogRepository)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	err := service.SubmitForApproval(ctx, uuid.Nil)
@@ -431,7 +431,7 @@ func TestSubmitForApproval_IssueNotReady(t *testing.T) {
 
 	mockIssueRepo.On("GetByID", ctx, issueID).Return(issue, nil)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	err := service.SubmitForApproval(ctx, issueID)
@@ -504,7 +504,7 @@ func TestGetPendingApprovals_HappyPath(t *testing.T) {
 	mockConfigRepo.On("GetByID", ctx, configID1).Return(config1, nil)
 	mockConfigRepo.On("GetByID", ctx, configID2).Return(config2, nil)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	result, err := service.GetPendingApprovals(ctx, &tier)
@@ -543,7 +543,7 @@ func TestGetPendingApprovals_NoTierFilter(t *testing.T) {
 
 	mockIssueRepo.On("GetPendingApprovals", ctx).Return(issues, nil)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	result, err := service.GetPendingApprovals(ctx, nil)
@@ -563,7 +563,7 @@ func TestGetPendingApprovals_InvalidTier(t *testing.T) {
 	mockConfigRepo := new(MockNewsletterConfigRepository)
 	mockAuditRepo := new(MockAuditLogRepository)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	result, err := service.GetPendingApprovals(ctx, &invalidTier)
@@ -584,7 +584,7 @@ func TestGetPendingApprovals_EmptyList(t *testing.T) {
 
 	mockIssueRepo.On("GetPendingApprovals", ctx).Return([]*domain.NewsletterIssue{}, nil)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	result, err := service.GetPendingApprovals(ctx, nil)
@@ -652,7 +652,7 @@ func TestApproveIssue_RepositoryFailure(t *testing.T) {
 
 	mockIssueRepo.On("GetByID", ctx, issueID).Return(nil, context.DeadlineExceeded)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	err := service.ApproveIssue(ctx, issueID, approverID, "notes")
@@ -710,7 +710,7 @@ func TestApproveIssue_AuditLogWriteFailure(t *testing.T) {
 	mockAuditRepo.On("Create", ctx, mock.AnythingOfType("*domain.AuditLog")).
 		Return(context.DeadlineExceeded)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act - should still succeed even if audit log fails
 	err := service.ApproveIssue(ctx, issueID, approverID, notes)
@@ -748,7 +748,7 @@ func TestRejectIssue_ConfigurationLoadFailure(t *testing.T) {
 	mockIssueRepo.On("GetByID", ctx, issueID).Return(issue, nil)
 	mockConfigRepo.On("GetByID", ctx, configID).Return(nil, context.DeadlineExceeded)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	err := service.RejectIssue(ctx, issueID, approverID, "reason")
@@ -798,7 +798,7 @@ func TestSubmitForApproval_UpdateFailure(t *testing.T) {
 	mockIssueRepo.On("Update", ctx, mock.AnythingOfType("*domain.NewsletterIssue")).
 		Return(context.DeadlineExceeded)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	err := service.SubmitForApproval(ctx, issueID)
@@ -821,7 +821,7 @@ func TestGetPendingApprovals_RepositoryFailure(t *testing.T) {
 
 	mockIssueRepo.On("GetPendingApprovals", ctx).Return(nil, expectedErr)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	result, err := service.GetPendingApprovals(ctx, nil)
@@ -880,7 +880,7 @@ func TestApproveIssue_MultiTenantTierIsolation(t *testing.T) {
 	})).Return(nil)
 	mockAuditRepo.On("Create", ctx, mock.AnythingOfType("*domain.AuditLog")).Return(nil)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	err := service.ApproveIssue(ctx, issueID, approverID, notes)
@@ -953,7 +953,7 @@ func TestGetPendingApprovals_TierFilteringValidation(t *testing.T) {
 	mockConfigRepo.On("GetByID", ctx, configID1).Return(config1, nil)
 	mockConfigRepo.On("GetByID", ctx, configID2).Return(config2, nil)
 
-	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil)
+	service := NewApprovalService(mockIssueRepo, mockConfigRepo, mockAuditRepo, nil, nil)
 
 	// Act
 	result, err := service.GetPendingApprovals(ctx, &tier)

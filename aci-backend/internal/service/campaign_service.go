@@ -513,7 +513,7 @@ func (s *CampaignService) Pause(ctx context.Context, id uuid.UUID) (*domain.Camp
 	// Deactivate all workflows
 	for channel, workflowID := range campaign.WorkflowIDs {
 		if err := s.n8nClient.DeactivateWorkflow(ctx, workflowID); err != nil {
-			return nil, fmt.Errorf("failed to deactivate workflow for channel %s: %w", channel, err)
+			return nil, fmt.Errorf("failed to deactivate workflow %d: %w", channel, err)
 		}
 	}
 
@@ -561,7 +561,7 @@ func (s *CampaignService) Resume(ctx context.Context, id uuid.UUID) (*domain.Cam
 	// Reactivate all workflows
 	for channel, workflowID := range campaign.WorkflowIDs {
 		if err := s.n8nClient.ActivateWorkflow(ctx, workflowID); err != nil {
-			return nil, fmt.Errorf("failed to activate workflow for channel %s: %w", channel, err)
+			return nil, fmt.Errorf("failed to activate workflow %d: %w", channel, err)
 		}
 	}
 
@@ -598,7 +598,7 @@ func (s *CampaignService) Stop(ctx context.Context, id uuid.UUID) (*domain.Campa
 	var deleteErrors []string
 	for channel, workflowID := range campaign.WorkflowIDs {
 		if err := s.n8nClient.DeleteWorkflow(ctx, workflowID); err != nil {
-			deleteErrors = append(deleteErrors, fmt.Sprintf("channel %s: %v", channel, err))
+			deleteErrors = append(deleteErrors, fmt.Sprintf("workflow %d: %v", channel, err))
 		}
 	}
 

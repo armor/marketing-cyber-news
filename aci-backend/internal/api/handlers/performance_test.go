@@ -42,28 +42,28 @@ type MockNewsletterConfigRepository struct {
 	mock.Mock
 }
 
-func (m *MockNewsletterConfigRepository) Create(ctx context.Context, config *domain.NewsletterConfig) error {
+func (m *MockNewsletterConfigRepository) Create(ctx context.Context, config *domain.NewsletterConfiguration) error {
 	args := m.Called(ctx, config)
 	return args.Error(0)
 }
 
-func (m *MockNewsletterConfigRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.NewsletterConfig, error) {
+func (m *MockNewsletterConfigRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.NewsletterConfiguration, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*domain.NewsletterConfig), args.Error(1)
+	return args.Get(0).(*domain.NewsletterConfiguration), args.Error(1)
 }
 
-func (m *MockNewsletterConfigRepository) List(ctx context.Context, filter *domain.NewsletterConfigFilter) ([]*domain.NewsletterConfig, int, error) {
+func (m *MockNewsletterConfigRepository) List(ctx context.Context, filter *domain.NewsletterConfigFilter) ([]*domain.NewsletterConfiguration, int, error) {
 	args := m.Called(ctx, filter)
 	if args.Get(0) == nil {
 		return nil, args.Int(1), args.Error(2)
 	}
-	return args.Get(0).([]*domain.NewsletterConfig), args.Int(1), args.Error(2)
+	return args.Get(0).([]*domain.NewsletterConfiguration), args.Int(1), args.Error(2)
 }
 
-func (m *MockNewsletterConfigRepository) Update(ctx context.Context, config *domain.NewsletterConfig) error {
+func (m *MockNewsletterConfigRepository) Update(ctx context.Context, config *domain.NewsletterConfiguration) error {
 	args := m.Called(ctx, config)
 	return args.Error(0)
 }
@@ -73,16 +73,16 @@ func (m *MockNewsletterConfigRepository) Delete(ctx context.Context, id uuid.UUI
 	return args.Error(0)
 }
 
-type MockNewsletterIssueRepository struct {
+type PerfMockNewsletterIssueRepository struct {
 	mock.Mock
 }
 
-func (m *MockNewsletterIssueRepository) Create(ctx context.Context, issue *domain.NewsletterIssue) error {
+func (m *PerfMockNewsletterIssueRepository) Create(ctx context.Context, issue *domain.NewsletterIssue) error {
 	args := m.Called(ctx, issue)
 	return args.Error(0)
 }
 
-func (m *MockNewsletterIssueRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.NewsletterIssue, error) {
+func (m *PerfMockNewsletterIssueRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.NewsletterIssue, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -90,7 +90,7 @@ func (m *MockNewsletterIssueRepository) GetByID(ctx context.Context, id uuid.UUI
 	return args.Get(0).(*domain.NewsletterIssue), args.Error(1)
 }
 
-func (m *MockNewsletterIssueRepository) List(ctx context.Context, filter *domain.NewsletterIssueFilter) ([]*domain.NewsletterIssue, int, error) {
+func (m *PerfMockNewsletterIssueRepository) List(ctx context.Context, filter *domain.NewsletterIssueFilter) ([]*domain.NewsletterIssue, int, error) {
 	args := m.Called(ctx, filter)
 	if args.Get(0) == nil {
 		return nil, args.Int(1), args.Error(2)
@@ -98,7 +98,7 @@ func (m *MockNewsletterIssueRepository) List(ctx context.Context, filter *domain
 	return args.Get(0).([]*domain.NewsletterIssue), args.Int(1), args.Error(2)
 }
 
-func (m *MockNewsletterIssueRepository) Update(ctx context.Context, issue *domain.NewsletterIssue) error {
+func (m *PerfMockNewsletterIssueRepository) Update(ctx context.Context, issue *domain.NewsletterIssue) error {
 	args := m.Called(ctx, issue)
 	return args.Error(0)
 }
@@ -132,8 +132,8 @@ func (m *MockSegmentRepository) List(ctx context.Context, filter *domain.Segment
 // Test Data Factories
 // ============================================================================
 
-func createMockNewsletterConfig(index int) *domain.NewsletterConfig {
-	return &domain.NewsletterConfig{
+func createMockNewsletterConfig(index int) *domain.NewsletterConfiguration {
+	return &domain.NewsletterConfiguration{
 		ID:                   uuid.New(),
 		Name:                 fmt.Sprintf("Performance Test Config %d", index),
 		Description:          "Configuration for performance testing",
@@ -199,7 +199,7 @@ func BenchmarkListNewsletterConfigs(b *testing.B) {
 	mockRepo := new(MockNewsletterConfigRepository)
 	handler := NewNewsletterConfigHandler(mockRepo)
 
-	configs := make([]*domain.NewsletterConfig, 100)
+	configs := make([]*domain.NewsletterConfiguration, 100)
 	for i := 0; i < 100; i++ {
 		configs[i] = createMockNewsletterConfig(i)
 	}
@@ -303,7 +303,7 @@ func BenchmarkGetNewsletterConfigByID(b *testing.B) {
 // ============================================================================
 
 func BenchmarkListNewsletterIssues(b *testing.B) {
-	mockRepo := new(MockNewsletterIssueRepository)
+	mockRepo := new(PerfMockNewsletterIssueRepository)
 	handler := NewIssueHandler(mockRepo)
 
 	configID := uuid.New()
@@ -334,7 +334,7 @@ func BenchmarkListNewsletterIssues(b *testing.B) {
 }
 
 func BenchmarkGetNewsletterIssueByID(b *testing.B) {
-	mockRepo := new(MockNewsletterIssueRepository)
+	mockRepo := new(PerfMockNewsletterIssueRepository)
 	handler := NewIssueHandler(mockRepo)
 
 	issue := createMockNewsletterIssue(uuid.New(), 0)
@@ -415,7 +415,7 @@ func BenchmarkJSONSerializationConfig(b *testing.B) {
 }
 
 func BenchmarkJSONSerializationConfigList(b *testing.B) {
-	configs := make([]*domain.NewsletterConfig, 100)
+	configs := make([]*domain.NewsletterConfiguration, 100)
 	for i := 0; i < 100; i++ {
 		configs[i] = createMockNewsletterConfig(i)
 	}
@@ -442,7 +442,7 @@ func BenchmarkConcurrentConfigRequests(b *testing.B) {
 	mockRepo := new(MockNewsletterConfigRepository)
 	handler := NewNewsletterConfigHandler(mockRepo)
 
-	configs := make([]*domain.NewsletterConfig, 100)
+	configs := make([]*domain.NewsletterConfiguration, 100)
 	for i := 0; i < 100; i++ {
 		configs[i] = createMockNewsletterConfig(i)
 	}
@@ -651,7 +651,7 @@ func BenchmarkConcurrent10Users(b *testing.B) {
 	mockRepo := new(MockNewsletterConfigRepository)
 	handler := NewNewsletterConfigHandler(mockRepo)
 
-	configs := make([]*domain.NewsletterConfig, 100)
+	configs := make([]*domain.NewsletterConfiguration, 100)
 	for i := 0; i < 100; i++ {
 		configs[i] = createMockNewsletterConfig(i)
 	}
@@ -716,7 +716,7 @@ func BenchmarkConcurrent100AnalyticsQueries(b *testing.B) {
 }
 
 func BenchmarkConcurrent50PreviewRequests(b *testing.B) {
-	mockRepo := new(MockNewsletterIssueRepository)
+	mockRepo := new(PerfMockNewsletterIssueRepository)
 
 	issue := createMockNewsletterIssue(uuid.New(), 0)
 	mockRepo.On("GetByID", mock.Anything, issue.ID).Return(issue, nil)
@@ -747,7 +747,7 @@ func BenchmarkConcurrent50PreviewRequests(b *testing.B) {
 func TestMemoryUsageDuringGeneration(t *testing.T) {
 	// This test helps identify memory leaks during newsletter generation
 
-	mockRepo := new(MockNewsletterIssueRepository)
+	mockRepo := new(PerfMockNewsletterIssueRepository)
 
 	for i := 0; i < 100; i++ {
 		issue := createMockNewsletterIssue(uuid.New(), i)
@@ -772,7 +772,7 @@ func TestAPIResponseTime(t *testing.T) {
 	mockRepo := new(MockNewsletterConfigRepository)
 	handler := NewNewsletterConfigHandler(mockRepo)
 
-	configs := make([]*domain.NewsletterConfig, 100)
+	configs := make([]*domain.NewsletterConfiguration, 100)
 	for i := 0; i < 100; i++ {
 		configs[i] = createMockNewsletterConfig(i)
 	}
