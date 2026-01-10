@@ -70,6 +70,10 @@ func (s *Server) setupRoutesWithWebSocket(wsHandler WebSocketHandler) {
 			r.Get("/signup-mode", s.handlers.Auth.GetSignupMode)
 			r.Post("/verify-email", s.handlers.Auth.VerifyEmail)
 			r.Post("/register/invitation", s.handlers.Auth.RegisterFromInvitation)
+
+			// Password reset endpoints
+			r.Post("/forgot-password", s.handlers.Auth.ForgotPassword)
+			r.Post("/reset-password", s.handlers.Auth.ResetPassword)
 		})
 
 		// Category routes (no authentication required)

@@ -530,3 +530,93 @@ func (h *AuthHandler) getStatusMessage(status entities.UserStatus) string {
 		return ""
 	}
 }
+
+// =============================================================================
+// Password Reset Endpoints
+// =============================================================================
+
+// ForgotPasswordRequest represents the forgot password request payload
+type ForgotPasswordRequest struct {
+	Email string `json:"email"`
+}
+
+// ResetPasswordRequest represents the reset password request payload
+type ResetPasswordRequest struct {
+	Token       string `json:"token"`
+	NewPassword string `json:"new_password"`
+}
+
+// ForgotPassword initiates a password reset flow
+// POST /v1/auth/forgot-password
+func (h *AuthHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
+	if h.enhancedAuthService == nil {
+		response.ServiceUnavailable(w, "Password reset service not configured")
+		return
+	}
+
+	var req ForgotPasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		requestID := middleware.GetRequestID(r.Context())
+		response.BadRequestWithDetails(w, "Invalid request body", nil, requestID)
+		return
+	}
+
+	if req.Email == "" {
+		response.BadRequest(w, "email is required")
+		return
+	}
+
+	// Request password reset - the service handles user lookup and token creation
+	// It returns nil (not an error) if user not found to prevent enumeration
+	resetToken, err := h.enhancedAuthService.RequestPasswordReset(r.Context(), req.Email)
+	if err != nil {
+		h.handleAuthError(w, r, err)
+		return
+	}
+
+	// Always return success to prevent email enumeration attacks
+	// If resetToken is non-nil, it means we generated a token for a valid user
+	// In a real implementation, you would send an email with the token here
+	if resetToken != nil {
+		// Log for debugging - in production, send email instead
+		log.Info().
+			Str("email", req.Email).
+			Str("token", resetToken.Token).
+			Time("expires_at", resetToken.ExpiresAt).
+			Msg("Password reset token generated")
+
+		// TODO: Send email with reset link
+		// For now, return the token in the response (DEV ONLY - remove in production)
+		response.SuccessWithMessage(w, map[string]interface{}{
+			"token":      resetToken.Token,
+			"expires_at": resetToken.ExpiresAt.Format("2006-01-02T15:04:05Z07:00"),
+		}, "If an account exists with this email, you will receive a password reset link")
+	} else {
+		// User not found or not active, but don't reveal that
+		response.SuccessWithMessage(w, nil, "If an account exists with this email, you will receive a password reset link")
+	}
+}
+
+// ResetPassword completes a password reset using a valid token
+// POST /v1/auth/reset-password
+func (h *AuthHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
+	if h.enhancedAuthService == nil {
+		response.ServiceUnavailable(w, "Password reset service not configured")
+		return
+	}
+
+	var req ResetPasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		requestID := middleware.GetRequestID(r.Context())
+		response.BadRequestWithDetails(w, "Invalid request body", nil, requestID)
+		return
+	}
+
+	err := h.enhancedAuthService.ResetPassword(r.Context(), req.Token, req.NewPassword)
+	if err != nil {
+		h.handleAuthError(w, r, err)
+		return
+	}
+
+	response.SuccessWithMessage(w, nil, "Password has been reset successfully. You can now log in with your new password.")
+}

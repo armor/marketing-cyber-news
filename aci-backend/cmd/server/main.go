@@ -143,6 +143,9 @@ func main() {
 	issueApprovalRepo := postgres.NewIssueApprovalRepository(db)
 	claimsLibraryRepo := postgres.NewClaimsLibraryRepository(db)
 
+	// Enhanced auth repositories (pgx-based)
+	passwordResetTokenRepo := postgres.NewPasswordResetTokenRepository(db)
+
 	// Marketing Autopilot repositories (pgx-based)
 	campaignRepo := postgres.NewCampaignRepository(db)
 	channelConnectionRepo := postgres.NewChannelConnectionRepository(db)
@@ -173,6 +176,21 @@ func main() {
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, tokenRepo, jwtService)
+
+	// Enhanced auth service with password reset support
+	enhancedAuthService := service.NewEnhancedAuthService(
+		userRepo,
+		tokenRepo,
+		jwtService,
+		nil, // invitationRepo - not implemented yet
+		nil, // verificationRepo - not implemented yet
+		nil, // approvalRepo - not implemented yet
+		nil, // loginAttemptRepo - not implemented yet
+		nil, // settingsRepo - not implemented yet
+		passwordResetTokenRepo,
+		cfg.Auth,
+	)
+
 	articleService := service.NewArticleService(articleRepo, categoryRepo, sourceRepo, webhookLogRepo)
 	alertService := service.NewAlertService(alertRepo, alertMatchRepo, articleRepo)
 	searchService := service.NewSearchService(articleRepo)
@@ -301,7 +319,7 @@ func main() {
 	}
 
 	// Initialize HTTP handlers
-	authHandler := handlers.NewAuthHandler(authService)
+	authHandler := handlers.NewEnhancedAuthHandler(authService, enhancedAuthService)
 	articleHandler := handlers.NewArticleHandler(articleRepo, searchService, engagementService)
 	alertHandler := handlers.NewAlertHandler(alertService)
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo, articleRepo)

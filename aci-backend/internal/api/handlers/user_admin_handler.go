@@ -67,8 +67,8 @@ type SetSignupModeRequest struct {
 	Mode string `json:"mode"`
 }
 
-// ResetPasswordRequest represents the admin password reset request payload
-type ResetPasswordRequest struct {
+// AdminResetPasswordRequest represents the admin password reset request payload
+type AdminResetPasswordRequest struct {
 	NewPassword string `json:"new_password"`
 }
 
@@ -604,7 +604,7 @@ func (h *UserAdminHandler) ResetUserPassword(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var req ResetPasswordRequest
+	var req AdminResetPasswordRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		requestID := middleware.GetRequestID(r.Context())
 		response.BadRequestWithDetails(w, "Invalid request body", nil, requestID)

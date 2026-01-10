@@ -26,6 +26,12 @@ const LoginPage = lazy(() =>
 const RegisterPage = lazy(() =>
   import('@/pages/Register').then((module) => ({ default: module.Register }))
 );
+const ForgotPasswordPage = lazy(() =>
+  import('@/pages/ForgotPassword').then((module) => ({ default: module.ForgotPassword }))
+);
+const ResetPasswordPage = lazy(() =>
+  import('@/pages/ResetPassword').then((module) => ({ default: module.ResetPassword }))
+);
 
 // Protected pages
 const DashboardPage = lazy(() =>
@@ -200,6 +206,22 @@ function App(): React.ReactElement {
                 element={
                   <PublicRoute>
                     <RegisterPage />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/forgot-password"
+                element={
+                  <PublicRoute>
+                    <ForgotPasswordPage />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/reset-password"
+                element={
+                  <PublicRoute>
+                    <ResetPasswordPage />
                   </PublicRoute>
                 }
               />

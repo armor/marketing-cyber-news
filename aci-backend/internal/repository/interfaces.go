@@ -423,6 +423,16 @@ type LoginAttemptRepository interface {
 	DeleteOld(ctx context.Context, before time.Time) (int, error)
 }
 
+// PasswordResetTokenRepository defines operations for password reset token persistence
+type PasswordResetTokenRepository interface {
+	Create(ctx context.Context, token *domain.PasswordResetToken) error
+	GetByToken(ctx context.Context, tokenHash string) (*domain.PasswordResetToken, error)
+	GetByUserID(ctx context.Context, userID uuid.UUID) (*domain.PasswordResetToken, error)
+	MarkUsed(ctx context.Context, id uuid.UUID) error
+	DeleteForUser(ctx context.Context, userID uuid.UUID) error
+	DeleteExpired(ctx context.Context) (int, error)
+}
+
 // SystemSettingsRepository defines operations for system settings persistence
 type SystemSettingsRepository interface {
 	Get(ctx context.Context, key string) (*domain.SystemSetting, error)

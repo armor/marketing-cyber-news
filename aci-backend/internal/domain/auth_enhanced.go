@@ -482,6 +482,93 @@ func HashToken(token string) string {
 	return hashToken(token)
 }
 
+// PasswordResetToken represents a token for password reset
+type PasswordResetToken struct {
+	ID        uuid.UUID  `json:"id"`
+	UserID    uuid.UUID  `json:"user_id"`
+	TokenHash string     `json:"-"`
+	Token     string     `json:"token,omitempty"` // Only set when creating
+	ExpiresAt time.Time  `json:"expires_at"`
+	UsedAt    *time.Time `json:"used_at,omitempty"`
+	CreatedAt time.Time  `json:"created_at"`
+}
+
+// NewPasswordResetToken creates a new password reset token
+func NewPasswordResetToken(userID uuid.UUID, expiresIn time.Duration) (*PasswordResetToken, error) {
+	token, err := generateSecureToken(32)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate token: %w", err)
+	}
+
+	now := time.Now()
+	return &PasswordResetToken{
+		ID:        uuid.New(),
+		UserID:    userID,
+		Token:     token,
+		TokenHash: hashToken(token),
+		ExpiresAt: now.Add(expiresIn),
+		CreatedAt: now,
+	}, nil
+}
+
+// Validate validates the password reset token
+func (t *PasswordResetToken) Validate() error {
+	if t.ID == uuid.Nil {
+		return fmt.Errorf("token ID is required")
+	}
+	if t.UserID == uuid.Nil {
+		return fmt.Errorf("user_id is required")
+	}
+	if t.TokenHash == "" {
+		return fmt.Errorf("token_hash is required")
+	}
+	if t.ExpiresAt.IsZero() {
+		return fmt.Errorf("expires_at is required")
+	}
+	return nil
+}
+
+// IsExpired checks if the token has expired
+func (t *PasswordResetToken) IsExpired() bool {
+	return time.Now().After(t.ExpiresAt)
+}
+
+// IsUsed checks if the token has been used
+func (t *PasswordResetToken) IsUsed() bool {
+	return t.UsedAt != nil
+}
+
+// IsValid checks if the token is still valid
+func (t *PasswordResetToken) IsValid() bool {
+	return !t.IsExpired() && !t.IsUsed()
+}
+
+// MarkUsed marks the token as used
+func (t *PasswordResetToken) MarkUsed() {
+	now := time.Now()
+	t.UsedAt = &now
+}
+
+// ResetPasswordInput represents input for resetting password with token
+type ResetPasswordInput struct {
+	Token       string `json:"token"`
+	NewPassword string `json:"new_password"`
+}
+
+// Validate validates the reset password input
+func (i *ResetPasswordInput) Validate() error {
+	if i.Token == "" {
+		return fmt.Errorf("token is required")
+	}
+	if i.NewPassword == "" {
+		return fmt.Errorf("new_password is required")
+	}
+	if err := ValidatePassword(i.NewPassword); err != nil {
+		return err
+	}
+	return nil
+}
+
 // CanAssignRole checks if a user with sourceRole can assign targetRole
 // Super admin can assign any role
 // Admin can assign any role except super_admin

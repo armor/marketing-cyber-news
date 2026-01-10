@@ -21,12 +21,13 @@ import (
 // EnhancedAuthService extends AuthService with multi-mode registration support
 type EnhancedAuthService struct {
 	*AuthService
-	invitationRepo   repository.InvitationRepository
-	verificationRepo repository.VerificationTokenRepository
-	approvalRepo     repository.ApprovalRequestRepository
-	loginAttemptRepo repository.LoginAttemptRepository
-	settingsRepo     repository.SystemSettingsRepository
-	authConfig       config.AuthConfig
+	invitationRepo     repository.InvitationRepository
+	verificationRepo   repository.VerificationTokenRepository
+	approvalRepo       repository.ApprovalRequestRepository
+	loginAttemptRepo   repository.LoginAttemptRepository
+	settingsRepo       repository.SystemSettingsRepository
+	passwordResetRepo  repository.PasswordResetTokenRepository
+	authConfig         config.AuthConfig
 }
 
 // NewEnhancedAuthService creates a new enhanced authentication service
@@ -39,18 +40,20 @@ func NewEnhancedAuthService(
 	approvalRepo repository.ApprovalRequestRepository,
 	loginAttemptRepo repository.LoginAttemptRepository,
 	settingsRepo repository.SystemSettingsRepository,
+	passwordResetRepo repository.PasswordResetTokenRepository,
 	authConfig config.AuthConfig,
 ) *EnhancedAuthService {
 	baseAuthService := NewAuthService(userRepo, tokenRepo, jwtSvc)
 
 	return &EnhancedAuthService{
-		AuthService:      baseAuthService,
-		invitationRepo:   invitationRepo,
-		verificationRepo: verificationRepo,
-		approvalRepo:     approvalRepo,
-		loginAttemptRepo: loginAttemptRepo,
-		settingsRepo:     settingsRepo,
-		authConfig:       authConfig,
+		AuthService:       baseAuthService,
+		invitationRepo:    invitationRepo,
+		verificationRepo:  verificationRepo,
+		approvalRepo:      approvalRepo,
+		loginAttemptRepo:  loginAttemptRepo,
+		settingsRepo:      settingsRepo,
+		passwordResetRepo: passwordResetRepo,
+		authConfig:        authConfig,
 	}
 }
 
@@ -513,4 +516,134 @@ func (s *EnhancedAuthService) recordLoginAttempt(ctx context.Context, email, ipA
 
 	attempt := domain.NewLoginAttempt(email, ipAddress, userAgent, success)
 	_ = s.loginAttemptRepo.Create(ctx, attempt)
+}
+
+// =============================================================================
+// Password Reset Methods
+// =============================================================================
+
+// RequestPasswordReset creates a password reset token for the user
+// Returns the token (to be sent via email) or nil if user not found (to prevent enumeration)
+func (s *EnhancedAuthService) RequestPasswordReset(ctx context.Context, email string) (*domain.PasswordResetToken, error) {
+	if s.passwordResetRepo == nil {
+		return nil, fmt.Errorf("password reset service not configured")
+	}
+
+	email = strings.ToLower(strings.TrimSpace(email))
+	if email == "" {
+		return nil, &domainerrors.ValidationError{
+			Field:   "email",
+			Message: "email is required",
+		}
+	}
+
+	// Validate email domain
+	if err := domain.ValidateEmailDomain(email); err != nil {
+		// Don't reveal if email is invalid to prevent enumeration
+		return nil, nil
+	}
+
+	// Get user by email
+	user, err := s.userRepo.GetByEmail(ctx, email)
+	if err != nil {
+		var notFoundErr *domainerrors.NotFoundError
+		if errors.As(err, &notFoundErr) {
+			// Don't reveal if user doesn't exist
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	// Check if user is active
+	if user.Status != entities.UserStatusActive {
+		// Don't reveal if user is not active
+		return nil, nil
+	}
+
+	// Create password reset token (1 hour expiry)
+	resetToken, err := domain.NewPasswordResetToken(user.ID, time.Hour)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create reset token: %w", err)
+	}
+
+	// Store token (this also deletes any existing tokens for the user)
+	if err := s.passwordResetRepo.Create(ctx, resetToken); err != nil {
+		return nil, fmt.Errorf("failed to store reset token: %w", err)
+	}
+
+	return resetToken, nil
+}
+
+// ResetPassword resets the user's password using a valid reset token
+func (s *EnhancedAuthService) ResetPassword(ctx context.Context, token, newPassword string) error {
+	if s.passwordResetRepo == nil {
+		return fmt.Errorf("password reset service not configured")
+	}
+
+	// Validate input
+	input := domain.ResetPasswordInput{
+		Token:       token,
+		NewPassword: newPassword,
+	}
+	if err := input.Validate(); err != nil {
+		return &domainerrors.ValidationError{
+			Field:   "input",
+			Message: err.Error(),
+		}
+	}
+
+	// Hash token and look it up
+	tokenHash := domain.HashToken(token)
+	resetToken, err := s.passwordResetRepo.GetByToken(ctx, tokenHash)
+	if err != nil {
+		var notFoundErr *domainerrors.NotFoundError
+		if errors.As(err, &notFoundErr) {
+			return &domainerrors.ValidationError{
+				Field:   "token",
+				Message: "invalid or expired reset token",
+			}
+		}
+		return fmt.Errorf("failed to get reset token: %w", err)
+	}
+
+	// Token validity is checked in the query, but double-check
+	if !resetToken.IsValid() {
+		return &domainerrors.ValidationError{
+			Field:   "token",
+			Message: "invalid or expired reset token",
+		}
+	}
+
+	// Get user
+	user, err := s.userRepo.GetByID(ctx, resetToken.UserID)
+	if err != nil {
+		return fmt.Errorf("failed to get user: %w", err)
+	}
+
+	// Hash new password
+	newPasswordHash, err := crypto.HashPassword(newPassword)
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	// Update password
+	if err := s.userRepo.UpdatePassword(ctx, user.ID, newPasswordHash); err != nil {
+		return fmt.Errorf("failed to update password: %w", err)
+	}
+
+	// Mark token as used
+	if err := s.passwordResetRepo.MarkUsed(ctx, resetToken.ID); err != nil {
+		// Log error but don't fail - password was already updated
+		_ = err
+	}
+
+	// Clear any account lockout
+	if user.FailedLoginCount > 0 || user.LockedUntil != nil {
+		if err := s.userRepo.UpdateLockout(ctx, user.ID, nil, 0); err != nil {
+			// Log error but don't fail
+			_ = err
+		}
+	}
+
+	return nil
 }
