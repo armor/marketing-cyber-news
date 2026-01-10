@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -15,13 +16,40 @@ import (
 	"github.com/phillipboles/aci-backend/internal/service"
 )
 
+// ContentServiceInterface defines the interface for content service operations
+// This allows for easy mocking in tests
+type ContentServiceInterface interface {
+	// Content Sources
+	CreateContentSource(ctx context.Context, source *domain.ContentSource) error
+	GetContentSourceByID(ctx context.Context, id uuid.UUID) (*domain.ContentSource, error)
+	ListContentSources(ctx context.Context, filter *domain.ContentSourceFilter) ([]*domain.ContentSource, int, error)
+	UpdateContentSource(ctx context.Context, source *domain.ContentSource) error
+	DeleteContentSource(ctx context.Context, id uuid.UUID) error
+	GetActiveSources(ctx context.Context) ([]*domain.ContentSource, error)
+	TestFeed(ctx context.Context, feedURL string) (*service.FeedTestResult, error)
+	GetPollingStatus(ctx context.Context, sourceID uuid.UUID) (*service.PollingStatus, error)
+	UpdateSourcePollingStatus(ctx context.Context, id uuid.UUID, success bool, errorMsg *string) error
+
+	// Content Items
+	BulkCreateContentItems(ctx context.Context, items []*domain.ContentItem) error
+	CreateContentItem(ctx context.Context, item *domain.ContentItem) error
+	GetContentItemByID(ctx context.Context, id uuid.UUID) (*domain.ContentItem, error)
+	ListContentItems(ctx context.Context, filter *domain.ContentItemFilter) ([]*domain.ContentItem, int, error)
+	UpdateContentItem(ctx context.Context, item *domain.ContentItem) error
+	DeleteContentItem(ctx context.Context, id uuid.UUID) error
+	GetFreshContent(ctx context.Context, daysThreshold int, topicTags []string, limit int) ([]*domain.ContentItem, error)
+
+	// Content Selection
+	GetContentForSegment(ctx context.Context, criteria *service.ContentSelectionCriteria) (*service.ContentSelectionResult, error)
+}
+
 // ContentHandler handles content-related HTTP requests
 type ContentHandler struct {
-	contentService *service.ContentService
+	contentService ContentServiceInterface
 }
 
 // NewContentHandler creates a new content handler
-func NewContentHandler(contentService *service.ContentService) *ContentHandler {
+func NewContentHandler(contentService ContentServiceInterface) *ContentHandler {
 	if contentService == nil {
 		panic("contentService cannot be nil")
 	}

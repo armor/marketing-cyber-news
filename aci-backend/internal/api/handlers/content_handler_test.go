@@ -132,6 +132,14 @@ func (m *MockContentService) GetFreshContent(ctx context.Context, daysThreshold 
 	return args.Get(0).([]*domain.ContentItem), args.Error(1)
 }
 
+func (m *MockContentService) GetContentForSegment(ctx context.Context, criteria *service.ContentSelectionCriteria) (*service.ContentSelectionResult, error) {
+	args := m.Called(ctx, criteria)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*service.ContentSelectionResult), args.Error(1)
+}
+
 // ============================================================================
 // Test Helpers
 // ============================================================================
@@ -179,13 +187,9 @@ func createTestContentItem() *domain.ContentItem {
 
 func contextWithUser(userID uuid.UUID) context.Context {
 	ctx := context.Background()
-	return context.WithValue(ctx, userIDContextKey, userID)
+	// Use plain string key to match getUserIDFromContext in helpers.go
+	return context.WithValue(ctx, "user_id", userID)
 }
-
-// getUserIDFromContext is defined in helpers.go, we just use the same context key
-type contextKey string
-
-const userIDContextKey contextKey = "user_id"
 
 // ============================================================================
 // CreateContentSource Handler Tests
