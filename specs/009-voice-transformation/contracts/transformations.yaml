@@ -1,0 +1,598 @@
+openapi: 3.1.0
+info:
+  title: Text Transformations API
+  description: API for transforming text using voice agents
+  version: 1.0.0
+
+servers:
+  - url: /v1
+    description: API v1
+
+paths:
+  /voice-agents/{agentId}/transform:
+    post:
+      operationId: transformText
+      summary: Transform text using a voice agent
+      description: |
+        Generates 3 transformation options at different temperature levels:
+        - Conservative (0.3): Minimal changes, preserves original style
+        - Moderate (0.5): Balanced transformation
+        - Bold (0.7): More creative rewrite
+
+        Rate limited to 30 requests per hour per user.
+      tags:
+        - Transformations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          description: Voice agent UUID to use for transformation
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransformRequest'
+            example:
+              text: "Our cybersecurity solution provides industry-leading protection against threats."
+              field_path: claim_text
+              entity_type: claim
+              entity_id: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Transformation options generated
+          headers:
+            X-RateLimit-Limit:
+              description: Maximum requests per hour
+              schema:
+                type: integer
+                example: 30
+            X-RateLimit-Remaining:
+              description: Remaining requests in current window
+              schema:
+                type: integer
+                example: 25
+            X-RateLimit-Reset:
+              description: Unix timestamp when rate limit resets
+              schema:
+                type: integer
+                example: 1704931200
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TransformResponse'
+              example:
+                data:
+                  request_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                  agent_id: "550e8400-e29b-41d4-a716-446655440000"
+                  agent_name: "Brand Voice"
+                  options:
+                    - index: 0
+                      label: conservative
+                      text: "Your team gains robust protection against evolving cyber threats with our security solution."
+                      temperature: 0.3
+                      tokens_used: 45
+                    - index: 1
+                      label: moderate
+                      text: "Stop threats before they start. Your security team gains real-time protection that evolves with the threat landscape."
+                      temperature: 0.5
+                      tokens_used: 52
+                    - index: 2
+                      label: bold
+                      text: "Your people deserve better than reactive security. Empower your team with protection that anticipates threats and keeps your business moving forward."
+                      temperature: 0.7
+                      tokens_used: 61
+                  latency_ms: 2340
+        '400':
+          description: Bad request (validation error or prompt injection detected)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    $ref: '#/components/schemas/Error'
+              examples:
+                textTooShort:
+                  summary: Text too short
+                  value:
+                    error:
+                      code: VALIDATION_ERROR
+                      message: Text must be at least 10 characters
+                textTooLong:
+                  summary: Text too long
+                  value:
+                    error:
+                      code: VALIDATION_ERROR
+                      message: Text must not exceed 10000 characters
+                injectionDetected:
+                  summary: Prompt injection detected
+                  value:
+                    error:
+                      code: INVALID_INPUT
+                      message: Input contains invalid content
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Voice agent not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: Voice agent not found
+        '429':
+          description: Rate limit exceeded
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+            Retry-After:
+              description: Seconds until rate limit resets
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: "Rate limit exceeded. Maximum 30 transformations per hour."
+        '503':
+          description: Transformation service unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: SERVICE_UNAVAILABLE
+                  message: "Transformation service temporarily unavailable. Please try again."
+
+  /transformations/select:
+    post:
+      operationId: selectTransformation
+      summary: Select and record a transformation choice
+      description: |
+        Records the user's selection of a transformation option. This creates an
+        audit trail linking the original request to the selected transformation.
+      tags:
+        - Transformations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectTransformRequest'
+            example:
+              request_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+              transformation_index: 1
+              field_path: claim_text
+              entity_type: claim
+              entity_id: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '201':
+          description: Transformation selection recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TransformationRecord'
+              example:
+                data:
+                  id: "8b9e6679-7425-40de-944b-e07fc1f90ae8"
+                  request_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                  agent_id: "550e8400-e29b-41d4-a716-446655440000"
+                  original_text: "Our cybersecurity solution provides industry-leading protection against threats."
+                  transformed_text: "Stop threats before they start. Your security team gains real-time protection that evolves with the threat landscape."
+                  transformation_index: 1
+                  field_path: claim_text
+                  entity_type: claim
+                  entity_id: "550e8400-e29b-41d4-a716-446655440000"
+                  selected_at: "2026-01-10T14:30:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Request ID not found (expired or invalid)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: "Transformation request not found or expired"
+
+  /transformations:
+    get:
+      operationId: listTransformations
+      summary: List transformation history
+      description: Returns transformation history for audit purposes (admin only)
+      tags:
+        - Transformations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          description: Filter by user (admin only)
+          schema:
+            type: string
+            format: uuid
+        - name: agent_id
+          in: query
+          description: Filter by voice agent
+          schema:
+            type: string
+            format: uuid
+        - name: entity_type
+          in: query
+          description: Filter by entity type
+          schema:
+            type: string
+        - name: entity_id
+          in: query
+          description: Filter by entity ID
+          schema:
+            type: string
+            format: uuid
+        - name: from_date
+          in: query
+          description: Filter transformations from this date
+          schema:
+            type: string
+            format: date-time
+        - name: to_date
+          in: query
+          description: Filter transformations to this date
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          description: Maximum number of records to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Number of records to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: List of transformation records
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TransformationRecord'
+                  meta:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      limit:
+                        type: integer
+                      offset:
+                        type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /transformations/{transformationId}:
+    get:
+      operationId: getTransformation
+      summary: Get a transformation record
+      tags:
+        - Transformations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: transformationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Transformation record
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TransformationRecordWithDetails'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    TransformRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          minLength: 10
+          maxLength: 10000
+          description: Text to transform
+        num_options:
+          type: integer
+          minimum: 1
+          maximum: 5
+          default: 3
+          description: Number of transformation options to generate
+        field_path:
+          type: string
+          maxLength: 255
+          description: UI field identifier for analytics
+        entity_type:
+          type: string
+          maxLength: 50
+          description: Related entity type (e.g., claim, newsletter)
+        entity_id:
+          type: string
+          format: uuid
+          description: Related entity ID
+
+    TransformResponse:
+      type: object
+      required:
+        - request_id
+        - agent_id
+        - agent_name
+        - options
+        - latency_ms
+      properties:
+        request_id:
+          type: string
+          format: uuid
+          description: Unique request ID for selecting a transformation
+        agent_id:
+          type: string
+          format: uuid
+        agent_name:
+          type: string
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransformOption'
+          minItems: 1
+          maxItems: 5
+        latency_ms:
+          type: integer
+          description: Total processing time in milliseconds
+
+    TransformOption:
+      type: object
+      required:
+        - index
+        - label
+        - text
+        - temperature
+        - tokens_used
+      properties:
+        index:
+          type: integer
+          minimum: 0
+          maximum: 4
+          description: Option index (0=conservative, 1=moderate, 2=bold)
+        label:
+          type: string
+          enum: [conservative, moderate, bold]
+          description: Human-readable label
+        text:
+          type: string
+          description: Transformed text
+        temperature:
+          type: number
+          description: LLM temperature used for this option
+        tokens_used:
+          type: integer
+          description: Tokens consumed for this option
+
+    SelectTransformRequest:
+      type: object
+      required:
+        - request_id
+        - transformation_index
+      properties:
+        request_id:
+          type: string
+          format: uuid
+          description: Request ID from transform response
+        transformation_index:
+          type: integer
+          minimum: 0
+          maximum: 4
+          description: Index of selected option
+        field_path:
+          type: string
+          maxLength: 255
+        entity_type:
+          type: string
+          maxLength: 50
+        entity_id:
+          type: string
+          format: uuid
+
+    TransformationRecord:
+      type: object
+      required:
+        - id
+        - request_id
+        - original_text
+        - transformed_text
+        - transformation_index
+        - selected_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        request_id:
+          type: string
+          format: uuid
+        agent_id:
+          type: string
+          format: uuid
+          nullable: true
+        original_text:
+          type: string
+        transformed_text:
+          type: string
+        transformation_index:
+          type: integer
+        total_options:
+          type: integer
+        field_path:
+          type: string
+        entity_type:
+          type: string
+        entity_id:
+          type: string
+          format: uuid
+        tokens_used:
+          type: integer
+        latency_ms:
+          type: integer
+        transformed_by:
+          type: string
+          format: uuid
+        selected_at:
+          type: string
+          format: date-time
+
+    TransformationRecordWithDetails:
+      allOf:
+        - $ref: '#/components/schemas/TransformationRecord'
+        - type: object
+          properties:
+            agent_config_snapshot:
+              type: object
+              description: Frozen agent configuration at transform time
+            user:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                email:
+                  type: string
+                name:
+                  type: string
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: UNAUTHORIZED
+              message: Authentication required
+
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: FORBIDDEN
+              message: Admin access required
+
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/components/schemas/Error'

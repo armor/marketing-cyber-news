@@ -1,0 +1,744 @@
+openapi: 3.1.0
+info:
+  title: Voice Agents API
+  description: API for managing voice transformation agents
+  version: 1.0.0
+
+servers:
+  - url: /v1
+    description: API v1
+
+paths:
+  /voice-agents:
+    get:
+      operationId: listVoiceAgents
+      summary: List all voice agents
+      description: Returns active voice agents available for transformation
+      tags:
+        - Voice Agents
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          description: Filter by status (admin only can see draft/inactive)
+          schema:
+            type: string
+            enum: [active, inactive, draft]
+        - name: include_rules
+          in: query
+          description: Include style rules in response
+          schema:
+            type: boolean
+            default: false
+        - name: include_examples
+          in: query
+          description: Include transformation examples in response
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: List of voice agents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VoiceAgent'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      operationId: createVoiceAgent
+      summary: Create a new voice agent
+      description: Create a new voice agent (admin only)
+      tags:
+        - Voice Agents
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVoiceAgentRequest'
+      responses:
+        '201':
+          description: Voice agent created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/VoiceAgent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /voice-agents/{agentId}:
+    get:
+      operationId: getVoiceAgent
+      summary: Get a voice agent by ID
+      tags:
+        - Voice Agents
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+        - name: include_rules
+          in: query
+          schema:
+            type: boolean
+            default: true
+        - name: include_examples
+          in: query
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Voice agent details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/VoiceAgentWithDetails'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      operationId: updateVoiceAgent
+      summary: Update a voice agent
+      description: Update voice agent configuration (admin only)
+      tags:
+        - Voice Agents
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVoiceAgentRequest'
+      responses:
+        '200':
+          description: Voice agent updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/VoiceAgent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      operationId: deleteVoiceAgent
+      summary: Delete a voice agent
+      description: Soft delete a voice agent (admin only)
+      tags:
+        - Voice Agents
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '204':
+          description: Voice agent deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /voice-agents/{agentId}/rules:
+    get:
+      operationId: listStyleRules
+      summary: List style rules for an agent
+      tags:
+        - Style Rules
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+        - name: rule_type
+          in: query
+          schema:
+            type: string
+            enum: [do, dont]
+      responses:
+        '200':
+          description: List of style rules
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StyleRule'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      operationId: createStyleRule
+      summary: Add a style rule to an agent
+      tags:
+        - Style Rules
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStyleRuleRequest'
+      responses:
+        '201':
+          description: Style rule created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/StyleRule'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /voice-agents/{agentId}/rules/{ruleId}:
+    put:
+      operationId: updateStyleRule
+      summary: Update a style rule
+      tags:
+        - Style Rules
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+        - $ref: '#/components/parameters/RuleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStyleRuleRequest'
+      responses:
+        '200':
+          description: Style rule updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/StyleRule'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      operationId: deleteStyleRule
+      summary: Delete a style rule
+      tags:
+        - Style Rules
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+        - $ref: '#/components/parameters/RuleId'
+      responses:
+        '204':
+          description: Style rule deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /voice-agents/{agentId}/examples:
+    get:
+      operationId: listExamples
+      summary: List transformation examples for an agent
+      tags:
+        - Examples
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '200':
+          description: List of examples
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TransformationExample'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      operationId: createExample
+      summary: Add a transformation example
+      tags:
+        - Examples
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExampleRequest'
+      responses:
+        '201':
+          description: Example created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TransformationExample'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /voice-agents/{agentId}/examples/{exampleId}:
+    put:
+      operationId: updateExample
+      summary: Update a transformation example
+      tags:
+        - Examples
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+        - $ref: '#/components/parameters/ExampleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateExampleRequest'
+      responses:
+        '200':
+          description: Example updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TransformationExample'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      operationId: deleteExample
+      summary: Delete a transformation example
+      tags:
+        - Examples
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+        - $ref: '#/components/parameters/ExampleId'
+      responses:
+        '204':
+          description: Example deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    AgentId:
+      name: agentId
+      in: path
+      required: true
+      description: Voice agent UUID
+      schema:
+        type: string
+        format: uuid
+
+    RuleId:
+      name: ruleId
+      in: path
+      required: true
+      description: Style rule UUID
+      schema:
+        type: string
+        format: uuid
+
+    ExampleId:
+      name: exampleId
+      in: path
+      required: true
+      description: Example UUID
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    VoiceAgent:
+      type: object
+      required:
+        - id
+        - name
+        - system_prompt
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        icon:
+          type: string
+          default: wand
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          default: '#6366F1'
+        system_prompt:
+          type: string
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0.7
+        max_tokens:
+          type: integer
+          minimum: 100
+          maximum: 4000
+          default: 2000
+        status:
+          type: string
+          enum: [active, inactive, draft]
+        sort_order:
+          type: integer
+        version:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    VoiceAgentWithDetails:
+      allOf:
+        - $ref: '#/components/schemas/VoiceAgent'
+        - type: object
+          properties:
+            style_rules:
+              type: array
+              items:
+                $ref: '#/components/schemas/StyleRule'
+            examples:
+              type: array
+              items:
+                $ref: '#/components/schemas/TransformationExample'
+
+    StyleRule:
+      type: object
+      required:
+        - id
+        - agent_id
+        - rule_type
+        - rule_text
+      properties:
+        id:
+          type: string
+          format: uuid
+        agent_id:
+          type: string
+          format: uuid
+        rule_type:
+          type: string
+          enum: [do, dont]
+        rule_text:
+          type: string
+        sort_order:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    TransformationExample:
+      type: object
+      required:
+        - id
+        - agent_id
+        - before_text
+        - after_text
+      properties:
+        id:
+          type: string
+          format: uuid
+        agent_id:
+          type: string
+          format: uuid
+        before_text:
+          type: string
+        after_text:
+          type: string
+        context:
+          type: string
+        sort_order:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    CreateVoiceAgentRequest:
+      type: object
+      required:
+        - name
+        - system_prompt
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        icon:
+          type: string
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+        system_prompt:
+          type: string
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 1
+        max_tokens:
+          type: integer
+          minimum: 100
+          maximum: 4000
+        status:
+          type: string
+          enum: [active, inactive, draft]
+        sort_order:
+          type: integer
+
+    UpdateVoiceAgentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        icon:
+          type: string
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+        system_prompt:
+          type: string
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 1
+        max_tokens:
+          type: integer
+          minimum: 100
+          maximum: 4000
+        status:
+          type: string
+          enum: [active, inactive, draft]
+        sort_order:
+          type: integer
+
+    CreateStyleRuleRequest:
+      type: object
+      required:
+        - rule_type
+        - rule_text
+      properties:
+        rule_type:
+          type: string
+          enum: [do, dont]
+        rule_text:
+          type: string
+        sort_order:
+          type: integer
+
+    UpdateStyleRuleRequest:
+      type: object
+      properties:
+        rule_type:
+          type: string
+          enum: [do, dont]
+        rule_text:
+          type: string
+        sort_order:
+          type: integer
+
+    CreateExampleRequest:
+      type: object
+      required:
+        - before_text
+        - after_text
+      properties:
+        before_text:
+          type: string
+        after_text:
+          type: string
+        context:
+          type: string
+        sort_order:
+          type: integer
+
+    UpdateExampleRequest:
+      type: object
+      properties:
+        before_text:
+          type: string
+        after_text:
+          type: string
+        context:
+          type: string
+        sort_order:
+          type: integer
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: VALIDATION_ERROR
+              message: Invalid input parameters
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: UNAUTHORIZED
+              message: Authentication required
+
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: FORBIDDEN
+              message: Admin access required
+
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: NOT_FOUND
+              message: Voice agent not found

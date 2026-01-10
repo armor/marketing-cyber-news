@@ -1,0 +1,688 @@
+openapi: 3.0.3
+info:
+  title: Content Pipeline API
+  description: |
+    API endpoints for the Content Pipeline feature.
+    Enables adding content to newsletters and importing content via URL.
+  version: 1.0.0
+  contact:
+    name: Engineering
+    email: engineering@armor.io
+
+servers:
+  - url: http://localhost:8080/v1
+    description: Local development
+  - url: http://129.153.33.152:8080/v1
+    description: Production
+
+tags:
+  - name: Newsletter Blocks
+    description: Operations for managing newsletter blocks
+  - name: Content Import
+    description: Operations for importing and creating content
+
+paths:
+  /newsletters/{issueId}/blocks/bulk:
+    post:
+      tags:
+        - Newsletter Blocks
+      summary: Bulk add content items as newsletter blocks
+      description: |
+        Add multiple content items as newsletter blocks in a single atomic operation.
+        Requires `marketing` or `admin` role.
+        Maximum 20 items per request.
+      operationId: bulkAddBlocks
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: issueId
+          in: path
+          required: true
+          description: UUID of the newsletter issue
+          schema:
+            type: string
+            format: uuid
+            example: "770e8400-e29b-41d4-a716-446655440001"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkAddBlocksRequest'
+            examples:
+              single_item:
+                summary: Add single content item
+                value:
+                  content_item_ids:
+                    - "550e8400-e29b-41d4-a716-446655440001"
+                  block_type: "news"
+              multiple_items:
+                summary: Add multiple content items
+                value:
+                  content_item_ids:
+                    - "550e8400-e29b-41d4-a716-446655440001"
+                    - "550e8400-e29b-41d4-a716-446655440002"
+                    - "550e8400-e29b-41d4-a716-446655440003"
+                  block_type: "content"
+      responses:
+        '201':
+          description: Blocks created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/BulkAddBlocksResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_json:
+                  value:
+                    error:
+                      code: "INVALID_REQUEST"
+                      message: "Invalid JSON in request body"
+                issue_not_draft:
+                  value:
+                    error:
+                      code: "ISSUE_NOT_DRAFT"
+                      message: "Newsletter issue is not in draft status"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "UNAUTHORIZED"
+                  message: "Missing or invalid authentication token"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "FORBIDDEN"
+                  message: "User lacks permission to add blocks to this newsletter"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "ISSUE_NOT_FOUND"
+                  message: "Newsletter issue not found"
+        '409':
+          description: All items are duplicates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "ALL_DUPLICATES"
+                  message: "All content items already exist in this newsletter issue"
+
+  /content/fetch-metadata:
+    post:
+      tags:
+        - Content Import
+      summary: Fetch URL metadata for content import
+      description: |
+        Fetch and extract metadata from a URL for content import preview.
+        Implements SSRF protection by blocking private IPs and cloud metadata endpoints.
+        Requires `marketing` or `admin` role.
+      operationId: fetchURLMetadata
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/URLMetadataRequest'
+            example:
+              url: "https://www.bleepingcomputer.com/news/security/example-article"
+      responses:
+        '200':
+          description: Metadata extracted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/URLMetadataResponse'
+        '400':
+          description: Invalid URL or blocked by SSRF protection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_url:
+                  value:
+                    error:
+                      code: "INVALID_URL"
+                      message: "URL format is invalid"
+                ssrf_blocked:
+                  value:
+                    error:
+                      code: "INVALID_URL"
+                      message: "URL target is blocked for security reasons"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Request timeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "REQUEST_TIMEOUT"
+                  message: "URL fetch timed out after 10 seconds"
+        '422':
+          description: Extraction failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "EXTRACTION_FAILED"
+                  message: "Could not extract metadata from URL (no title found)"
+
+  /content/items:
+    post:
+      tags:
+        - Content Import
+      summary: Create content item manually
+      description: |
+        Create a content item from manual entry or imported metadata.
+        Sets `source_type = 'manual'` and `trust_score = 0.75`.
+        Requires `marketing` or `admin` role.
+      operationId: createManualContent
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateManualContentRequest'
+            example:
+              url: "https://example.com/important-security-article"
+              title: "Critical Zero-Day Vulnerability Discovered"
+              summary: "Security researchers have discovered a critical vulnerability..."
+              content_type: "news"
+              topic_tags:
+                - "vulnerability"
+                - "zero-day"
+              framework_tags:
+                - "MITRE"
+              publish_date: "2026-01-10"
+              author: "John Security"
+      responses:
+        '201':
+          description: Content item created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ContentItem'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "INVALID_REQUEST"
+                  message: "Title is required"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Duplicate URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "DUPLICATE_URL"
+                  message: "Content item with this URL already exists"
+
+  /newsletters/issues:
+    get:
+      tags:
+        - Newsletter Blocks
+      summary: List draft newsletter issues
+      description: |
+        Get list of newsletter issues in draft status for selection in add-to-newsletter dialog.
+      operationId: listDraftIssues
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft]
+            default: draft
+          description: Filter by issue status
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+          description: Maximum number of issues to return
+      responses:
+        '200':
+          description: List of draft issues
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DraftIssue'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT authentication token
+
+  schemas:
+    BulkAddBlocksRequest:
+      type: object
+      required:
+        - content_item_ids
+        - block_type
+      properties:
+        content_item_ids:
+          type: array
+          description: UUIDs of content items to add as blocks
+          minItems: 1
+          maxItems: 20
+          items:
+            type: string
+            format: uuid
+        block_type:
+          type: string
+          enum:
+            - hero
+            - news
+            - content
+            - events
+            - spotlight
+          description: Block type for all items
+
+    BulkAddBlocksResponse:
+      type: object
+      required:
+        - blocks
+        - created_count
+        - skipped_count
+      properties:
+        blocks:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewsletterBlock'
+        created_count:
+          type: integer
+          description: Number of blocks created
+        skipped_count:
+          type: integer
+          description: Number of items skipped (duplicates)
+        skipped_ids:
+          type: array
+          description: Content item IDs that were skipped
+          items:
+            type: string
+            format: uuid
+
+    NewsletterBlock:
+      type: object
+      required:
+        - id
+        - issue_id
+        - block_type
+        - position
+        - title
+        - cta_url
+        - cta_label
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        issue_id:
+          type: string
+          format: uuid
+        content_item_id:
+          type: string
+          format: uuid
+          nullable: true
+        block_type:
+          type: string
+          enum: [hero, news, content, events, spotlight]
+        position:
+          type: integer
+        title:
+          type: string
+        teaser:
+          type: string
+          nullable: true
+        cta_url:
+          type: string
+          format: uri
+        cta_label:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    URLMetadataRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+          maxLength: 2048
+          description: URL to fetch metadata from
+
+    URLMetadataResponse:
+      type: object
+      required:
+        - url
+        - title
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Normalized URL
+        title:
+          type: string
+          description: Page title (required)
+        description:
+          type: string
+          nullable: true
+          description: Meta description or OG description
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          description: OG image URL
+        publish_date:
+          type: string
+          format: date
+          nullable: true
+          description: Article publish date
+        author:
+          type: string
+          nullable: true
+          description: Author name
+        read_time_minutes:
+          type: integer
+          nullable: true
+          description: Estimated read time
+        site_name:
+          type: string
+          nullable: true
+          description: Site name from OG or domain
+
+    CreateManualContentRequest:
+      type: object
+      required:
+        - url
+        - title
+        - content_type
+      properties:
+        url:
+          type: string
+          format: uri
+          maxLength: 2048
+        title:
+          type: string
+          minLength: 1
+          maxLength: 500
+        summary:
+          type: string
+          maxLength: 2000
+          nullable: true
+        content_type:
+          type: string
+          enum:
+            - blog
+            - news
+            - case_study
+            - webinar
+            - product_update
+            - event
+        topic_tags:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            maxLength: 50
+        framework_tags:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            maxLength: 50
+        publish_date:
+          type: string
+          format: date
+          nullable: true
+        author:
+          type: string
+          maxLength: 200
+          nullable: true
+        image_url:
+          type: string
+          format: uri
+          maxLength: 2048
+          nullable: true
+
+    ContentItem:
+      type: object
+      required:
+        - id
+        - url
+        - title
+        - content_type
+        - trust_score
+        - relevance_score
+        - is_active
+        - source_type
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        source_id:
+          type: string
+          format: uuid
+          nullable: true
+        article_id:
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: uri
+        title:
+          type: string
+        summary:
+          type: string
+          nullable: true
+        content:
+          type: string
+          nullable: true
+        content_type:
+          type: string
+          enum: [blog, news, case_study, webinar, product_update, event]
+        topic_tags:
+          type: array
+          items:
+            type: string
+        framework_tags:
+          type: array
+          items:
+            type: string
+        industry_tags:
+          type: array
+          items:
+            type: string
+        buyer_stage:
+          type: string
+          nullable: true
+        partner_tags:
+          type: array
+          items:
+            type: string
+        author:
+          type: string
+          nullable: true
+        publish_date:
+          type: string
+          format: date-time
+        word_count:
+          type: integer
+          nullable: true
+        reading_time_minutes:
+          type: integer
+          nullable: true
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+        trust_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        relevance_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        historical_ctr:
+          type: number
+          format: float
+        historical_opens:
+          type: integer
+        historical_clicks:
+          type: integer
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_active:
+          type: boolean
+        indexed_at:
+          type: string
+          format: date-time
+          nullable: true
+        source_type:
+          type: string
+          enum: [rss, api, manual]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    DraftIssue:
+      type: object
+      required:
+        - id
+        - segment_id
+        - segment_name
+        - issue_date
+        - status
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        segment_id:
+          type: string
+          format: uuid
+        segment_name:
+          type: string
+        issue_date:
+          type: string
+          format: date
+        subject_line:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [draft]
+        created_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code
+            message:
+              type: string
+              description: Human-readable error message
+            details:
+              type: object
+              additionalProperties: true
+              description: Additional error details
