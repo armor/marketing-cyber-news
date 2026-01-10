@@ -252,3 +252,10 @@ kubectl logs deployment/aci-backend -n armor-newsletter --tail=50
 # OCI CLI (always use profile)
 oci --profile OCI_MARKETING compute instance list
 ```
+
+## Active Technologies
+- Go 1.24 (backend), TypeScript 5.9 (frontend) + Chi v5.2, React 19, TanStack Query v5, shadcn/ui (009-voice-transformation)
+- PostgreSQL 16, Redis 7 (rate limiting) (009-voice-transformation)
+
+## Recent Changes
+- 009-voice-transformation: Added Go 1.24 (backend), TypeScript 5.9 (frontend) + Chi v5.2, React 19, TanStack Query v5, shadcn/ui
