@@ -9,7 +9,6 @@ import { type ReactElement, useState } from 'react';
 import { Wand2, Plus, Edit2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { VoiceAgentForm } from '@/components/marketing/voice/admin/VoiceAgentForm';
 import { StyleRuleEditor } from '@/components/marketing/voice/admin/StyleRuleEditor';
@@ -324,9 +323,10 @@ export function VoiceAgentsPage(): ReactElement {
         </div>
       )}
 
-      {/* Form Dialog */}
-      <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent
+      {/* Form Sheet */}
+      <Sheet open={showForm} onOpenChange={setShowForm}>
+        <SheetContent
+          side="right"
           style={{
             maxWidth: '600px',
             padding: '0',
@@ -339,8 +339,8 @@ export function VoiceAgentsPage(): ReactElement {
             onSave={handleSaveAgent}
             onCancel={handleCancelForm}
           />
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
 
       {/* Detail Sheet */}
       <Sheet open={!!detailAgentId} onOpenChange={(open) => !open && handleCloseDetails()}>

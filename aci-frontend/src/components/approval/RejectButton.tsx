@@ -10,13 +10,13 @@ import { X, AlertTriangle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRejectArticle } from '@/hooks/useApprovalMutations';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetFooter,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -153,8 +153,9 @@ export function RejectButton({
         Reject
       </Button>
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent
+      <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <SheetContent
+          side="right"
           onPointerDownOutside={(e) => {
             if (isPending) {
               e.preventDefault();
@@ -167,8 +168,8 @@ export function RejectButton({
           }}
         >
           <form onSubmit={handleSubmit}>
-            <DialogHeader>
-              <DialogTitle
+            <SheetHeader>
+              <SheetTitle
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -178,8 +179,8 @@ export function RejectButton({
               >
                 <X style={{ width: 'var(--spacing-5)', height: 'var(--spacing-5)' }} />
                 Reject Article
-              </DialogTitle>
-              <DialogDescription asChild>
+              </SheetTitle>
+              <SheetDescription asChild>
                 <div
                   style={{
                     display: 'flex',
@@ -308,10 +309,10 @@ export function RejectButton({
                     </div>
                   </div>
                 </div>
-              </DialogDescription>
-            </DialogHeader>
+              </SheetDescription>
+            </SheetHeader>
 
-            <DialogFooter
+            <SheetFooter
               style={{
                 marginTop: 'var(--spacing-6)',
               }}
@@ -344,10 +345,10 @@ export function RejectButton({
                   'Reject Article'
                 )}
               </Button>
-            </DialogFooter>
+            </SheetFooter>
           </form>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

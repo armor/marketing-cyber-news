@@ -11,13 +11,13 @@ import { Rocket, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useReleaseArticle } from '@/hooks/useApprovalMutations';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from '@/components/ui/dialog';
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+  SheetDescription,
+} from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -148,10 +148,10 @@ export function ReleaseButton({
           </Tooltip>
         </TooltipProvider>
 
-        <Dialog open={isOpen} onOpenChange={(open) => !isPending && !open && handleClose()}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle
+        <Sheet open={isOpen} onOpenChange={(open) => !isPending && !open && handleClose()}>
+          <SheetContent side="right">
+            <SheetHeader>
+              <SheetTitle
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -166,11 +166,11 @@ export function ReleaseButton({
                   }}
                 />
                 Release Article
-              </DialogTitle>
-              <DialogDescription>
+              </SheetTitle>
+              <SheetDescription>
                 You are about to release this article for public viewing.
-              </DialogDescription>
-            </DialogHeader>
+              </SheetDescription>
+            </SheetHeader>
 
             <div
               style={{
@@ -237,7 +237,7 @@ export function ReleaseButton({
               </div>
             </div>
 
-            <DialogFooter>
+            <SheetFooter>
               <Button
                 type="button"
                 variant="outline"
@@ -260,9 +260,9 @@ export function ReleaseButton({
                 )}
                 Release to Public
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </>
     );
   }
@@ -271,10 +271,10 @@ export function ReleaseButton({
     <>
       {button}
 
-      <Dialog open={isOpen} onOpenChange={(open) => !isPending && !open && handleClose()}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle
+      <Sheet open={isOpen} onOpenChange={(open) => !isPending && !open && handleClose()}>
+        <SheetContent side="right">
+          <SheetHeader>
+            <SheetTitle
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -289,11 +289,11 @@ export function ReleaseButton({
                 }}
               />
               Release Article
-            </DialogTitle>
-            <DialogDescription>
+            </SheetTitle>
+            <SheetDescription>
               You are about to release this article for public viewing.
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
 
           <div
             style={{
@@ -360,7 +360,7 @@ export function ReleaseButton({
             </div>
           </div>
 
-          <DialogFooter>
+          <SheetFooter>
             <Button
               type="button"
               variant="outline"
@@ -386,9 +386,9 @@ export function ReleaseButton({
               )}
               Release to Public
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

@@ -19,7 +19,7 @@
 
 import { type ReactElement, useState } from 'react';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { ClaimsList, ClaimForm, ClaimsFilter } from '@/components/newsletter/claims';
 import { useAuth } from '@/hooks/useAuth';
 import type { ClaimFilter } from '@/types/claims';
@@ -79,7 +79,7 @@ export function ClaimsLibraryPage(): ReactElement {
     setFilter(newFilter);
   };
 
-  const handleTabChange = (_tabId: string): void => {
+  const handleTabChange = (): void => {
     // Reset filter when switching tabs
     setFilter({});
   };
@@ -203,9 +203,10 @@ export function ClaimsLibraryPage(): ReactElement {
       {/* Tab Navigation */}
       <Tabs tabs={tabs} defaultTab="all" onChange={handleTabChange} />
 
-      {/* Form Dialog */}
-      <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent
+      {/* Form Sheet */}
+      <Sheet open={showForm} onOpenChange={setShowForm}>
+        <SheetContent
+          side="right"
           style={{
             maxWidth: '600px',
             padding: '0',
@@ -216,8 +217,8 @@ export function ClaimsLibraryPage(): ReactElement {
             onSave={handleSaveClaim}
             onCancel={handleCancelForm}
           />
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

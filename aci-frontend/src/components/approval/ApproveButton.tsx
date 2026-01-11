@@ -10,13 +10,13 @@ import { CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useApproveArticle } from '@/hooks/useApprovalMutations';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from '@/components/ui/dialog';
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+  SheetDescription,
+} from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -144,10 +144,10 @@ export function ApproveButton({
         Approve
       </Button>
 
-      <Dialog open={isOpen} onOpenChange={(open) => !isPending && !open && handleClose()}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle
+      <Sheet open={isOpen} onOpenChange={(open) => !isPending && !open && handleClose()}>
+        <SheetContent side="right">
+          <SheetHeader>
+            <SheetTitle
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -162,11 +162,11 @@ export function ApproveButton({
                 }}
               />
               Approve Article
-            </DialogTitle>
-            <DialogDescription>
+            </SheetTitle>
+            <SheetDescription>
               Are you sure you want to approve:
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
 
           <form id="approve-form" onSubmit={handleSubmit}>
             <div
@@ -241,7 +241,7 @@ export function ApproveButton({
             </div>
           </form>
 
-          <DialogFooter>
+          <SheetFooter>
             <Button
               type="button"
               variant="outline"
@@ -264,9 +264,9 @@ export function ApproveButton({
               )}
               Approve Article
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

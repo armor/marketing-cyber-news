@@ -11,13 +11,13 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
 import { useIssues } from '@/hooks/useIssues';
 import { useApproveIssue, useRejectIssue } from '@/hooks/useIssueMutations';
@@ -304,19 +304,20 @@ export function NewsletterApprovalPage(): ReactElement {
         </div>
       )}
 
-      {/* Reject Confirmation Dialog */}
-      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
-        <DialogContent
+      {/* Reject Confirmation Sheet */}
+      <Sheet open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <SheetContent
+          side="right"
           style={{
             maxWidth: '500px',
           }}
         >
-          <DialogHeader>
-            <DialogTitle>Reject Newsletter</DialogTitle>
-            <DialogDescription>
+          <SheetHeader>
+            <SheetTitle>Reject Newsletter</SheetTitle>
+            <SheetDescription>
               Please provide a reason for rejecting this newsletter. This feedback will help improve future issues.
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
 
           <div style={{ padding: 'var(--spacing-4) 0' }}>
             <label
@@ -368,7 +369,7 @@ export function NewsletterApprovalPage(): ReactElement {
             </p>
           </div>
 
-          <DialogFooter>
+          <SheetFooter>
             <Button
               variant="outline"
               onClick={handleCancelReject}
@@ -383,9 +384,9 @@ export function NewsletterApprovalPage(): ReactElement {
             >
               {rejectIssueMutation.isPending ? 'Rejecting...' : 'Reject Newsletter'}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

@@ -24,13 +24,13 @@ import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import {
   ConfigurationList,
   ConfigurationForm,
@@ -587,16 +587,16 @@ export function NewsletterConfigPage(): ReactElement {
         initialData={editingSegment ? segmentQuery.data : undefined}
       />
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Configuration</DialogTitle>
-            <DialogDescription>
+      {/* Delete Confirmation Sheet */}
+      <Sheet open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <SheetContent side="right">
+          <SheetHeader>
+            <SheetTitle>Delete Configuration</SheetTitle>
+            <SheetDescription>
               Are you sure you want to delete &quot;{configToDelete?.name}&quot;? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
+            </SheetDescription>
+          </SheetHeader>
+          <SheetFooter>
             <Button
               variant="outline"
               onClick={handleCancelDelete}
@@ -610,9 +610,9 @@ export function NewsletterConfigPage(): ReactElement {
             >
               {deleteConfigMutation.isPending ? 'Deleting...' : 'Delete'}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

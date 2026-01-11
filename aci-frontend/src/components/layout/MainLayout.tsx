@@ -36,7 +36,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps): React.ReactElement {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div data-theme="dark" className="min-h-screen flex flex-col bg-background">
       {/* Full-width Header at top - sticky */}
       <header
         className="sticky top-0 z-50 flex shrink-0 items-center h-14 px-4 gap-3"
