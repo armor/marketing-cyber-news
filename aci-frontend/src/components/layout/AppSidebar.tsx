@@ -30,6 +30,7 @@ import {
   Palette,
   TrendingUp,
   FileText,
+  Sparkles,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -151,6 +152,11 @@ const NAV_ITEMS: NavItem[] = [
         to: '/content-studio',
         icon: Wand2,
         label: 'Content Studio',
+      },
+      {
+        to: '/voice-transform',
+        icon: Sparkles,
+        label: 'Voice Transform',
       },
       {
         to: '/channels',

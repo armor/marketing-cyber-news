@@ -9,3 +9,4 @@ export { VoiceTransformInput } from './VoiceTransformInput';
 export { TransformationOptions } from './TransformationOptions';
 export { VoiceTransform } from './VoiceTransform';
 export { VoiceTransformButton } from './VoiceTransformButton';
+export { VoiceTransformKeyboardHandler } from './VoiceTransformKeyboardHandler';

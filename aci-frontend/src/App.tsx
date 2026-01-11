@@ -15,6 +15,7 @@ import { queryClient } from '@/services/api/queryClient';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { PublicRoute } from '@/components/layout/PublicRoute';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { VoiceTransformKeyboardHandler } from '@/components/marketing/voice';
 
 // ============================================================================
 // Lazy-loaded Pages
@@ -195,6 +196,7 @@ function App(): React.ReactElement {
       <AuthProvider>
         <ThemeProvider>
         <BrowserRouter>
+          <VoiceTransformKeyboardHandler>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
               {/* Root redirect */}
@@ -533,6 +535,7 @@ function App(): React.ReactElement {
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
+          </VoiceTransformKeyboardHandler>
         </BrowserRouter>
         </ThemeProvider>
         <Toaster
