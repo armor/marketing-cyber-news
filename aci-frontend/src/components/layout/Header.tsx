@@ -48,42 +48,42 @@ export function Header(): React.ReactElement {
         <button
           className="relative inline-flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200"
           style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.06)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
           }}
           aria-label="Help"
           type="button"
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.06)';
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
           }}
         >
-          <HelpCircle className="w-5 h-5 text-muted-foreground" />
+          <HelpCircle className="w-5 h-5" style={{ color: 'var(--color-amber-400)' }} />
         </button>
 
         {/* Notification bell */}
         <button
           className="relative inline-flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200"
           style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.06)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
           }}
           aria-label="Notifications"
           type="button"
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.06)';
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
           }}
         >
-          <Bell className="w-5 h-5 text-muted-foreground" />
+          <Bell className="w-5 h-5" style={{ color: 'var(--color-amber-400)' }} />
           {/* Notification badge */}
           <span
             className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full"
@@ -220,7 +220,19 @@ export function Header(): React.ReactElement {
                       e.currentTarget.style.backgroundColor = 'transparent';
                     }}
                   >
-                    <Settings className="w-4 h-4 text-muted-foreground" />
+                    <div
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        borderRadius: 'var(--border-radius-md)',
+                      }}
+                    >
+                      <Settings className="w-4 h-4" style={{ color: 'var(--color-amber-400)' }} />
+                    </div>
                     User Settings
                   </Link>
 
@@ -237,7 +249,19 @@ export function Header(): React.ReactElement {
                       e.currentTarget.style.backgroundColor = 'transparent';
                     }}
                   >
-                    <Building2 className="w-4 h-4 text-muted-foreground" />
+                    <div
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        borderRadius: 'var(--border-radius-md)',
+                      }}
+                    >
+                      <Building2 className="w-4 h-4" style={{ color: 'var(--color-amber-400)' }} />
+                    </div>
                     Admin Settings
                   </Link>
                 </div>
@@ -266,7 +290,19 @@ export function Header(): React.ReactElement {
                       e.currentTarget.style.backgroundColor = 'transparent';
                     }}
                   >
-                    <LogOut className="w-4 h-4" />
+                    <div
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                        borderRadius: 'var(--border-radius-md)',
+                      }}
+                    >
+                      <LogOut className="w-4 h-4" />
+                    </div>
                     Logout
                   </button>
                 </div>

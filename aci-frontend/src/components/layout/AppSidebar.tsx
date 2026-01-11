@@ -244,7 +244,7 @@ function CollapsibleNavGroup({
     >
       {/* Parent item with expand/collapse */}
       <button
-        onClick={() => setIsExpanded(!shouldExpand)}
+        onClick={() => setIsExpanded(!isExpanded)}
         style={{
           display: 'flex',
           alignItems: 'center',
