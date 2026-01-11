@@ -204,7 +204,7 @@ async function mockReleaseEndpoint(
   page: Page,
   options: { allowedRoles?: string[]; requiresApproved?: boolean } = {}
 ): Promise<{ calls: { articleId: string; body: unknown }[] }> {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   const { allowedRoles = ['admin', 'ciso', 'super_admin'], requiresApproved = true } = options;
   const calls: { articleId: string; body: unknown }[] = [];
 
@@ -660,7 +660,7 @@ test.describe('Article Release Workflow (User Story 3)', () => {
       // Arrange: Authenticate as regular user
       await authenticateAs(page, 'user');
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+       
       const approvedArticle = createMockArticle('article-user-attempt', 'approved', { index: 1 });
 
       // Mock queue endpoint to return 403 for regular users
@@ -708,7 +708,7 @@ test.describe('Article Release Workflow (User Story 3)', () => {
       // Arrange: Authenticate as marketing user (can only approve marketing gate)
       await authenticateAs(page, 'marketing');
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+       
       const approvedArticle = createMockArticle('article-marketing-attempt', 'approved', {
         index: 1,
       });

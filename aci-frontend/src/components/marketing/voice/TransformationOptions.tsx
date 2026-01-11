@@ -48,7 +48,7 @@ export function TransformationOptions({
     try {
       await navigator.clipboard.writeText(text);
       toast.success(`Option ${index + 1} copied to clipboard`);
-    } catch (error) {
+    } catch {
       toast.error('Failed to copy to clipboard');
     }
   };

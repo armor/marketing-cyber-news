@@ -343,7 +343,7 @@ export function ApprovalQueue({
   const [severityFilter, setSeverityFilter] = useState<string | undefined>(
     undefined
   );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Reserved for future category filtering feature
+   
   const [_categoryFilter, _setCategoryFilter] = useState<string | undefined>(
     undefined
   );

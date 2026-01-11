@@ -106,7 +106,6 @@ test.describe('Newsletter Configuration API - Regression Tests', () => {
     console.log('\n=== TEST: Full CRUD workflow ===');
 
     const token = await getAuthToken(request);
-    let configId: string;
 
     // CREATE
     console.log('Step 1: CREATE');
@@ -149,7 +148,7 @@ test.describe('Newsletter Configuration API - Regression Tests', () => {
     expect(createData.data.name).toBe(configData.name);
     expect(createData.data.banned_phrases).toEqual(configData.banned_phrases);
 
-    configId = createData.data.id;
+    const configId = createData.data.id;
     console.log(`Created config: ${configId}`);
 
     // READ

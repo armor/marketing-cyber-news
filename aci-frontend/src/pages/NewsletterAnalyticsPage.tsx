@@ -363,12 +363,13 @@ const ABTestResultsView: React.FC = () => {
  */
 export const NewsletterAnalyticsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabView>('overview');
-  const [dateRange, setDateRange] = useState<DateRangeParams>({
+   
+  const [dateRange, setDateRange] = useState<DateRangeParams>(() => ({
     dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
       .toISOString()
       .split('T')[0],
     dateTo: new Date().toISOString().split('T')[0],
-  });
+  }));
 
   const handleExport = (): void => {
     const filename = `newsletter-analytics-${activeTab}-${new Date().toISOString().split('T')[0]}.csv`;

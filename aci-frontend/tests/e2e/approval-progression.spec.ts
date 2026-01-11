@@ -35,7 +35,7 @@ type ApprovalGate = (typeof APPROVAL_GATES)[number];
  * Status values corresponding to each pending gate
  * (Currently unused but kept for reference and potential future use)
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const GATE_STATUS_MAP: Record<ApprovalGate, string> = {
   marketing: 'pending_marketing',
   branding: 'pending_branding',
@@ -310,7 +310,7 @@ async function mockApprovalQueue(
  * Mock approve endpoint with state transition tracking
  * (Currently unused but kept for potential future use in endpoint validation tests)
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 async function mockApproveEndpoint(
   page: Page,
   options: {
@@ -474,7 +474,7 @@ test.describe('Sequential Gate Progression (User Story 2)', () => {
         const expectedNextStatus = NEXT_STATUS_MAP[gate];
 
         // Mock approve endpoint
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+         
         let approveWasCalled = false;
         await page.route(`**/v1/articles/*/approve`, async (route: Route) => {
           approveWasCalled = true;
@@ -607,7 +607,7 @@ test.describe('Sequential Gate Progression (User Story 2)', () => {
       await authenticateAs(page, 'branding');
 
       // Create article at marketing gate (not branding)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+       
       const article = createMockArticle('article-wrong-gate', 'pending_marketing', 1);
 
       // Branding user should not see marketing-pending articles in their queue
@@ -653,7 +653,7 @@ test.describe('Sequential Gate Progression (User Story 2)', () => {
       });
 
       // Mock approve endpoint that validates gate order
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+       
       let apiCallResult: { success: boolean; errorCode?: string } | null = null;
 
       await page.route(`**/v1/articles/*/approve`, async (route: Route) => {
@@ -708,7 +708,7 @@ test.describe('Sequential Gate Progression (User Story 2)', () => {
       await authenticateAs(page, 'marketing');
 
       // Article that has already passed marketing (at branding now)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+       
       const article = createMockArticle('article-already-approved', 'pending_branding', 1);
 
       // Mock queue - marketing should not see this article
@@ -1099,7 +1099,7 @@ test.describe('Sequential Gate Progression (User Story 2)', () => {
 
       await authenticateAs(page, 'admin');
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+       
       const releasedArticle = {
         ...createMockArticle('article-released', 'released', 1),
         publishedAt: new Date().toISOString(),

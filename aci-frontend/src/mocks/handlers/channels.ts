@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { mockChannels, createMockChannel } from '../fixtures/channels';
-import type { Channel, ConnectChannelRequest, OAuthState } from '../../types/channels';
+import type { Channel, ConnectChannelRequest, OAuthState, ChannelType } from '../../types/channels';
 
 const BASE_URL = 'http://localhost:8080/api/v1';
 
@@ -98,7 +98,7 @@ export const channelHandlers = [
 
     const oauthState: OAuthState = {
       state_token: `state_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-      channel_type: body.channel_type as any,
+      channel_type: body.channel_type as ChannelType,
       redirect_uri: body.redirect_uri,
       created_at: new Date().toISOString(),
       expires_at: new Date(Date.now() + 3600000).toISOString(), // 1 hour

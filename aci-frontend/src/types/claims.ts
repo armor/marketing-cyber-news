@@ -35,9 +35,9 @@ export interface Claim {
   readonly is_usable: boolean;
 }
 
-export interface ClaimListItem extends Claim {
-  // Extended fields for list view if needed
-}
+// Using type alias instead of empty interface to avoid ESLint warning
+// Extended fields for list view can be added here when needed
+export type ClaimListItem = Claim;
 
 // ============================================
 // REQUEST/RESPONSE TYPES

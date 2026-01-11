@@ -26,7 +26,7 @@ import type { CVE } from '@/types/threat';
  * Create mock CVE entity
  * (Used in commented test code - part of TDD structure)
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 function createMockCVE(overrides?: Partial<CVE>): CVE {
   const baseId = Math.random().toString(36).substr(2, 5).toUpperCase();
 

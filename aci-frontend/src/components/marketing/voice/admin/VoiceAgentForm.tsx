@@ -88,6 +88,7 @@ export function VoiceAgentForm({
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Initializing form from props is a valid pattern
     setFormData({
       name: agent.name,
       description: agent.description ?? '',

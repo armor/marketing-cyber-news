@@ -29,9 +29,9 @@ import { test, expect, Page, Route, Response } from '@playwright/test';
 // ============================================================================
 
 // Base URLs for reference (used in documentation and debugging)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const _BASE_URL = 'http://localhost:5173';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const _API_BASE = 'http://localhost:8080/v1';
 
 const TOKEN_STORAGE_KEY = 'aci_access_token';

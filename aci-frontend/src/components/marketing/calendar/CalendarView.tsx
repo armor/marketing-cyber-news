@@ -15,6 +15,7 @@ import {
   dateFnsLocalizer,
   type View,
   type SlotInfo,
+  type NavigateAction,
 } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
@@ -135,7 +136,12 @@ export function CalendarView({
   }, []);
 
   // Custom toolbar
-  const CustomToolbar = ({ label, onNavigate, onView }: any) => {
+  interface CustomToolbarProps {
+    label: string;
+    onNavigate: (action: NavigateAction) => void;
+    onView: (view: View) => void;
+  }
+  const CustomToolbar = ({ label, onNavigate, onView }: CustomToolbarProps) => {
     return (
       <div
         style={{

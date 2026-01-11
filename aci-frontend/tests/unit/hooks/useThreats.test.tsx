@@ -21,7 +21,7 @@ import type { ThreatSummary, ThreatCategory } from '@/types/threat';
 // Mock Data Factories
 // ============================================================================
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 function createMockThreat(overrides?: Partial<ThreatSummary>): ThreatSummary {
   const baseId = Math.random().toString(36).substr(2, 9);
   const now = new Date().toISOString();
