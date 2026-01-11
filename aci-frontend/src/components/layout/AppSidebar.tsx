@@ -3,10 +3,10 @@
  *
  * Main navigation sidebar for Armor Cyber News dashboard.
  * Styled with Armor-Dash design patterns using sidebar primitives.
- * Features role-based menu items and collapsible sidebar.
+ * Features role-based menu items and collapsible sidebar with nested groups.
  */
 
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -31,6 +31,8 @@ import {
   TrendingUp,
   FileText,
   Sparkles,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -42,9 +44,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarRail,
   SidebarSeparator,
 } from '@/components/ui/sidebar';
@@ -71,43 +70,47 @@ interface NavItem {
 // Constants
 // ============================================================================
 
-const NAV_ITEMS: NavItem[] = [
-  {
-    to: '/',
-    icon: LayoutDashboard,
-    label: 'Dashboard',
-  },
-  {
-    to: '/threats',
-    icon: Shield,
-    label: 'Threats',
-  },
-  {
-    to: '/bookmarks',
-    icon: Bookmark,
-    label: 'Bookmarks',
-  },
-  {
-    to: '/alerts',
-    icon: Bell,
-    label: 'Alerts',
-  },
-  {
-    to: '/approvals',
-    icon: ClipboardCheck,
-    label: 'Approval Queue',
-    requiresApproval: true,
-  },
-  {
-    to: '/analytics',
-    icon: BarChart,
-    label: 'Analytics',
-  },
-  {
-    to: '/newsletter',
-    icon: Mail,
-    label: 'Newsletter',
-    requiresNewsletter: true,
+const NAV_GROUPS = {
+  main: [
+    {
+      to: '/',
+      icon: LayoutDashboard,
+      label: 'Dashboard',
+    },
+    {
+      to: '/threats',
+      icon: Shield,
+      label: 'Threats',
+    },
+    {
+      to: '/bookmarks',
+      icon: Bookmark,
+      label: 'Bookmarks',
+    },
+    {
+      to: '/alerts',
+      icon: Bell,
+      label: 'Alerts',
+    },
+    {
+      to: '/approvals',
+      icon: ClipboardCheck,
+      label: 'Approval Queue',
+      requiresApproval: true,
+    },
+    {
+      to: '/analytics',
+      icon: BarChart,
+      label: 'Analytics',
+    },
+  ],
+  newsletter: {
+    parent: {
+      to: '/newsletter',
+      icon: Mail,
+      label: 'Newsletter',
+      requiresNewsletter: true,
+    },
     children: [
       {
         to: '/newsletter/configs',
@@ -142,11 +145,13 @@ const NAV_ITEMS: NavItem[] = [
       },
     ],
   },
-  {
-    to: '/campaigns',
-    icon: Megaphone,
-    label: 'Marketing',
-    requiresMarketing: true,
+  marketing: {
+    parent: {
+      to: '/campaigns',
+      icon: Megaphone,
+      label: 'Marketing',
+      requiresMarketing: true,
+    },
     children: [
       {
         to: '/content-studio',
@@ -180,11 +185,13 @@ const NAV_ITEMS: NavItem[] = [
       },
     ],
   },
-  {
-    to: '/admin',
-    icon: Settings,
-    label: 'Admin',
-    requiresAdmin: true,
+  admin: {
+    parent: {
+      to: '/admin',
+      icon: Settings,
+      label: 'Admin',
+      requiresAdmin: true,
+    },
     children: [
       {
         to: '/admin/voice-agents',
@@ -193,7 +200,166 @@ const NAV_ITEMS: NavItem[] = [
       },
     ],
   },
-];
+};
+
+// ============================================================================
+// Collapsible Nav Group Component
+// ============================================================================
+
+interface CollapsibleNavGroupProps {
+  parent: NavItem;
+  children: NavItem[];
+  isVisible: boolean;
+  isItemVisible: (item: NavItem) => boolean;
+  isActive: (path: string) => boolean;
+  defaultExpanded?: boolean;
+}
+
+function CollapsibleNavGroup({
+  parent,
+  children,
+  isVisible,
+  isItemVisible,
+  isActive,
+  defaultExpanded = false,
+}: CollapsibleNavGroupProps) {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const ParentIcon = parent.icon;
+  const parentActive = isActive(parent.to);
+  const visibleChildren = children.filter(isItemVisible);
+
+  if (!isVisible || visibleChildren.length === 0) {
+    return null;
+  }
+
+  // Check if any child is active to auto-expand
+  const hasActiveChild = visibleChildren.some((child) => isActive(child.to));
+  const shouldExpand = isExpanded || hasActiveChild;
+
+  return (
+    <div
+      style={{
+        marginBottom: 'var(--spacing-2)',
+      }}
+    >
+      {/* Parent item with expand/collapse */}
+      <button
+        onClick={() => setIsExpanded(!shouldExpand)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          width: '100%',
+          padding: 'var(--spacing-3) var(--spacing-4)',
+          borderRadius: 'var(--border-radius-lg)',
+          background: parentActive ? 'var(--color-bg-elevated)' : 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          color: parentActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+          fontSize: 'var(--typography-font-size-sm)',
+          fontWeight: parentActive ? 'var(--typography-font-weight-semibold)' : 'var(--typography-font-weight-medium)',
+          transition: 'all var(--motion-duration-fast) var(--motion-easing-default)',
+        }}
+        onMouseEnter={(e) => {
+          if (!parentActive) {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!parentActive) {
+            e.currentTarget.style.background = 'transparent';
+          }
+        }}
+      >
+        <div
+          style={{
+            width: '32px',
+            height: '32px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: parentActive ? 'rgba(249, 115, 22, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+            borderRadius: 'var(--border-radius-md)',
+            flexShrink: 0,
+            marginRight: 'var(--spacing-3)',
+          }}
+        >
+          <ParentIcon style={{ width: '16px', height: '16px', color: parentActive ? 'var(--color-signal-orange)' : 'var(--color-amber-400)' }} />
+        </div>
+        <span style={{ flex: 1, textAlign: 'left' }}>{parent.label}</span>
+        {shouldExpand ? (
+          <ChevronDown style={{ width: '16px', height: '16px', opacity: 0.5 }} />
+        ) : (
+          <ChevronRight style={{ width: '16px', height: '16px', opacity: 0.5 }} />
+        )}
+      </button>
+
+      {/* Children (collapsible) */}
+      {shouldExpand && (
+        <div
+          style={{
+            marginLeft: 'var(--spacing-4)',
+            paddingLeft: 'var(--spacing-4)',
+            borderLeft: '1px solid var(--color-border-default)',
+            marginTop: 'var(--spacing-1)',
+          }}
+        >
+          {visibleChildren.map((child) => {
+            const ChildIcon = child.icon;
+            const childActive = isActive(child.to);
+            return (
+              <NavLink
+                key={child.to}
+                to={child.to}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: 'var(--spacing-2) var(--spacing-3)',
+                  borderRadius: 'var(--border-radius-md)',
+                  background: childActive ? 'rgba(249, 115, 22, 0.15)' : 'transparent',
+                  color: childActive ? 'var(--color-signal-orange)' : 'var(--color-text-muted)',
+                  fontSize: 'var(--typography-font-size-sm)',
+                  fontWeight: childActive ? 'var(--typography-font-weight-medium)' : 'var(--typography-font-weight-normal)',
+                  textDecoration: 'none',
+                  transition: 'all var(--motion-duration-fast) var(--motion-easing-default)',
+                  marginBottom: 'var(--spacing-1)',
+                }}
+                onMouseEnter={(e) => {
+                  if (!childActive) {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                    e.currentTarget.style.color = 'var(--color-text-primary)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!childActive) {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = 'var(--color-text-muted)';
+                  }
+                }}
+              >
+                <div
+                  style={{
+                    width: '28px',
+                    height: '28px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: childActive ? 'rgba(249, 115, 22, 0.15)' : 'rgba(255, 255, 255, 0.06)',
+                    borderRadius: 'var(--border-radius-md)',
+                    flexShrink: 0,
+                    marginRight: 'var(--spacing-3)',
+                  }}
+                >
+                  <ChildIcon style={{ width: '14px', height: '14px', color: childActive ? 'var(--color-signal-orange)' : 'var(--color-amber-400)' }} />
+                </div>
+                <span>{child.label}</span>
+              </NavLink>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ============================================================================
 // Component
@@ -282,30 +448,6 @@ export const AppSidebar = memo(function AppSidebar() {
     return true;
   };
 
-  // Filter nav items based on role
-  const visibleNavItems = NAV_ITEMS.filter((item) => {
-    // Parent must be visible
-    if (!isItemVisible(item)) {
-      return false;
-    }
-
-    // If has children, at least one child must be visible
-    if (item.children) {
-      return item.children.some(isItemVisible);
-    }
-
-    return true;
-  }).map((item) => {
-    // Filter children for parent items
-    if (item.children) {
-      return {
-        ...item,
-        children: item.children.filter(isItemVisible),
-      };
-    }
-    return item;
-  });
-
   // Check if path is active
   const isActive = (path: string): boolean => {
     if (path === '/') {
@@ -314,70 +456,64 @@ export const AppSidebar = memo(function AppSidebar() {
     return location.pathname.startsWith(path);
   };
 
+  // Filter main nav items
+  const visibleMainItems = NAV_GROUPS.main.filter(isItemVisible);
+
   return (
     <Sidebar collapsible="icon">
       {/* Navigation Content */}
-      <SidebarContent className="p-2">
-        <SidebarGroup className="p-0">
-          <SidebarGroupLabel className="px-3 py-2 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
-            Navigation
+      <SidebarContent
+        style={{
+          padding: 'var(--spacing-4)',
+        }}
+      >
+        {/* Main Navigation Group */}
+        <SidebarGroup style={{ padding: 0 }}>
+          <SidebarGroupLabel
+            style={{
+              padding: 'var(--spacing-2) var(--spacing-4)',
+              marginBottom: 'var(--spacing-2)',
+              fontSize: 'var(--typography-font-size-xs)',
+              fontWeight: 'var(--typography-font-weight-semibold)',
+              color: 'var(--color-text-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: 'var(--typography-letter-spacing-wide)',
+            }}
+          >
+            Main
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-1">
-              {visibleNavItems.map((item) => {
+            <SidebarMenu style={{ gap: 'var(--spacing-1)' }}>
+              {visibleMainItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.to);
 
-                // Parent item with children
-                if (item.children && item.children.length > 0) {
-                  return (
-                    <SidebarMenuItem key={item.to}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={active}
-                        tooltip={item.label}
-                        className="px-3 py-2 rounded-md"
-                      >
-                        <NavLink to={item.to}>
-                          <Icon className="size-4 shrink-0" />
-                          <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                        </NavLink>
-                      </SidebarMenuButton>
-                      <SidebarMenuSub>
-                        {item.children.map((child) => {
-                          const ChildIcon = child.icon;
-                          const childActive = isActive(child.to);
-                          return (
-                            <SidebarMenuSubItem key={child.to}>
-                              <SidebarMenuSubButton
-                                asChild
-                                isActive={childActive}
-                                className="px-3 py-2 rounded-md"
-                              >
-                                <NavLink to={child.to}>
-                                  <ChildIcon className="size-4 shrink-0" />
-                                  <span>{child.label}</span>
-                                </NavLink>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          );
-                        })}
-                      </SidebarMenuSub>
-                    </SidebarMenuItem>
-                  );
-                }
-
-                // Regular item without children
                 return (
                   <SidebarMenuItem key={item.to}>
                     <SidebarMenuButton
                       asChild
                       isActive={active}
                       tooltip={item.label}
-                      className="px-3 py-2 rounded-md"
+                      style={{
+                        padding: 'var(--spacing-3) var(--spacing-4)',
+                        borderRadius: 'var(--border-radius-lg)',
+                      }}
                     >
                       <NavLink to={item.to} end={item.to === '/'}>
-                        <Icon className="size-4 shrink-0" />
+                        <div
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: active ? 'rgba(249, 115, 22, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+                            borderRadius: 'var(--border-radius-md)',
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Icon style={{ width: '16px', height: '16px', color: active ? 'var(--color-signal-orange)' : 'var(--color-amber-400)' }} />
+                        </div>
                         <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                       </NavLink>
                     </SidebarMenuButton>
@@ -387,35 +523,162 @@ export const AppSidebar = memo(function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        <SidebarSeparator style={{ margin: 'var(--spacing-4) 0' }} />
+
+        {/* Newsletter Group */}
+        <SidebarGroup style={{ padding: 0 }}>
+          <SidebarGroupLabel
+            style={{
+              padding: 'var(--spacing-2) var(--spacing-4)',
+              marginBottom: 'var(--spacing-2)',
+              fontSize: 'var(--typography-font-size-xs)',
+              fontWeight: 'var(--typography-font-weight-semibold)',
+              color: 'var(--color-text-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: 'var(--typography-letter-spacing-wide)',
+            }}
+          >
+            Content
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <CollapsibleNavGroup
+              parent={NAV_GROUPS.newsletter.parent}
+              children={NAV_GROUPS.newsletter.children}
+              isVisible={isItemVisible(NAV_GROUPS.newsletter.parent)}
+              isItemVisible={isItemVisible}
+              isActive={isActive}
+              defaultExpanded
+            />
+            <CollapsibleNavGroup
+              parent={NAV_GROUPS.marketing.parent}
+              children={NAV_GROUPS.marketing.children}
+              isVisible={isItemVisible(NAV_GROUPS.marketing.parent)}
+              isItemVisible={isItemVisible}
+              isActive={isActive}
+            />
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Admin Group */}
+        {isAdmin && (
+          <>
+            <SidebarSeparator style={{ margin: 'var(--spacing-4) 0' }} />
+            <SidebarGroup style={{ padding: 0 }}>
+              <SidebarGroupLabel
+                style={{
+                  padding: 'var(--spacing-2) var(--spacing-4)',
+                  marginBottom: 'var(--spacing-2)',
+                  fontSize: 'var(--typography-font-size-xs)',
+                  fontWeight: 'var(--typography-font-weight-semibold)',
+                  color: 'var(--color-text-muted)',
+                  textTransform: 'uppercase',
+                  letterSpacing: 'var(--typography-letter-spacing-wide)',
+                }}
+              >
+                System
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <CollapsibleNavGroup
+                  parent={NAV_GROUPS.admin.parent}
+                  children={NAV_GROUPS.admin.children}
+                  isVisible={isItemVisible(NAV_GROUPS.admin.parent)}
+                  isItemVisible={isItemVisible}
+                  isActive={isActive}
+                />
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        )}
       </SidebarContent>
 
       {/* Footer with User Info */}
-      <SidebarFooter className="p-3 border-t border-sidebar-border">
-        <SidebarMenu className="gap-1">
+      <SidebarFooter
+        style={{
+          padding: 'var(--spacing-4)',
+          borderTop: '1px solid var(--color-border-default)',
+        }}
+      >
+        <SidebarMenu style={{ gap: 'var(--spacing-2)' }}>
           {user && (
             <SidebarMenuItem>
-              <SidebarMenuButton className="px-3 py-2 rounded-md">
-                <div className="flex items-center justify-center shrink-0 w-8 h-8 rounded-full bg-sidebar-primary text-sidebar-primary-foreground text-sm font-semibold">
+              <SidebarMenuButton
+                style={{
+                  padding: 'var(--spacing-3) var(--spacing-4)',
+                  borderRadius: 'var(--border-radius-lg)',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: 'var(--border-radius-full)',
+                    background: 'var(--gradient-btn-primary)',
+                    color: 'var(--color-text-primary)',
+                    fontSize: 'var(--typography-font-size-sm)',
+                    fontWeight: 'var(--typography-font-weight-semibold)',
+                  }}
+                >
                   {(user.name || user.email || 'U').charAt(0).toUpperCase()}
                 </div>
-                <div className="flex flex-col text-left leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="truncate text-sm font-medium text-sidebar-foreground">
+                <div
+                  className="group-data-[collapsible=icon]:hidden"
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    textAlign: 'left',
+                    lineHeight: 1.3,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 'var(--typography-font-size-sm)',
+                      fontWeight: 'var(--typography-font-weight-medium)',
+                      color: 'var(--color-text-primary)',
+                    }}
+                  >
                     {user.name || user.email}
                   </span>
-                  <span className="truncate capitalize text-xs text-sidebar-foreground/70">
+                  <span
+                    style={{
+                      fontSize: 'var(--typography-font-size-xs)',
+                      color: 'var(--color-text-muted)',
+                      textTransform: 'capitalize',
+                    }}
+                  >
                     {user.role?.replace('_', ' ')}
                   </span>
                 </div>
               </SidebarMenuButton>
             </SidebarMenuItem>
           )}
-          <SidebarSeparator className="my-2" />
+          <SidebarSeparator style={{ margin: 'var(--spacing-2) 0' }} />
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={logout}
-              className="px-3 py-2 rounded-md text-sidebar-foreground hover:text-destructive"
+              style={{
+                padding: 'var(--spacing-3) var(--spacing-4)',
+                borderRadius: 'var(--border-radius-lg)',
+              }}
             >
-              <LogOut className="size-4" />
+              <div
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                  borderRadius: 'var(--border-radius-md)',
+                  flexShrink: 0,
+                }}
+              >
+                <LogOut style={{ width: '16px', height: '16px', color: 'var(--color-amber-400)' }} />
+              </div>
               <span className="group-data-[collapsible=icon]:hidden">Logout</span>
             </SidebarMenuButton>
           </SidebarMenuItem>

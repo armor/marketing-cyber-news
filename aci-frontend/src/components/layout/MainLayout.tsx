@@ -68,8 +68,21 @@ export function MainLayout({ children }: MainLayoutProps): React.ReactElement {
 
           {/* Main content area */}
           <main className="flex-1 flex flex-col" role="main">
-            <div className="flex-1 overflow-y-auto p-6">
-              {children}
+            <div
+              className="flex-1 overflow-y-auto"
+              style={{
+                background: 'var(--gradient-page)',
+                padding: 'var(--spacing-layout-page)',
+              }}
+            >
+              <div
+                style={{
+                  maxWidth: '1400px',
+                  margin: '0 auto',
+                }}
+              >
+                {children}
+              </div>
             </div>
             <Footer />
           </main>

@@ -11,20 +11,22 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-gradient-btn-primary text-[var(--color-obsidian)] dark:text-[var(--color-obsidian)] font-bold shadow-btn-primary hover:shadow-btn-primary-hover hover:-translate-y-px hover:brightness-110",
+          "bg-gradient-btn-primary text-[var(--color-obsidian)] dark:text-[var(--color-obsidian)] font-bold shadow-btn-primary hover:shadow-btn-primary-hover hover:-translate-y-px hover:brightness-110 backdrop-blur-sm",
         primary:
-          "bg-gradient-btn-primary text-[var(--color-obsidian)] dark:text-[var(--color-obsidian)] font-bold shadow-btn-primary hover:shadow-btn-primary-hover hover:-translate-y-px hover:brightness-110",
+          "bg-gradient-btn-primary text-[var(--color-obsidian)] dark:text-[var(--color-obsidian)] font-bold shadow-btn-primary hover:shadow-btn-primary-hover hover:-translate-y-px hover:brightness-110 backdrop-blur-sm",
         destructive:
-          "bg-gradient-btn-alert text-white shadow-xs hover:brightness-110 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
+          "bg-gradient-btn-alert text-white shadow-xs hover:brightness-110 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 backdrop-blur-sm",
         outline:
-          "border border-[rgba(255,255,255,0.15)] dark:border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.06)] dark:bg-[rgba(255,255,255,0.06)] text-foreground shadow-xs hover:bg-[rgba(255,255,255,0.12)] hover:border-[rgba(255,255,255,0.25)]",
+          "border border-[rgba(255,255,255,0.2)] dark:border-[rgba(255,255,255,0.2)] bg-[rgba(255,255,255,0.08)] dark:bg-[rgba(255,255,255,0.08)] backdrop-blur-md text-foreground shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:bg-[rgba(255,255,255,0.15)] hover:border-[rgba(255,255,255,0.3)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.2)]",
         secondary:
-          "bg-[rgba(255,255,255,0.06)] dark:bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.1)] text-foreground shadow-xs hover:bg-[rgba(255,255,255,0.12)]",
+          "bg-[rgba(255,255,255,0.08)] dark:bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.15)] backdrop-blur-md text-foreground shadow-[0_4px_16px_rgba(0,0,0,0.1)] hover:bg-[rgba(255,255,255,0.15)] hover:border-[rgba(255,255,255,0.25)]",
         ghost:
-          "hover:bg-[rgba(255,255,255,0.08)] hover:text-foreground",
+          "hover:bg-[rgba(255,255,255,0.1)] hover:backdrop-blur-sm hover:text-foreground",
         link: "text-[var(--color-amber-400)] underline-offset-4 hover:underline",
         success:
-          "bg-gradient-btn-trust text-white shadow-xs hover:brightness-110",
+          "bg-gradient-btn-trust text-white shadow-xs hover:brightness-110 backdrop-blur-sm",
+        glass:
+          "bg-[rgba(255,255,255,0.1)] dark:bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] backdrop-blur-xl text-foreground shadow-[0_8px_32px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.15)] hover:bg-[rgba(255,255,255,0.18)] hover:border-[rgba(255,255,255,0.35)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.2)] hover:-translate-y-px",
       },
       size: {
         default: "h-10 px-4 py-2 has-[>svg]:px-3",
