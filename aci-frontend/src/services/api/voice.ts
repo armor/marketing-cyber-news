@@ -20,9 +20,10 @@ import type {
 } from '@/types/voice';
 
 // API Prefixes - aligned with backend routing
-const VOICE_AGENTS_PREFIX = '/v1/voice-agents';
-const ADMIN_VOICE_AGENTS_PREFIX = '/v1/admin/voice-agents';
-const TRANSFORMATIONS_PREFIX = '/v1/transformations';
+// Note: API_BASE_URL already includes /v1, so we don't duplicate it here
+const VOICE_AGENTS_PREFIX = '/voice-agents';
+const ADMIN_VOICE_AGENTS_PREFIX = '/admin/voice-agents';
+const TRANSFORMATIONS_PREFIX = '/transformations';
 
 // ============================================================================
 // Voice Agent API (Public)
