@@ -179,6 +179,13 @@ const NAV_ITEMS: NavItem[] = [
     icon: Settings,
     label: 'Admin',
     requiresAdmin: true,
+    children: [
+      {
+        to: '/admin/voice-agents',
+        icon: Wand2,
+        label: 'Voice Agents',
+      },
+    ],
   },
 ];
 

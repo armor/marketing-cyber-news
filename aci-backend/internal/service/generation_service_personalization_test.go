@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
@@ -66,6 +67,24 @@ func (m *MockNewsletterBlockRepository) IncrementClicks(ctx context.Context, id 
 func (m *MockNewsletterBlockRepository) UpdatePositions(ctx context.Context, issueID uuid.UUID, positions map[uuid.UUID]int) error {
 	args := m.Called(ctx, issueID, positions)
 	return args.Error(0)
+}
+
+func (m *MockNewsletterBlockRepository) BulkCreateWithLock(ctx context.Context, issueID uuid.UUID, blocks []*domain.NewsletterBlock) error {
+	args := m.Called(ctx, issueID, blocks)
+	return args.Error(0)
+}
+
+func (m *MockNewsletterBlockRepository) GetExistingContentItemIDs(ctx context.Context, issueID uuid.UUID, contentItemIDs []uuid.UUID) ([]uuid.UUID, error) {
+	args := m.Called(ctx, issueID, contentItemIDs)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]uuid.UUID), args.Error(1)
+}
+
+func (m *MockNewsletterBlockRepository) GetMaxPositionForUpdate(ctx context.Context, tx pgx.Tx, issueID uuid.UUID) (int, error) {
+	args := m.Called(ctx, tx, issueID)
+	return args.Int(0), args.Error(1)
 }
 
 // Test BuildPersonalizationContext

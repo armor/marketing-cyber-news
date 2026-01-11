@@ -126,6 +126,14 @@ func (m *MockContentItemRepository) GetFreshContent(ctx context.Context, daysThr
 	return args.Get(0).([]*domain.ContentItem), args.Error(1)
 }
 
+func (m *MockContentItemRepository) GetByIDs(ctx context.Context, ids []uuid.UUID) ([]*domain.ContentItem, error) {
+	args := m.Called(ctx, ids)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*domain.ContentItem), args.Error(1)
+}
+
 // Segment, NewsletterConfig, and AuditLog mocks are already defined in test_mocks.go
 
 // ============================================================================

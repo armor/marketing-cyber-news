@@ -242,6 +242,26 @@ func (s *Server) setupRoutesWithWebSocket(wsHandler WebSocketHandler) {
 					r.Get("/settings/signup-mode", s.handlers.UserAdmin.GetSignupMode)
 					r.Put("/settings/signup-mode", s.handlers.UserAdmin.SetSignupMode)
 				}
+
+				// Voice Agent Management (Voice Transformation System - Admin only)
+				if s.handlers.VoiceAgent != nil {
+					r.Route("/voice-agents", func(r chi.Router) {
+						// Voice Agent CRUD
+						r.Post("/", s.handlers.VoiceAgent.CreateAgent)
+						r.Put("/{id}", s.handlers.VoiceAgent.UpdateAgent)
+						r.Delete("/{id}", s.handlers.VoiceAgent.DeleteAgent)
+
+						// Style Rule Management
+						r.Post("/{id}/rules", s.handlers.VoiceAgent.CreateStyleRule)
+						r.Put("/{id}/rules/{ruleId}", s.handlers.VoiceAgent.UpdateStyleRule)
+						r.Delete("/{id}/rules/{ruleId}", s.handlers.VoiceAgent.DeleteStyleRule)
+
+						// Example Management
+						r.Post("/{id}/examples", s.handlers.VoiceAgent.CreateExample)
+						r.Put("/{id}/examples/{exampleId}", s.handlers.VoiceAgent.UpdateExample)
+						r.Delete("/{id}/examples/{exampleId}", s.handlers.VoiceAgent.DeleteExample)
+					})
+				}
 			})
 
 			// Newsletter routes
@@ -327,6 +347,11 @@ func (s *Server) setupRoutesWithWebSocket(wsHandler WebSocketHandler) {
 				r.Post("/{id}/validate", s.handlers.Issue.ValidateBrandVoice)
 				r.Post("/{id}/select-subject-line", s.handlers.Issue.SelectSubjectLine)
 				r.Post("/{id}/regenerate-subject-lines", s.handlers.Issue.RegenerateSubjectLines)
+
+				// Newsletter block management (Content Pipeline)
+				if s.handlers.NewsletterBlock != nil {
+					r.Post("/{id}/blocks/bulk", s.handlers.NewsletterBlock.BulkAddBlocks)
+				}
 			})
 
 			// Segment routes
@@ -564,6 +589,42 @@ func (s *Server) setupRoutesWithWebSocket(wsHandler WebSocketHandler) {
 				r.Get("/", s.handlers.Calendar.GetCalendar)
 				r.Put("/{id}", s.handlers.Calendar.UpdateCalendarEntry)
 				r.Delete("/{id}", s.handlers.Calendar.CancelCalendarEntry)
+			})
+
+			// Voice Agent routes (Voice Transformation System)
+			r.Route("/voice-agents", func(r chi.Router) {
+				// Handle case where VoiceAgent handler is not initialized
+				if s.handlers.VoiceAgent == nil {
+					r.HandleFunc("/*", func(w http.ResponseWriter, req *http.Request) {
+						response.ServiceUnavailable(w, "Voice agent service is not available")
+					})
+					return
+				}
+
+				// List all active voice agents
+				r.Get("/", s.handlers.VoiceAgent.ListAgents)
+
+				// Get a specific voice agent with rules and examples
+				r.Get("/{id}", s.handlers.VoiceAgent.GetAgent)
+
+				// Transform text using a voice agent (rate limited)
+				if s.handlers.Transform != nil {
+					r.With(middleware.VoiceTransformRateLimiter()).Post("/{id}/transform", s.handlers.Transform.Transform)
+				}
+			})
+
+			// Transformation routes (Voice Transformation System)
+			r.Route("/transformations", func(r chi.Router) {
+				// Handle case where Transform handler is not initialized
+				if s.handlers.Transform == nil {
+					r.HandleFunc("/*", func(w http.ResponseWriter, req *http.Request) {
+						response.ServiceUnavailable(w, "Transformation service is not available")
+					})
+					return
+				}
+
+				// Select a transformation option (no rate limiting - selection doesn't use LLM)
+				r.Post("/select", s.handlers.Transform.SelectTransformation)
 			})
 		})
 	})

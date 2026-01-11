@@ -197,4 +197,33 @@ export const marketingKeys = {
     alerts: (campaignId: string) =>
       [...marketingKeys.competitors.all(), campaignId, 'alerts'] as const,
   },
+
+  // ============================================================================
+  // Voice Transformation Keys
+  // ============================================================================
+
+  voice: {
+    /**
+     * Base key for all voice transformation queries
+     */
+    all: () => [...marketingKeys.all, 'voice'] as const,
+
+    /**
+     * Key for voice agents list
+     */
+    agents: () => [...marketingKeys.voice.all(), 'agents'] as const,
+
+    /**
+     * Key for single voice agent detail
+     * @param id - Voice agent ID
+     */
+    agent: (id: string) => [...marketingKeys.voice.agents(), id] as const,
+
+    /**
+     * Key for transformation history
+     * @param filters - Optional filters
+     */
+    transformations: (filters?: Record<string, unknown>) =>
+      [...marketingKeys.voice.all(), 'transformations', filters ?? {}] as const,
+  },
 } as const;

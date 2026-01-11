@@ -99,6 +99,12 @@ const MarketingAnalyticsPage = lazy(() =>
 const CompetitorMonitorPage = lazy(() =>
   import('@/pages/CompetitorMonitorPage').then((module) => ({ default: module.CompetitorMonitorPage }))
 );
+const VoiceTransformPage = lazy(() =>
+  import('@/pages/VoiceTransformPage').then((module) => ({ default: module.VoiceTransformPage }))
+);
+const VoiceAgentsPage = lazy(() =>
+  import('@/pages/admin/VoiceAgentsPage').then((module) => ({ default: module.VoiceAgentsPage }))
+);
 const AnalyticsPage = lazy(() =>
   Promise.resolve({
     default: () => (
@@ -491,12 +497,33 @@ function App(): React.ReactElement {
                   </ProtectedRoute>
                 }
               />
+              {/* Voice Transformation Route */}
+              <Route
+                path="/voice-transform"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <VoiceTransformPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/admin"
                 element={
                   <ProtectedRoute requiredRole="admin">
                     <MainLayout>
                     <AdminPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/voice-agents"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <MainLayout>
+                      <VoiceAgentsPage />
                     </MainLayout>
                   </ProtectedRoute>
                 }

@@ -24,6 +24,7 @@ import (
 	"github.com/phillipboles/aci-backend/internal/pkg/jwt"
 	"github.com/phillipboles/aci-backend/internal/repository/postgres"
 	"github.com/phillipboles/aci-backend/internal/service"
+	"github.com/phillipboles/aci-backend/internal/service/voice"
 	"github.com/phillipboles/aci-backend/internal/websocket"
 )
 
@@ -162,6 +163,12 @@ func main() {
 	articleReadRepo := postgres.NewArticleReadRepository(sqlDB)
 	auditLogRepo := postgres.NewAuditLogRepository(sqlDB)
 
+	// Voice Transformation repositories (pgx-based)
+	voiceAgentRepo := postgres.NewVoiceAgentRepository(db)
+	styleRuleRepo := postgres.NewStyleRuleRepository(db)
+	exampleRepo := postgres.NewExampleRepository(db)
+	transformationRepo := postgres.NewTransformationRepository(db)
+
 	log.Info().Msg("Repositories initialized")
 
 	// Initialize WebSocket hub
@@ -219,6 +226,30 @@ func main() {
 	newsletterApprovalService := service.NewApprovalService(newsletterIssueRepo, newsletterConfigRepo, auditLogRepo, userRepo, issueApprovalRepo)
 	analyticsService := service.NewAnalyticsService(engagementEventRepo, newsletterIssueRepo, newsletterConfigRepo, segmentRepo)
 	claimsLibraryService := service.NewClaimsLibraryService(claimsLibraryRepo, auditLogRepo)
+
+	// Voice Transformation services
+	var voiceAgentService voice.AgentService
+	var styleRuleService voice.StyleRuleService
+	var exampleService voice.ExampleService
+	var voiceTransformService voice.TransformService
+
+	openRouterAPIKey := os.Getenv("OPENROUTER_API_KEY")
+	if openRouterAPIKey != "" {
+		llmClient, err := voice.NewOpenRouterClient(&voice.LLMClientConfig{
+			APIKey: openRouterAPIKey,
+		})
+		if err != nil {
+			log.Warn().Err(err).Msg("Failed to create OpenRouter client, voice transformation disabled")
+		} else {
+			voiceAgentService = voice.NewAgentService(voiceAgentRepo)
+			styleRuleService = voice.NewStyleRuleService(styleRuleRepo, voiceAgentRepo)
+			exampleService = voice.NewExampleService(exampleRepo, voiceAgentRepo)
+			voiceTransformService = voice.NewTransformService(voiceAgentService, llmClient, transformationRepo)
+			log.Info().Msg("Voice Transformation services initialized")
+		}
+	} else {
+		log.Info().Msg("OPENROUTER_API_KEY not set, voice transformation disabled")
+	}
 
 	// n8n webhook URL and timeout from configuration (validated at startup)
 	// TODO: Wire deliveryService when newsletter delivery is enabled
@@ -335,6 +366,7 @@ func main() {
 	issueHandler := handlers.NewIssueHandler(generationService, brandVoiceService, newsletterApprovalService, contactRepo)
 	analyticsHandler := handlers.NewAnalyticsHandler(analyticsService, abTestService)
 	claimsLibraryHandler := handlers.NewClaimsLibraryHandler(claimsLibraryService)
+	newsletterBlockHandler := handlers.NewNewsletterBlockHandler(newsletterBlockRepo, newsletterIssueRepo, contentItemRepo)
 
 	// Get n8n webhook secret from environment for engagement handler
 	n8nWebhookSecret := os.Getenv("N8N_WEBHOOK_SECRET")
@@ -360,6 +392,15 @@ func main() {
 
 	// Initialize metrics handler for Prometheus
 	metricsHandler := handlers.NewMetricsHandler()
+
+	// Voice Transformation handlers
+	var voiceAgentHandler *handlers.VoiceAgentHandler
+	var transformHandler *handlers.TransformHandler
+	if voiceAgentService != nil && voiceTransformService != nil && styleRuleService != nil && exampleService != nil {
+		voiceAgentHandler = handlers.NewVoiceAgentHandler(voiceAgentService, styleRuleService, exampleService)
+		transformHandler = handlers.NewTransformHandler(voiceTransformService)
+		log.Info().Msg("Voice Transformation handlers initialized")
+	}
 
 	// NOTE: AdminHandler blocked until AdminService interface issue is resolved
 	// adminHandler := handlers.NewAdminHandler(adminService)
@@ -394,6 +435,9 @@ func main() {
 		Health:             healthHandler,
 		Metrics:            metricsHandler,
 		ClaimsLibrary:      claimsLibraryHandler,
+		NewsletterBlock:    newsletterBlockHandler,
+		VoiceAgent:         voiceAgentHandler,
+		Transform:          transformHandler,
 	}
 
 	serverConfig := api.Config{

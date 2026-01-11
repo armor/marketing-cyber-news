@@ -8,6 +8,7 @@ import { BrandScoreBadge } from './BrandScoreBadge';
 import { BrandFeedback } from './BrandFeedback';
 import { RefinementButtons } from './RefinementButtons';
 import { ScheduleDialog } from './ScheduleDialog';
+import { VoiceTransformButton } from '@/components/marketing/voice';
 import type {
   ContentChannel,
   ContentType,
@@ -250,7 +251,16 @@ export function ContentStudio({
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Generated Content</CardTitle>
-                <BrandScoreBadge score={generatedContent.brandScore.overall} />
+                <div className="flex items-center" style={{ gap: 'var(--spacing-2)' }}>
+                  <VoiceTransformButton
+                    text={generatedContent.content}
+                    onApply={handleContentChange}
+                    fieldPath="content"
+                    entityType="content_studio"
+                    disabled={isGenerating || isRefining}
+                  />
+                  <BrandScoreBadge score={generatedContent.brandScore.overall} />
+                </div>
               </div>
             </CardHeader>
             <CardContent>

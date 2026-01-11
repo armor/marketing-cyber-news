@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { VoiceTransformButton } from '@/components/marketing/voice';
 import { useClaim } from '@/hooks/useClaim';
 import { useClaimCategories } from '@/hooks/useClaimCategories';
 import { useCreateClaim, useUpdateClaim } from '@/hooks/useClaimMutations';
@@ -256,9 +257,19 @@ function ClaimFormContent({
       >
         {/* Claim Text */}
         <div>
-          <Label htmlFor="claim_text">
-            Claim Text <span style={{ color: 'var(--color-error)' }}>*</span>
-          </Label>
+          <div className="flex items-center justify-between" style={{ marginBottom: 'var(--spacing-1)' }}>
+            <Label htmlFor="claim_text">
+              Claim Text <span style={{ color: 'var(--color-error)' }}>*</span>
+            </Label>
+            <VoiceTransformButton
+              text={formState.claim_text}
+              onApply={(text) => handleChange('claim_text', text)}
+              fieldPath="claim_text"
+              entityType="claim"
+              entityId={existingClaim?.id}
+              disabled={isSubmitting}
+            />
+          </div>
           <Textarea
             id="claim_text"
             value={formState.claim_text}
@@ -266,7 +277,6 @@ function ClaimFormContent({
             placeholder="Enter the claim, disclaimer, or do-not-say text..."
             rows={4}
             style={{
-              marginTop: 'var(--spacing-1)',
               borderColor: errors.claim_text ? 'var(--color-error)' : undefined,
             }}
           />

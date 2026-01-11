@@ -50,6 +50,9 @@ type Handlers struct {
 	Health             *handlers.HealthHandler
 	Metrics            *handlers.MetricsHandler
 	ClaimsLibrary      *handlers.ClaimsLibraryHandler
+	NewsletterBlock    *handlers.NewsletterBlockHandler
+	VoiceAgent         *handlers.VoiceAgentHandler
+	Transform          *handlers.TransformHandler
 }
 
 // Config holds server configuration

@@ -12,6 +12,7 @@ import { approvalHandlers } from './approvals';
 import { newsletterHandlers } from './newsletter';
 import { channelHandlers } from './channels';
 import { marketingHandlers } from './marketing';
+import { voiceHandlers } from './voice';
 
 export const handlers = [
   ...authHandlers,
@@ -23,4 +24,5 @@ export const handlers = [
   ...newsletterHandlers,
   ...channelHandlers,
   ...marketingHandlers,
+  ...voiceHandlers,
 ];
