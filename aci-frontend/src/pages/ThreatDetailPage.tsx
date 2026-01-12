@@ -25,8 +25,8 @@
  */
 
 import type { ReactElement } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Home, Shield, Target, AlertTriangle, CheckCircle2, ExternalLink } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Shield, Target, AlertTriangle, CheckCircle2, ExternalLink } from 'lucide-react';
 import { useThreat } from '@/hooks/useThreat';
 import { useToggleBookmark } from '@/hooks/useToggleBookmark';
 import { ThreatHeader } from '@/components/threat/ThreatHeader';

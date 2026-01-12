@@ -12,7 +12,6 @@ import { useState } from 'react';
 import { Bell, ChevronDown, Settings, LogOut, Building2, HelpCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { ArmorLogo } from '@/components/ui/ArmorLogo';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 // ============================================================================
@@ -30,13 +29,35 @@ export function Header(): React.ReactElement {
       {/* Left: Logo and Title */}
       <div className="flex items-center gap-4 min-w-0">
         <Link to="/dashboard" className="flex-shrink-0">
-          <ArmorLogo width={100} height={42} backgroundContext="dark" />
+          <img
+            src="/branding/logos/armor-dash-white-logo.svg"
+            alt="Armor"
+            style={{ height: '36px', width: 'auto' }}
+          />
         </Link>
-        <div className="hidden md:block min-w-0">
-          <h1 className="text-lg font-bold text-foreground tracking-tight">
+        <div className="hidden md:flex flex-col min-w-0" style={{ padding: 'var(--spacing-2) var(--spacing-3)' }}>
+          <h1
+            style={{
+              fontSize: 'var(--typography-font-size-lg)',
+              fontWeight: 'var(--typography-font-weight-bold)',
+              background: 'var(--gradient-brand-text-alt)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              lineHeight: 'var(--typography-line-height-tight)',
+              margin: 0,
+              letterSpacing: 'var(--typography-letter-spacing-tight)',
+            }}
+          >
             Cyber News
           </h1>
-          <p className="text-xs text-muted-foreground">
+          <p
+            style={{
+              fontSize: 'var(--typography-font-size-xs)',
+              color: 'rgba(255, 255, 255, 0.6)',
+              margin: 0,
+            }}
+          >
             Proactive Threat Intelligence
           </p>
         </div>

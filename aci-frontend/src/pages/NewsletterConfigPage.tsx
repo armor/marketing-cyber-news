@@ -18,11 +18,12 @@
 
 import { type ReactElement, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Settings, Users, ArrowLeft } from 'lucide-react';
+import { Plus, Settings, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { PageHeader } from '@/components/layout/PageHeader';
 import {
   Sheet,
   SheetContent,
@@ -118,7 +119,7 @@ export function NewsletterConfigPage(): ReactElement {
   // Event Handlers
   // ============================================================================
 
-  const handleBack = useCallback((): void => {
+  const _handleBack = useCallback((): void => {
     navigate(DASHBOARD_PATH);
   }, [navigate]);
 
@@ -325,125 +326,49 @@ export function NewsletterConfigPage(): ReactElement {
   // ============================================================================
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        backgroundColor: 'var(--color-background)',
-      }}
-    >
-      {/* Header */}
-      <header
-        style={{
-          backgroundColor: 'var(--color-surface)',
-          borderBottom: `var(--border-width-thin) solid var(--color-border-default)`,
-          padding: 'var(--spacing-component-lg) var(--spacing-page-padding)',
-        }}
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between">
-            {/* Left: Back button and title */}
-            <div className="flex items-center gap-[var(--spacing-gap-lg)]">
-              <Button
-                onClick={handleBack}
-                variant="ghost"
-                size="sm"
-                aria-label="Back to dashboard"
-              >
-                <ArrowLeft
-                  style={{
-                    width: 'var(--spacing-4)',
-                    height: 'var(--spacing-4)',
-                    marginRight: 'var(--spacing-2)',
-                  }}
-                />
-                Back
-              </Button>
-
-              <div className="flex items-center gap-[var(--spacing-gap-md)]">
-                <Settings
-                  style={{
-                    width: 'var(--spacing-6)',
-                    height: 'var(--spacing-6)',
-                    color: 'var(--color-brand-primary)',
-                  }}
-                />
-                <h1
-                  style={{
-                    fontSize: 'var(--typography-font-size-2xl)',
-                    fontWeight: 'var(--typography-font-weight-bold)',
-                    color: 'var(--color-text-primary)',
-                  }}
-                >
-                  Newsletter Configuration
-                </h1>
-              </div>
-            </div>
-
-            {/* Right: Create button */}
-            <Button
-              onClick={
-                activeTab === 'configurations'
-                  ? handleCreateConfiguration
-                  : handleCreateSegment
-              }
-              size="default"
-              aria-label={
-                activeTab === 'configurations'
-                  ? 'Create new newsletter configuration'
-                  : 'Create new audience segment'
-              }
-            >
-              <Plus
-                style={{
-                  width: 'var(--spacing-4)',
-                  height: 'var(--spacing-4)',
-                  marginRight: 'var(--spacing-2)',
-                }}
-                aria-hidden="true"
-              />
-              {activeTab === 'configurations'
-                ? 'New Configuration'
-                : 'New Segment'}
-            </Button>
-          </div>
-
-          {/* Breadcrumb */}
-          <div
-            className="flex items-center gap-[var(--spacing-gap-sm)]"
-            style={{
-              marginTop: 'var(--spacing-gap-md)',
-              fontSize: 'var(--typography-font-size-sm)',
-              color: 'var(--color-text-secondary)',
-            }}
+    <div className="flex flex-col h-full">
+      {/* Page Header */}
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'Newsletter', href: '/newsletter/configs' },
+          { label: 'Configuration' },
+        ]}
+        title="Newsletter Configuration"
+        description="Manage newsletter configurations and audience segments"
+        actions={
+          <Button
+            onClick={
+              activeTab === 'configurations'
+                ? handleCreateConfiguration
+                : handleCreateSegment
+            }
+            size="default"
+            aria-label={
+              activeTab === 'configurations'
+                ? 'Create new newsletter configuration'
+                : 'Create new audience segment'
+            }
           >
-            <button
-              onClick={handleBack}
-              className="hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2"
+            <Plus
               style={{
-                color: 'var(--color-text-secondary)',
+                width: 'var(--spacing-4)',
+                height: 'var(--spacing-4)',
+                marginRight: 'var(--spacing-2)',
               }}
-              aria-label="Go to Dashboard"
-            >
-              Dashboard
-            </button>
-            <span>&gt;</span>
-            <span
-              style={{
-                color: 'var(--color-text-primary)',
-                fontWeight: 'var(--typography-font-weight-medium)',
-              }}
-            >
-              Newsletter Config
-            </span>
-          </div>
-        </div>
-      </header>
+              aria-hidden="true"
+            />
+            {activeTab === 'configurations'
+              ? 'New Configuration'
+              : 'New Segment'}
+          </Button>
+        }
+      />
 
       {/* Main Content */}
       <main
-        style={{
-          padding: 'var(--spacing-page-padding)',
-        }}
+        className="flex-1 overflow-y-auto"
+        style={{ padding: 'var(--spacing-6)' }}
       >
         <div className="max-w-7xl mx-auto">
           {/* Tab Navigation */}
