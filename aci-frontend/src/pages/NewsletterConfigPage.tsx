@@ -74,8 +74,6 @@ const TABS: readonly Tab[] = [
   { id: 'segments', label: 'Segments', icon: Users },
 ] as const;
 
-const DASHBOARD_PATH = '/';
-
 // ============================================================================
 // Component
 // ============================================================================
@@ -118,10 +116,6 @@ export function NewsletterConfigPage(): ReactElement {
   // ============================================================================
   // Event Handlers
   // ============================================================================
-
-  const _handleBack = useCallback((): void => {
-    navigate(DASHBOARD_PATH);
-  }, [navigate]);
 
   const handleCreateConfiguration = useCallback((): void => {
     setSelectedConfig(null);

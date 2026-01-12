@@ -42,29 +42,25 @@ export interface ActivityFeedProps {
 
 /**
  * Icon mapping for activity types
+ * Uses consistent amber icon styling to match nav icons
  */
 const ActivityIcon: React.FC<{ type: ActivityItem['type'] }> = ({ type }) => {
-  const iconStyles: React.CSSProperties = {
-    width: spacing[5],
-    height: spacing[5],
+  const containerStyles: React.CSSProperties = {
+    width: '32px',
+    height: '32px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: borders.radius.full,
+    borderRadius: borders.radius.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     flexShrink: 0,
+    color: 'var(--color-amber-400)',
   };
 
   switch (type) {
     case 'new_threat':
       return (
-        <div
-          style={{
-            ...iconStyles,
-            backgroundColor: colors.semantic.info,
-            color: colors.text.primary,
-          }}
-          aria-label="New threat"
-        >
+        <div style={containerStyles} aria-label="New threat">
           <svg
             width="16"
             height="16"
@@ -83,14 +79,7 @@ const ActivityIcon: React.FC<{ type: ActivityItem['type'] }> = ({ type }) => {
       );
     case 'updated_threat':
       return (
-        <div
-          style={{
-            ...iconStyles,
-            backgroundColor: colors.semantic.warning,
-            color: colors.text.primary,
-          }}
-          aria-label="Updated threat"
-        >
+        <div style={containerStyles} aria-label="Updated threat">
           <svg
             width="16"
             height="16"
@@ -110,14 +99,7 @@ const ActivityIcon: React.FC<{ type: ActivityItem['type'] }> = ({ type }) => {
       );
     case 'alert_triggered':
       return (
-        <div
-          style={{
-            ...iconStyles,
-            backgroundColor: colors.severity.critical,
-            color: colors.text.primary,
-          }}
-          aria-label="Alert triggered"
-        >
+        <div style={containerStyles} aria-label="Alert triggered">
           <svg
             width="16"
             height="16"
@@ -305,7 +287,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
                 style={{
                   display: 'flex',
                   gap: spacing[3],
-                  padding: componentSpacing.md,
+                  padding: componentSpacing.lg,
                   borderBottom: index < displayItems.length - 1
                     ? `${borders.width.thin} solid ${colors.border.default}`
                     : 'none',

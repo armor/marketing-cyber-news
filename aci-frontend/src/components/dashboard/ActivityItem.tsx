@@ -145,18 +145,19 @@ export function ActivityItem({
           'cursor-pointer hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
       )}
       style={{
-        padding: spacing[3],
+        padding: spacing[4],
         borderColor: colors.border.default,
       }}
     >
       {/* Icon */}
       <div
-        className="flex-shrink-0 flex items-center justify-center rounded-full"
+        className="flex-shrink-0 flex items-center justify-center"
         style={{
-          width: spacing[8],
-          height: spacing[8],
-          backgroundColor: colors.background.secondary,
-          color: colors.text.secondary,
+          width: '32px',
+          height: '32px',
+          backgroundColor: 'rgba(255, 255, 255, 0.08)',
+          borderRadius: '8px',
+          color: 'var(--color-amber-400)',
         }}
       >
         {icon}

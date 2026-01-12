@@ -76,6 +76,23 @@ function getVariantBorderColor(variant: MetricCardProps['variant']): string {
 }
 
 /**
+ * Returns icon container background based on variant
+ */
+function getIconContainerBackground(variant: MetricCardProps['variant']): string {
+  switch (variant) {
+    case 'critical':
+      return 'rgba(239, 68, 68, 0.15)';
+    case 'warning':
+      return 'rgba(249, 115, 22, 0.15)';
+    case 'success':
+      return 'rgba(34, 197, 94, 0.15)';
+    case 'default':
+    default:
+      return 'rgba(255, 255, 255, 0.08)';
+  }
+}
+
+/**
  * Returns the appropriate accent color for trend indicators
  */
 function getTrendColor(direction: 'up' | 'down' | 'neutral'): string {
@@ -113,6 +130,7 @@ export function MetricCard({
   variant = 'default',
 }: MetricCardProps) {
   const borderColor = getVariantBorderColor(variant);
+  const iconBackground = getIconContainerBackground(variant);
   const formattedValue = formatNumber(value);
 
   // Build accessible label
@@ -136,7 +154,8 @@ export function MetricCard({
     >
       <CardContent
         style={{
-          padding: componentSpacing.lg,
+          padding: componentSpacing.xl,
+          paddingTop: componentSpacing.xl,
         }}
       >
         {/* Header: Title and Icon */}
@@ -153,6 +172,7 @@ export function MetricCard({
               color: colors.text.muted,
               textTransform: 'uppercase',
               letterSpacing: typography.letterSpacing.wide,
+              paddingTop: spacing[1],
             }}
           >
             {title}
@@ -160,8 +180,16 @@ export function MetricCard({
           {icon && (
             <div
               style={{
-                color: borderColor,
-                opacity: 0.7,
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: iconBackground,
+                borderRadius: borders.radius.md,
+                flexShrink: 0,
+                color: 'var(--color-amber-400)',
+                marginLeft: spacing[2],
               }}
               aria-hidden="true"
             >

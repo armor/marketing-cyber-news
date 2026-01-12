@@ -27,6 +27,7 @@
 import type { ReactElement } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Shield, Target, AlertTriangle, CheckCircle2, ExternalLink } from 'lucide-react';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { useThreat } from '@/hooks/useThreat';
 import { useToggleBookmark } from '@/hooks/useToggleBookmark';
 import { ThreatHeader } from '@/components/threat/ThreatHeader';
@@ -273,86 +274,49 @@ export function ThreatDetailPage(): ReactElement {
 
   // Success: Render full threat detail
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: spacing[8],
-        padding: spacing[8],
-        maxWidth: '1200px',
-        margin: '0 auto',
-      }}
-    >
-      {/* Breadcrumb Navigation */}
-      <nav
-        data-testid="breadcrumb-nav"
-        aria-label="Breadcrumb navigation"
+    <div className="flex flex-col h-full">
+      {/* Page Header with Breadcrumbs */}
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'Threats', href: '/threats' },
+          { label: threat.title },
+        ]}
+        title={threat.title}
+        actions={
+          <Button
+            data-testid="back-to-threats-button"
+            variant="ghost"
+            onClick={handleBackClick}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: spacing[2],
+            }}
+          >
+            <ArrowLeft size={16} aria-hidden="true" />
+            <span>Back to Threats</span>
+          </Button>
+        }
+      />
+
+      {/* Main Content */}
+      <div
+        className="flex-1 overflow-y-auto"
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: spacing[2],
-          fontSize: typography.fontSize.sm,
-          color: colors.text.muted,
+          padding: spacing[8],
         }}
       >
-        <Link
-          to="/dashboard"
+        <div
           style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: spacing[2],
-            color: colors.text.muted,
-            textDecoration: 'none',
-          }}
-          className="hover:text-primary"
-        >
-          <Home size={16} aria-hidden="true" />
-          <span>Home</span>
-        </Link>
-        <span aria-hidden="true">/</span>
-        <Link
-          to="/threats"
-          style={{
-            color: colors.text.muted,
-            textDecoration: 'none',
-          }}
-          className="hover:text-primary"
-        >
-          Threats
-        </Link>
-        <span aria-hidden="true">/</span>
-        <span
-          style={{
-            color: colors.text.secondary,
-            fontWeight: typography.fontWeight.medium,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            maxWidth: '400px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: spacing[8],
+            maxWidth: '1200px',
+            margin: '0 auto',
           }}
         >
-          {threat.title}
-        </span>
-      </nav>
-
-      {/* Back Button */}
-      <div>
-        <Button
-          data-testid="back-to-threats-button"
-          variant="ghost"
-          onClick={handleBackClick}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: spacing[2],
-          }}
-        >
-          <ArrowLeft size={16} aria-hidden="true" />
-          <span>Back to Threats</span>
-        </Button>
-      </div>
-
-      {/* Threat Header (title, severity, meta, bookmark) */}
+          {/* Threat Header (title, severity, meta, bookmark) */}
       <ThreatHeader
         threat={threat}
         onBookmarkToggle={handleBookmarkToggle}
@@ -790,6 +754,8 @@ export function ThreatDetailPage(): ReactElement {
             ))}
           </div>
         )}
+      </div>
+        </div>
       </div>
     </div>
   );

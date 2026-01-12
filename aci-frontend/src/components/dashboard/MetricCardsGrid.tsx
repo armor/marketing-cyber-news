@@ -95,7 +95,7 @@ export function MetricCardsGrid({
         <MetricCard
           title="Total Threats"
           value={totalThreats}
-          icon={<Shield size={24} />}
+          icon={<Shield size={18} />}
           variant="default"
         />
       </div>
@@ -105,7 +105,7 @@ export function MetricCardsGrid({
         <MetricCard
           title="Critical"
           value={criticalCount}
-          icon={<AlertTriangle size={24} />}
+          icon={<AlertTriangle size={18} />}
           variant="critical"
         />
       </div>
@@ -115,7 +115,7 @@ export function MetricCardsGrid({
         <MetricCard
           title="New Today"
           value={newToday}
-          icon={<Clock size={24} />}
+          icon={<Clock size={18} />}
           variant="warning"
         />
       </div>
@@ -125,7 +125,7 @@ export function MetricCardsGrid({
         <MetricCard
           title="Active Alerts"
           value={activeAlerts}
-          icon={<Bell size={24} />}
+          icon={<Bell size={18} />}
           variant="success"
         />
       </div>

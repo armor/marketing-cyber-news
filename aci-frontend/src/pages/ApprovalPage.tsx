@@ -32,14 +32,14 @@
 
 import { type ReactElement, useEffect } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
-import { ShieldCheck, ClipboardCheck, ChevronRight, Home } from 'lucide-react';
+import { ShieldCheck, Home } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { ApprovalQueue } from '@/components/approval/ApprovalQueue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { PageHeader } from '@/components/layout/PageHeader';
 import {
   getUserGate,
   GATE_LABELS,
@@ -226,71 +226,14 @@ export function ApprovalPage(): ReactElement {
   return (
     <div className="flex flex-col h-full">
       {/* Page Header */}
-      <div
-        className="shrink-0"
-        style={{
-          padding: 'var(--spacing-4) var(--spacing-6)',
-          borderBottom: '1px solid var(--color-border-default)',
-          background: 'var(--color-bg-elevated)',
-        }}
-      >
-        {/* Breadcrumb */}
-        <nav
-          className="flex items-center text-sm mb-3"
-          style={{ color: 'var(--color-text-muted)' }}
-          aria-label="Breadcrumb"
-        >
-          <NavLink
-            to={DASHBOARD_PATH}
-            className="hover:text-[var(--color-text-primary)] transition-colors flex items-center"
-          >
-            <Home className="size-4 mr-1" />
-            Dashboard
-          </NavLink>
-          <ChevronRight className="size-4 mx-2" />
-          <span style={{ color: 'var(--color-text-primary)', fontWeight: 'var(--typography-font-weight-medium)' }}>
-            Approvals
-          </span>
-        </nav>
-
-        {/* Title Row */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center" style={{ gap: 'var(--spacing-3)' }}>
-            <div
-              className="flex items-center justify-center"
-              style={{
-                width: 'var(--spacing-10)',
-                height: 'var(--spacing-10)',
-                borderRadius: 'var(--border-radius-md)',
-                background: 'var(--gradient-btn-primary)',
-                color: 'var(--color-bg-elevated)',
-              }}
-            >
-              <ClipboardCheck className="size-5" />
-            </div>
-            <div>
-              <h1
-                style={{
-                  fontSize: 'var(--typography-font-size-xl)',
-                  fontWeight: 'var(--typography-font-weight-bold)',
-                  color: 'var(--color-text-primary)',
-                  lineHeight: 'var(--typography-line-height-tight)',
-                }}
-              >
-                {pageTitle}
-              </h1>
-              <p
-                style={{
-                  fontSize: 'var(--typography-font-size-sm)',
-                  color: 'var(--color-text-secondary)',
-                }}
-              >
-                Review and approve pending articles
-              </p>
-            </div>
-          </div>
-
-          {/* User Role Badge */}
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Dashboard', href: DASHBOARD_PATH },
+          { label: 'Approvals' },
+        ]}
+        title={pageTitle}
+        description="Review and approve pending articles"
+        actions={
           <Badge
             variant="secondary"
             className="capitalize"
@@ -302,10 +245,8 @@ export function ApprovalPage(): ReactElement {
           >
             {userRole.replace('_', ' ')}
           </Badge>
-        </div>
-      </div>
-
-      <Separator />
+        }
+      />
 
       {/* Main Content Area */}
       <div
