@@ -57,7 +57,7 @@ import type { UserRole } from '@/types/approval';
 
 interface NavItem {
   to: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   label: string;
   requiresAdmin?: boolean;
   requiresApproval?: boolean;
@@ -461,8 +461,9 @@ export const AppSidebar = memo(function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      {/* Navigation Content */}
+      {/* Navigation Content - scrollable */}
       <SidebarContent
+        className="overflow-y-auto flex-1"
         style={{
           padding: 'var(--spacing-4)',
         }}

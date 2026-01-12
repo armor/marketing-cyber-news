@@ -148,18 +148,20 @@ export function Header(): React.ReactElement {
             <>
               {/* Backdrop for closing */}
               <div
-                className="fixed inset-0 z-40"
+                className="fixed inset-0"
+                style={{ zIndex: 999 }}
                 onClick={() => setUserMenuOpen(false)}
                 aria-hidden="true"
               />
 
               <div
-                className="absolute right-0 top-full mt-2 z-50 w-72 overflow-hidden rounded-xl"
+                className="absolute right-0 top-full mt-2 w-72 overflow-hidden rounded-xl"
                 style={{
                   backgroundColor: 'rgba(24, 24, 27, 0.95)',
                   backdropFilter: 'blur(12px)',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
                   boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
+                  zIndex: 1001, // Above header (1000) so dropdown is clickable
                 }}
                 role="menu"
               >
