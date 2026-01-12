@@ -495,3 +495,134 @@ func (r *newsletterBlockRepository) GetMaxPosition(ctx context.Context, issueID 
 
 	return maxPosition, nil
 }
+
+// GetMaxPositionForUpdate returns the maximum position with pessimistic locking (FOR UPDATE)
+// This must be called within a transaction to prevent race conditions during bulk block creation
+func (r *newsletterBlockRepository) GetMaxPositionForUpdate(ctx context.Context, tx pgx.Tx, issueID uuid.UUID) (int, error) {
+	if issueID == uuid.Nil {
+		return 0, fmt.Errorf("issue ID cannot be nil")
+	}
+
+	// Lock all blocks for this issue to prevent concurrent position conflicts
+	query := `SELECT COALESCE(MAX(position), -1) FROM newsletter_blocks WHERE issue_id = $1 FOR UPDATE`
+
+	var maxPosition int
+	err := tx.QueryRow(ctx, query, issueID).Scan(&maxPosition)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get max position with lock: %w", err)
+	}
+
+	return maxPosition, nil
+}
+
+// GetExistingContentItemIDs returns content item IDs that already exist as blocks in the issue
+func (r *newsletterBlockRepository) GetExistingContentItemIDs(ctx context.Context, issueID uuid.UUID, contentItemIDs []uuid.UUID) ([]uuid.UUID, error) {
+	if issueID == uuid.Nil {
+		return nil, fmt.Errorf("issue ID cannot be nil")
+	}
+
+	if len(contentItemIDs) == 0 {
+		return nil, nil
+	}
+
+	query := `
+		SELECT content_item_id
+		FROM newsletter_blocks
+		WHERE issue_id = $1 AND content_item_id = ANY($2)
+	`
+
+	rows, err := r.db.Pool.Query(ctx, query, issueID, contentItemIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get existing content item IDs: %w", err)
+	}
+	defer rows.Close()
+
+	existingIDs := make([]uuid.UUID, 0)
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, fmt.Errorf("failed to scan content item ID: %w", err)
+		}
+		existingIDs = append(existingIDs, id)
+	}
+
+	return existingIDs, nil
+}
+
+// BulkCreateWithLock creates multiple newsletter blocks with pessimistic locking
+// Uses SELECT FOR UPDATE to prevent position conflicts during concurrent additions
+func (r *newsletterBlockRepository) BulkCreateWithLock(ctx context.Context, issueID uuid.UUID, blocks []*domain.NewsletterBlock) error {
+	if issueID == uuid.Nil {
+		return fmt.Errorf("issue ID cannot be nil")
+	}
+
+	if len(blocks) == 0 {
+		return nil
+	}
+
+	// Validate all blocks first
+	for i, block := range blocks {
+		if block == nil {
+			return fmt.Errorf("block at index %d is nil", i)
+		}
+		if err := block.Validate(); err != nil {
+			return fmt.Errorf("invalid block at index %d: %w", i, err)
+		}
+	}
+
+	tx, err := r.db.Pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// Get max position with lock to prevent race conditions
+	maxPosition, err := r.GetMaxPositionForUpdate(ctx, tx, issueID)
+	if err != nil {
+		return fmt.Errorf("failed to get max position: %w", err)
+	}
+
+	// Assign positions starting after max
+	currentPosition := maxPosition + 1
+	insertQuery := `
+		INSERT INTO newsletter_blocks (
+			id, issue_id, content_item_id, block_type, position,
+			title, teaser, cta_label, cta_url,
+			is_promotional, topic_tags, clicks,
+			created_at, updated_at
+		)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+	`
+
+	for _, block := range blocks {
+		block.Position = currentPosition
+		currentPosition++
+
+		_, err := tx.Exec(ctx, insertQuery,
+			block.ID,
+			block.IssueID,
+			block.ContentItemID,
+			block.BlockType,
+			block.Position,
+			block.Title,
+			block.Teaser,
+			block.CTALabel,
+			block.CTAURL,
+			block.IsPromotional,
+			pq.Array(block.TopicTags),
+			block.Clicks,
+			block.CreatedAt,
+			block.UpdatedAt,
+		)
+
+		if err != nil {
+			return fmt.Errorf("failed to insert block %s: %w", block.ID, err)
+		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
+}

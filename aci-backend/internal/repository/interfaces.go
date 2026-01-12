@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/phillipboles/aci-backend/internal/domain"
 	"github.com/phillipboles/aci-backend/internal/domain/entities"
 	voiceDomain "github.com/phillipboles/aci-backend/internal/domain/voice"
@@ -200,6 +201,7 @@ type ContentSourceRepository interface {
 type ContentItemRepository interface {
 	Create(ctx context.Context, item *domain.ContentItem) error
 	GetByID(ctx context.Context, id uuid.UUID) (*domain.ContentItem, error)
+	GetByIDs(ctx context.Context, ids []uuid.UUID) ([]*domain.ContentItem, error)
 	GetByURL(ctx context.Context, url string) (*domain.ContentItem, error)
 	List(ctx context.Context, filter *domain.ContentItemFilter) ([]*domain.ContentItem, int, error)
 	Update(ctx context.Context, item *domain.ContentItem) error
@@ -232,8 +234,11 @@ type NewsletterBlockRepository interface {
 	Update(ctx context.Context, block *domain.NewsletterBlock) error
 	Delete(ctx context.Context, id uuid.UUID) error
 	BulkCreate(ctx context.Context, blocks []*domain.NewsletterBlock) error
+	BulkCreateWithLock(ctx context.Context, issueID uuid.UUID, blocks []*domain.NewsletterBlock) error
 	UpdatePositions(ctx context.Context, issueID uuid.UUID, positions map[uuid.UUID]int) error
 	IncrementClicks(ctx context.Context, id uuid.UUID) error
+	GetMaxPositionForUpdate(ctx context.Context, tx pgx.Tx, issueID uuid.UUID) (int, error)
+	GetExistingContentItemIDs(ctx context.Context, issueID uuid.UUID, contentItemIDs []uuid.UUID) ([]uuid.UUID, error)
 }
 
 // TestVariantRepository defines operations for A/B test variant persistence

@@ -155,6 +155,86 @@ func (r *contentItemRepository) GetByID(ctx context.Context, id uuid.UUID) (*dom
 	return item, nil
 }
 
+// GetByIDs retrieves multiple content items by their IDs
+func (r *contentItemRepository) GetByIDs(ctx context.Context, ids []uuid.UUID) ([]*domain.ContentItem, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+
+	query := `
+		SELECT
+			id, source_id, article_id, title, url, summary, content,
+			content_type, topic_tags, framework_tags, industry_tags,
+			buyer_stage, partner_tags, author, publish_date,
+			word_count, reading_time_minutes, image_url,
+			trust_score, relevance_score, historical_ctr,
+			historical_opens, historical_clicks, expires_at,
+			is_active, indexed_at, created_at, updated_at
+		FROM content_items
+		WHERE id = ANY($1)
+	`
+
+	rows, err := r.db.Pool.Query(ctx, query, ids)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get content items by IDs: %w", err)
+	}
+	defer rows.Close()
+
+	items := make([]*domain.ContentItem, 0, len(ids))
+	for rows.Next() {
+		item := &domain.ContentItem{}
+		var topicTags, frameworkTags, industryTags, partnerTags []string
+
+		err := rows.Scan(
+			&item.ID,
+			&item.SourceID,
+			&item.ArticleID,
+			&item.Title,
+			&item.URL,
+			&item.Summary,
+			&item.Content,
+			&item.ContentType,
+			&topicTags,
+			&frameworkTags,
+			&industryTags,
+			&item.BuyerStage,
+			&partnerTags,
+			&item.Author,
+			&item.PublishDate,
+			&item.WordCount,
+			&item.ReadingTimeMinutes,
+			&item.ImageURL,
+			&item.TrustScore,
+			&item.RelevanceScore,
+			&item.HistoricalCTR,
+			&item.HistoricalOpens,
+			&item.HistoricalClicks,
+			&item.ExpiresAt,
+			&item.IsActive,
+			&item.IndexedAt,
+			&item.CreatedAt,
+			&item.UpdatedAt,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan content item: %w", err)
+		}
+
+		item.TopicTags = topicTags
+		item.FrameworkTags = frameworkTags
+		item.IndustryTags = industryTags
+		item.PartnerTags = partnerTags
+
+		items = append(items, item)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating content items: %w", err)
+	}
+
+	return items, nil
+}
+
 // GetByURL retrieves a content item by URL (for deduplication)
 func (r *contentItemRepository) GetByURL(ctx context.Context, url string) (*domain.ContentItem, error) {
 	if url == "" {
