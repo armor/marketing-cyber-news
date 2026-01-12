@@ -430,3 +430,24 @@ input[type="date"]:not(:valid)::-webkit-datetime-edit {
     color-scheme: dark;
   }
 }
+
+/* ---------------------------------------------------------------
+   BUTTON TEXT COLOR FIX - Tailwind v4 CSS Layer Override
+   Ensures white text on gradient buttons in dark theme
+   --------------------------------------------------------------- */
+[data-slot="button"][class*="bg-gradient-btn-primary"],
+[data-slot="button"][class*="bg-gradient-btn-alert"],
+[data-slot="button"][class*="bg-gradient-btn-trust"],
+.dark [data-slot="button"][class*="bg-gradient-btn-primary"],
+.dark [data-slot="button"][class*="bg-gradient-btn-alert"],
+.dark [data-slot="button"][class*="bg-gradient-btn-trust"],
+[data-theme="dark"] [data-slot="button"][class*="bg-gradient-btn-primary"],
+[data-theme="dark"] [data-slot="button"][class*="bg-gradient-btn-alert"],
+[data-theme="dark"] [data-slot="button"][class*="bg-gradient-btn-trust"] {
+  color: white !important;
+}
+
+/* AI button variant */
+[data-slot="button"][class*="from-violet-600"] {
+  color: white !important;
+}

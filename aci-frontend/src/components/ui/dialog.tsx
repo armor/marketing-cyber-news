@@ -10,7 +10,14 @@ const Dialog = DialogPrimitive.Root
 
 const DialogTrigger = DialogPrimitive.Trigger
 
-const DialogPortal = DialogPrimitive.Portal
+const DialogPortal = ({
+  children,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Portal>) => (
+  <DialogPrimitive.Portal {...props}>
+    <div data-theme="dark">{children}</div>
+  </DialogPrimitive.Portal>
+)
 
 const DialogClose = DialogPrimitive.Close
 

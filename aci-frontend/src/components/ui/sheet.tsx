@@ -27,9 +27,14 @@ function SheetClose({
 }
 
 function SheetPortal({
+  children,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Portal>) {
-  return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />;
+  return (
+    <SheetPrimitive.Portal data-slot="sheet-portal" {...props}>
+      <div data-theme="dark">{children}</div>
+    </SheetPrimitive.Portal>
+  );
 }
 
 function SheetOverlay({

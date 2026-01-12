@@ -22,7 +22,7 @@ const DEFAULT_PREFERENCES: UserPreferences = {
 
 export const mockSuperAdminUser: User = {
   id: 'superadmin-001',
-  email: 'superadmin@test.com',
+  email: 'superadmin@armor.com',
   name: 'Super Admin',
   role: 'super_admin',
   avatarUrl: null,
@@ -33,7 +33,7 @@ export const mockSuperAdminUser: User = {
 
 export const mockAdminUser: User = {
   id: 'admin-001',
-  email: 'admin@test.com',
+  email: 'admin@armor.com',
   name: 'Admin User',
   role: 'admin',
   avatarUrl: null,
@@ -44,7 +44,7 @@ export const mockAdminUser: User = {
 
 export const mockMarketingUser: User = {
   id: 'marketing-001',
-  email: 'marketing@test.com',
+  email: 'marketing@armor.com',
   name: 'Marketing User',
   role: 'marketing',
   avatarUrl: null,
@@ -55,7 +55,7 @@ export const mockMarketingUser: User = {
 
 export const mockBrandingUser: User = {
   id: 'branding-001',
-  email: 'branding@test.com',
+  email: 'branding@armor.com',
   name: 'Branding User',
   role: 'branding',
   avatarUrl: null,
@@ -66,7 +66,7 @@ export const mockBrandingUser: User = {
 
 export const mockSoc1User: User = {
   id: 'soc1-001',
-  email: 'soc1@test.com',
+  email: 'soc1@armor.com',
   name: 'SOC Level 1',
   role: 'soc_level_1',
   avatarUrl: null,
@@ -80,7 +80,7 @@ export const mockSoc1User: User = {
 
 export const mockSoc3User: User = {
   id: 'soc3-001',
-  email: 'soc3@test.com',
+  email: 'soc3@armor.com',
   name: 'SOC Level 3',
   role: 'soc_level_3',
   avatarUrl: null,
@@ -94,7 +94,7 @@ export const mockSoc3User: User = {
 
 export const mockCisoUser: User = {
   id: 'ciso-001',
-  email: 'ciso@test.com',
+  email: 'ciso@armor.com',
   name: 'CISO',
   role: 'ciso',
   avatarUrl: null,
@@ -105,7 +105,7 @@ export const mockCisoUser: User = {
 
 export const mockViewerUser: User = {
   id: 'viewer-001',
-  email: 'test@example.com',
+  email: 'viewer@armor.com',
   name: 'Viewer User',
   role: 'viewer',
   avatarUrl: null,

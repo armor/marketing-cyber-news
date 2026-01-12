@@ -36,9 +36,9 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps): React.ReactElement {
   return (
     <div data-theme="dark" className="h-screen flex flex-col overflow-hidden bg-background">
-      {/* Sticky Header at top - full width */}
+      {/* Header at top - full width, fixed height */}
       <header
-        className="sticky top-0 w-full h-14 flex-shrink-0 flex items-center px-4"
+        className="w-full h-14 flex-shrink-0 flex items-center px-4"
         style={{
           background: 'var(--gradient-panel-header)',
           backdropFilter: 'blur(12px)',
@@ -49,13 +49,13 @@ export function MainLayout({ children }: MainLayoutProps): React.ReactElement {
         <Header />
       </header>
 
-      {/* Content area - fills remaining viewport */}
-      <div className="flex flex-1 overflow-hidden">
-        <SidebarProvider style={{ minHeight: 0, height: '100%', flex: '1 1 0%' }}>
+      {/* Content area - fills remaining viewport height */}
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        <SidebarProvider className="h-full">
           <AppSidebar />
-          <SidebarInset className="flex-1 overflow-hidden" style={{ height: '100%' }}>
+          <SidebarInset className="flex-1 overflow-hidden">
             {/* Main content area - scrollable */}
-            <div className="h-full flex flex-col overflow-hidden" role="main">
+            <div className="h-full flex flex-col" role="main">
               <div
                 className="flex-1 overflow-y-auto"
                 style={{
@@ -63,7 +63,7 @@ export function MainLayout({ children }: MainLayoutProps): React.ReactElement {
                   padding: 'var(--spacing-layout-page)',
                 }}
               >
-                  {children}
+                {children}
               </div>
               <Footer />
             </div>
