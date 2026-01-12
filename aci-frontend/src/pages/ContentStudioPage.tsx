@@ -1,4 +1,3 @@
-import { MainLayout } from '@/components/layout/MainLayout';
 import { ContentStudio } from '@/components/marketing/content/ContentStudio';
 import type {
   ContentChannel,
@@ -166,14 +165,13 @@ Learn more about how we're protecting organizations from emerging threats: [link
   };
 
   return (
-    <MainLayout>
-      <div
-        style={{
-          maxWidth: '56rem',
-          margin: '0 auto',
-          padding: 'var(--spacing-6)',
-        }}
-      >
+    <div
+      style={{
+        maxWidth: '56rem',
+        margin: '0 auto',
+        padding: 'var(--spacing-6)',
+      }}
+    >
         {/* Page Header */}
         <div
           className="flex flex-col"
@@ -205,15 +203,14 @@ Learn more about how we're protecting organizations from emerging threats: [link
           </p>
         </div>
 
-        {/* Content Studio Component */}
-        <ContentStudio
-          onGenerate={handleGenerate}
-          onRefine={handleRefine}
-          onSchedule={handleSchedule}
-          suggestedPrompts={suggestedPrompts}
-        />
-      </div>
-    </MainLayout>
+      {/* Content Studio Component */}
+      <ContentStudio
+        onGenerate={handleGenerate}
+        onRefine={handleRefine}
+        onSchedule={handleSchedule}
+        suggestedPrompts={suggestedPrompts}
+      />
+    </div>
   );
 }
 

@@ -352,7 +352,7 @@ function SidebarFooter({ className, style, ...props }: React.ComponentProps<'div
     <div
       data-slot="sidebar-footer"
       data-sidebar="footer"
-      className={cn('flex flex-col', className)}
+      className={cn('flex flex-col flex-shrink-0', className)}
       style={{
         gap: 'var(--spacing-2)',
         padding: 'var(--spacing-3)',
