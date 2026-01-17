@@ -1,5 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import type { ThreatFilters } from '@/types/threat';
+import type { InfiniteThreatsFilters } from '@/hooks/useInfiniteThreats';
 
 /**
  * Query key factories for consistent cache key management.
@@ -11,6 +12,8 @@ export const queryKeys = {
     lists: () => [...queryKeys.threats.all, 'list'] as const,
     list: (filters: ThreatFilters, page: number) =>
       [...queryKeys.threats.lists(), filters, page] as const,
+    infinite: (filters: InfiniteThreatsFilters) =>
+      [...queryKeys.threats.all, 'infinite', filters] as const,
     details: () => [...queryKeys.threats.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.threats.details(), id] as const,
   },
