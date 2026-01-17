@@ -55,7 +55,7 @@
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.69.0",
     "react-is": "^19.2.3",
-    "react-router-dom": "^7.10.1",
+    "react-router-dom": "^7.12.0",
     "reaviz": "^16.1.0",
     "recharts": "^3.5.1",
     "sonner": "^2.0.7",
