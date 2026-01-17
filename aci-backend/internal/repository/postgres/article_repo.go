@@ -343,92 +343,168 @@ func (r *articleRepository) List(ctx context.Context, filter *domain.ArticleFilt
 	}
 
 	// Build WHERE clause
-	where := []string{"1=1"}
+	where := []string{"a.is_published = true"} // Only published articles
 	args := []interface{}{}
 	argCount := 0
 
 	if filter.CategoryID != nil {
 		argCount++
-		where = append(where, fmt.Sprintf("category_id = $%d", argCount))
+		where = append(where, fmt.Sprintf("a.category_id = $%d", argCount))
 		args = append(args, *filter.CategoryID)
 	}
 
 	if filter.SourceID != nil {
 		argCount++
-		where = append(where, fmt.Sprintf("source_id = $%d", argCount))
+		where = append(where, fmt.Sprintf("a.source_id = $%d", argCount))
 		args = append(args, *filter.SourceID)
 	}
 
 	if filter.Severity != nil {
 		argCount++
-		where = append(where, fmt.Sprintf("severity = $%d", argCount))
+		where = append(where, fmt.Sprintf("a.severity = $%d", argCount))
 		args = append(args, *filter.Severity)
 	}
 
 	if len(filter.Tags) > 0 {
 		argCount++
-		where = append(where, fmt.Sprintf("tags && $%d", argCount))
+		where = append(where, fmt.Sprintf("a.tags && $%d", argCount))
 		args = append(args, filter.Tags)
 	}
 
 	if filter.CVE != nil {
 		argCount++
-		where = append(where, fmt.Sprintf("$%d = ANY(cves)", argCount))
+		where = append(where, fmt.Sprintf("$%d = ANY(a.cves)", argCount))
 		args = append(args, *filter.CVE)
 	}
 
 	if filter.Vendor != nil {
 		argCount++
-		where = append(where, fmt.Sprintf("$%d = ANY(vendors)", argCount))
+		where = append(where, fmt.Sprintf("$%d = ANY(a.vendors)", argCount))
 		args = append(args, *filter.Vendor)
 	}
 
 	if filter.DateFrom != nil {
 		argCount++
-		where = append(where, fmt.Sprintf("published_at >= $%d", argCount))
+		where = append(where, fmt.Sprintf("a.published_at >= $%d", argCount))
 		args = append(args, *filter.DateFrom)
 	}
 
 	if filter.DateTo != nil {
 		argCount++
-		where = append(where, fmt.Sprintf("published_at <= $%d", argCount))
+		where = append(where, fmt.Sprintf("a.published_at <= $%d", argCount))
 		args = append(args, *filter.DateTo)
 	}
 
 	if filter.SearchQuery != nil {
 		argCount++
-		where = append(where, fmt.Sprintf("(title ILIKE $%d OR content ILIKE $%d)", argCount, argCount))
-		args = append(args, "%"+*filter.SearchQuery+"%")
+		where = append(where, fmt.Sprintf("(a.title ILIKE $%d OR a.content ILIKE $%d OR COALESCE(a.summary, '') ILIKE $%d)", argCount, argCount, argCount))
+		searchTerm := "%" + *filter.SearchQuery + "%"
+		args = append(args, searchTerm)
 	}
 
 	whereClause := strings.Join(where, " AND ")
 
-	// Count total
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM articles WHERE %s", whereClause)
+	// Determine JOIN clause and ORDER BY based on sort option
+	var joinClause, orderClause string
+
+	if filter.SortBy != nil {
+		switch *filter.SortBy {
+		case domain.SortByLatestViewed:
+			if filter.UserID == nil {
+				return nil, 0, fmt.Errorf("user_id is required for latest_viewed sorting")
+			}
+			argCount++
+			userIDArg := argCount
+			args = append(args, *filter.UserID)
+
+			joinClause = fmt.Sprintf(`
+				LEFT JOIN (
+					SELECT DISTINCT ON (article_id) article_id, read_at
+					FROM article_reads
+					WHERE user_id = $%d
+					ORDER BY article_id, read_at DESC
+				) user_reads ON a.id = user_reads.article_id`, userIDArg)
+			orderClause = "user_reads.read_at DESC NULLS LAST, a.published_at DESC"
+
+		case domain.SortByNewest:
+			orderClause = "a.published_at DESC"
+		case domain.SortByOldest:
+			orderClause = "a.published_at ASC"
+		case domain.SortBySeverityDesc:
+			orderClause = `
+				CASE a.severity
+					WHEN 'critical' THEN 1
+					WHEN 'high' THEN 2
+					WHEN 'medium' THEN 3
+					WHEN 'low' THEN 4
+					WHEN 'informational' THEN 5
+					ELSE 6
+				END ASC, a.published_at DESC`
+		case domain.SortBySeverityAsc:
+			orderClause = `
+				CASE a.severity
+					WHEN 'critical' THEN 1
+					WHEN 'high' THEN 2
+					WHEN 'medium' THEN 3
+					WHEN 'low' THEN 4
+					WHEN 'informational' THEN 5
+					ELSE 6
+				END DESC, a.published_at DESC`
+		case domain.SortByTitleAsc:
+			orderClause = "a.title ASC"
+		case domain.SortByTitleDesc:
+			orderClause = "a.title DESC"
+		case domain.SortByCVECountDesc:
+			orderClause = "COALESCE(array_length(a.cves, 1), 0) DESC, a.published_at DESC"
+		case domain.SortBySourceAsc:
+			joinClause = "LEFT JOIN sources s ON a.source_id = s.id"
+			orderClause = "s.name ASC, a.published_at DESC"
+		default:
+			orderClause = "a.published_at DESC"
+		}
+	} else {
+		orderClause = "a.published_at DESC"
+	}
+
+	// Count total with appropriate joins
+	countFromClause := "articles a"
+	if joinClause != "" {
+		countFromClause = fmt.Sprintf("articles a %s", joinClause)
+	}
+	countQuery := fmt.Sprintf("SELECT COUNT(DISTINCT a.id) FROM %s WHERE %s", countFromClause, whereClause)
+
 	var total int
 	err := r.db.Pool.QueryRow(ctx, countQuery, args...).Scan(&total)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to count articles: %w", err)
 	}
 
-	// Get articles
+	// Get articles with pagination
 	argCount++
 	limitArg := argCount
 	argCount++
 	offsetArg := argCount
 
+	// Build complete query
+	selectFields := `
+		a.id, a.title, a.slug, a.content, a.summary, a.category_id, a.source_id, a.source_url,
+		a.severity, a.tags, a.cves, a.vendors, a.threat_type, a.attack_vector, a.impact_assessment,
+		a.recommended_actions, a.iocs, a.armor_relevance, a.armor_cta, a.competitor_score,
+		a.is_competitor_favorable, a.reading_time_minutes, a.view_count, a.is_published,
+		a.published_at, a.enriched_at, a.created_at, a.updated_at`
+
+	fromClause := "articles a"
+	if joinClause != "" {
+		fromClause = fmt.Sprintf("articles a %s", joinClause)
+	}
+
 	query := fmt.Sprintf(`
-		SELECT
-			id, title, slug, content, summary, category_id, source_id, source_url,
-			severity, tags, cves, vendors, threat_type, attack_vector, impact_assessment,
-			recommended_actions, iocs, armor_relevance, armor_cta, competitor_score,
-			is_competitor_favorable, reading_time_minutes, view_count, is_published,
-			published_at, enriched_at, created_at, updated_at
-		FROM articles
+		SELECT DISTINCT %s
+		FROM %s
 		WHERE %s
-		ORDER BY published_at DESC
+		ORDER BY %s
 		LIMIT $%d OFFSET $%d
-	`, whereClause, limitArg, offsetArg)
+	`, selectFields, fromClause, whereClause, orderClause, limitArg, offsetArg)
 
 	args = append(args, filter.PageSize, filter.Offset())
 

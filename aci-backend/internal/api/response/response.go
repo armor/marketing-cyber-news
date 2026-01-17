@@ -16,10 +16,11 @@ type Response struct {
 
 // Meta contains pagination metadata
 type Meta struct {
-	Page       int `json:"page,omitempty"`
-	PageSize   int `json:"page_size,omitempty"`
-	TotalCount int `json:"total_count,omitempty"`
-	TotalPages int `json:"total_pages,omitempty"`
+	Page        int  `json:"page,omitempty"`
+	PageSize    int  `json:"page_size,omitempty"`
+	TotalCount  int  `json:"total_count,omitempty"`
+	TotalPages  int  `json:"total_pages,omitempty"`
+	HasNextPage bool `json:"has_next_page,omitempty"`
 }
 
 // JSON sends a JSON response with the specified status code and data

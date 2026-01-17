@@ -115,6 +115,11 @@ func (h *ArticleHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get user from context for user-specific sorting (optional)
+	if claims, ok := middleware.GetUserFromContext(ctx); ok {
+		filter.UserID = &claims.UserID
+	}
+
 	if err := filter.Validate(); err != nil {
 		log.Error().
 			Err(err).
@@ -140,10 +145,11 @@ func (h *ArticleHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	meta := &response.Meta{
-		Page:       filter.Page,
-		PageSize:   filter.PageSize,
-		TotalCount: total,
-		TotalPages: CalculateTotalPages(total, filter.PageSize),
+		Page:        filter.Page,
+		PageSize:    filter.PageSize,
+		TotalCount:  total,
+		TotalPages:  CalculateTotalPages(total, filter.PageSize),
+		HasNextPage: filter.Page < CalculateTotalPages(total, filter.PageSize),
 	}
 
 	response.SuccessWithMeta(w, articleResponses, meta)
@@ -276,10 +282,11 @@ func (h *ArticleHandler) Search(w http.ResponseWriter, r *http.Request) {
 	}
 
 	meta := &response.Meta{
-		Page:       filter.Page,
-		PageSize:   filter.PageSize,
-		TotalCount: total,
-		TotalPages: CalculateTotalPages(total, filter.PageSize),
+		Page:        filter.Page,
+		PageSize:    filter.PageSize,
+		TotalCount:  total,
+		TotalPages:  CalculateTotalPages(total, filter.PageSize),
+		HasNextPage: filter.Page < CalculateTotalPages(total, filter.PageSize),
 	}
 
 	response.SuccessWithMeta(w, searchResponses, meta)
@@ -386,6 +393,17 @@ func parseArticleFilter(r *http.Request) (*domain.ArticleFilter, error) {
 			return nil, fmt.Errorf("invalid date_to parameter (use RFC3339 format): %w", err)
 		}
 		filter.DateTo = &dateTo
+	}
+
+	// Parse search query
+	if searchStr := query.Get("search"); searchStr != "" {
+		filter.SearchQuery = &searchStr
+	}
+
+	// Parse sort_by
+	if sortByStr := query.Get("sort_by"); sortByStr != "" {
+		sortBy := domain.SortBy(sortByStr)
+		filter.SortBy = &sortBy
 	}
 
 	return filter, nil

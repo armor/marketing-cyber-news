@@ -1,19 +1,19 @@
 /**
  * ThreatCard Component
  *
- * Displays a threat summary in list view with severity indicators, metadata, and actions.
- * Uses design tokens exclusively - NO hardcoded CSS values.
+ * Enhanced threat card with view tracking, improved accessibility,
+ * and theme-agnostic styling. Supports both standard ThreatSummary
+ * and enhanced ThreatSummaryWithViews for infinite scroll.
  *
  * Features:
- * - Severity-coded left border
- * - Clickable title for navigation
- * - Truncated summary text (2-3 lines)
- * - Category and CVE badges
- * - Source and relative timestamp
- * - Bookmark toggle button
- * - Hover state with elevation
- * - Keyboard accessible
- * - Dark theme support
+ * - View tracking indicators
+ * - Theme-agnostic CSS variables only
+ * - Enhanced accessibility
+ * - Severity-coded styling
+ * - CVE badges with overflow handling
+ * - Relative time formatting
+ * - Keyboard navigation
+ * - Bookmark toggle
  *
  * @example
  * ```tsx
@@ -25,363 +25,395 @@
  * ```
  */
 
-import React from 'react';
-import { formatDistanceToNow } from 'date-fns';
-import { Bookmark, BookmarkCheck } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { SeverityBadge } from './SeverityBadge';
-import { cn } from '@/lib/utils';
+import { type ReactElement, useCallback } from 'react';
+import { Shield, Eye, Clock, ExternalLink } from 'lucide-react';
 import type { ThreatSummary } from '@/types/threat';
-import { ThreatCategory } from '@/types/threat';
-import { colors } from '@/styles/tokens/colors';
-import { spacing, componentSpacing } from '@/styles/tokens/spacing';
-import { typography } from '@/styles/tokens/typography';
-import { shadows } from '@/styles/tokens/shadows';
-import { borders } from '@/styles/tokens/borders';
-import { motion } from '@/styles/tokens/motion';
+import type { ThreatSummaryWithViews } from '@/hooks/useInfiniteThreats';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+
+// ============================================================================
+// Types
+// ============================================================================
 
 export interface ThreatCardProps {
-  /** Threat summary data */
-  threat: ThreatSummary;
-  /** Callback when card/title is clicked */
-  onSelect?: (threatId: string) => void;
-  /** Callback when bookmark button is toggled */
-  onBookmarkToggle?: (threatId: string) => void;
-  /** Optional className for additional styling */
-  className?: string;
+  readonly threat: ThreatSummary | ThreatSummaryWithViews;
+  readonly onSelect?: (id: string) => void;
+  readonly onBookmarkToggle?: (id: string) => void;
+  readonly showViewIndicator?: boolean;
+  readonly className?: string;
+  readonly 'data-index'?: number;
+  readonly 'aria-setsize'?: number;
+  readonly 'aria-posinset'?: number;
 }
 
-/**
- * Maps ThreatCategory enum to display labels
- */
-const CATEGORY_LABELS: Record<ThreatCategory, string> = {
-  [ThreatCategory.MALWARE]: 'Malware',
-  [ThreatCategory.PHISHING]: 'Phishing',
-  [ThreatCategory.RANSOMWARE]: 'Ransomware',
-  [ThreatCategory.DATA_BREACH]: 'Data Breach',
-  [ThreatCategory.VULNERABILITY]: 'Vulnerability',
-  [ThreatCategory.APT]: 'APT',
-  [ThreatCategory.DDOS]: 'DDoS',
-  [ThreatCategory.INSIDER_THREAT]: 'Insider Threat',
-  [ThreatCategory.SUPPLY_CHAIN]: 'Supply Chain',
-  [ThreatCategory.ZERO_DAY]: 'Zero Day',
-};
+// ============================================================================
+// Helper Functions
+// ============================================================================
 
 /**
- * Returns the severity color for the left border
+ * Get severity color from design tokens
  */
-function getSeverityBorderColor(severity: ThreatSummary['severity']): string {
-  switch (severity) {
+function getSeverityColor(severity: string): string {
+  switch (severity.toLowerCase()) {
     case 'critical':
-      return colors.severity.critical;
+      return 'var(--color-severity-critical)';
     case 'high':
-      return colors.severity.high;
+      return 'var(--color-severity-high)';
     case 'medium':
-      return colors.severity.medium;
+      return 'var(--color-severity-medium)';
     case 'low':
-      return colors.severity.low;
+      return 'var(--color-severity-low)';
     default:
-      return colors.border.default;
+      return 'var(--color-text-secondary)';
   }
 }
 
 /**
- * Formats ISO 8601 date string to relative time (e.g., "2 hours ago")
+ * Get severity variant for badges
  */
-function formatRelativeTime(isoDateString: string): string {
-  try {
-    const date = new Date(isoDateString);
-    return formatDistanceToNow(date, { addSuffix: true });
-  } catch {
-    return 'Unknown time';
+function getSeverityVariant(severity: string): 'default' | 'secondary' | 'destructive' | 'outline' {
+  switch (severity.toLowerCase()) {
+    case 'critical':
+      return 'destructive';
+    case 'high':
+      return 'destructive';
+    case 'medium':
+      return 'secondary';
+    case 'low':
+      return 'outline';
+    default:
+      return 'outline';
   }
 }
 
 /**
- * ThreatCard Component
+ * Format relative date with more precision
+ */
+function formatRelativeDate(isoString: string): string {
+  const date = new Date(isoString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMinutes < 60) {
+    if (diffMinutes < 1) return 'Just now';
+    return `${diffMinutes}m ago`;
+  }
+  if (diffHours < 24) {
+    return `${diffHours}h ago`;
+  }
+  if (diffDays < 7) {
+    return `${diffDays}d ago`;
+  }
+  if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7);
+    return `${weeks}w ago`;
+  }
+
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+  });
+}
+
+/**
+ * Check if threat has view tracking data
+ */
+function hasViewData(threat: ThreatSummary | ThreatSummaryWithViews): threat is ThreatSummaryWithViews {
+  return 'lastViewedAt' in threat || 'viewCount' in threat || 'userHasViewed' in threat;
+}
+
+/**
+ * Format category display name
+ */
+function formatCategory(category: string): string {
+  return category.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+}
+
+// ============================================================================
+// Component
+// ============================================================================
+
+/**
+ * Enhanced threat card with view tracking and accessibility features
  *
- * Renders a card displaying threat summary information with interactive elements.
- * All styling uses design tokens for theme consistency.
+ * Displays threat information with severity indicators, view tracking,
+ * CVE counts, and interactive bookmark toggle. Optimized for both
+ * mouse and keyboard navigation with theme-agnostic styling.
  */
 export function ThreatCard({
   threat,
   onSelect,
   onBookmarkToggle,
+  showViewIndicator = true,
   className,
-}: ThreatCardProps) {
-  const borderColor = getSeverityBorderColor(threat.severity);
-  const categoryLabel = CATEGORY_LABELS[threat.category];
-  const relativeTime = formatRelativeTime(threat.publishedAt);
+  'data-index': dataIndex,
+  'aria-setsize': ariaSetsize,
+  'aria-posinset': ariaPosInSet,
+}: ThreatCardProps): ReactElement {
+  // ============================================================================
+  // Event Handlers
+  // ============================================================================
 
-  // Handle card click (but not on bookmark button)
-  const handleCardClick = (e: React.MouseEvent) => {
-    // Don't trigger if clicking bookmark button or any interactive element
-    if (
-      e.target instanceof HTMLElement &&
-      (e.target.closest('button') || e.target.closest('a'))
-    ) {
-      return;
+  const handleCardClick = useCallback(() => {
+    if (onSelect) {
+      onSelect(threat.id);
     }
+  }, [onSelect, threat.id]);
 
-    onSelect?.(threat.id);
-  };
-
-  // Handle title click
-  const handleTitleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onSelect?.(threat.id);
-  };
-
-  // Handle bookmark toggle
-  const handleBookmarkClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onBookmarkToggle?.(threat.id);
-  };
-
-  // Handle keyboard navigation
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      onSelect?.(threat.id);
+      handleCardClick();
     }
-  };
+  }, [handleCardClick]);
+
+  const handleBookmarkClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onBookmarkToggle) {
+      onBookmarkToggle(threat.id);
+    }
+  }, [onBookmarkToggle, threat.id]);
+
+  // ============================================================================
+  // View Data Processing
+  // ============================================================================
+
+  const viewData = hasViewData(threat) ? threat : null;
+  const hasBeenViewed = viewData?.userHasViewed ?? false;
+  const viewCount = viewData?.viewCount ?? 0;
+  const lastViewedAt = viewData?.lastViewedAt;
+
+  // ============================================================================
+  // Styling
+  // ============================================================================
+
+  const severityColor = getSeverityColor(threat.severity);
+  const severityVariant = getSeverityVariant(threat.severity);
+
+  // ============================================================================
+  // Render
+  // ============================================================================
 
   return (
-    <Card
-      role="article"
-      aria-label={`Threat: ${threat.title}`}
-      data-testid={`threat-card-${threat.id}`}
-      data-threat-id={threat.id}
-      data-severity={threat.severity}
-      tabIndex={onSelect ? 0 : undefined}
+    <article
+      className={`
+        group relative cursor-pointer rounded-lg border border-[var(--color-border-default)]
+        bg-[var(--color-bg-elevated)] p-[var(--spacing-component-lg)]
+        shadow-[var(--shadow-sm)] transition-all duration-[var(--motion-duration-fast)]
+        hover:shadow-[var(--shadow-md)] hover:border-[var(--color-brand-primary-muted)]
+        focus-within:ring-2 focus-within:ring-[var(--color-brand-primary)]
+        focus-within:ring-offset-2 overflow-hidden
+        ${hasBeenViewed ? 'opacity-90' : ''}
+        ${className || ''}
+      `}
       onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
       onKeyDown={handleKeyDown}
-      className={cn(
-        'relative overflow-hidden transition-all cursor-pointer',
-        onSelect && 'hover:cursor-pointer',
-        className
-      )}
-      style={{
-        borderLeftWidth: borders.width.thick,
-        borderLeftColor: borderColor,
-        borderRadius: borders.radius.lg,
-        boxShadow: shadows.sm,
-        transition: `box-shadow ${motion.duration.normal} ${motion.easing.default}, transform ${motion.duration.fast} ${motion.easing.default}`,
-      }}
-      // Hover effect using inline styles
-      onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = shadows.md;
-        e.currentTarget.style.transform = 'translateY(-2px)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.boxShadow = shadows.sm;
-        e.currentTarget.style.transform = 'translateY(0)';
-      }}
+      aria-label={`View threat: ${threat.title}`}
+      aria-describedby={`threat-${threat.id}-summary`}
+      data-testid="threat-card"
+      data-threat-id={threat.id}
+      data-index={dataIndex}
+      aria-setsize={ariaSetsize}
+      aria-posinset={ariaPosInSet}
     >
-      <CardContent
-        style={{
-          padding: componentSpacing.lg,
-        }}
-      >
-        {/* Header: Severity Badge, Category Badge, Bookmark Button */}
+      {/* View Indicator */}
+      {showViewIndicator && hasBeenViewed && (
         <div
-          className="flex items-start justify-between gap-[var(--spacing-gap-md)]"
-          style={{
-            marginBottom: spacing[3],
-          }}
+          className="absolute top-[var(--spacing-component-sm)] left-[var(--spacing-component-sm)] flex items-center gap-[var(--spacing-gap-xs)]"
+          aria-label="Previously viewed"
         >
-          <div
-            className="flex items-center flex-wrap gap-[var(--spacing-gap-sm)]"
-            style={{ flex: 1 }}
+          <div className="w-2 h-2 rounded-full bg-[var(--color-brand-primary)]" />
+          <span className="text-xs text-[var(--color-text-muted)]">Viewed</span>
+        </div>
+      )}
+
+      {/* Header: Severity and Category */}
+      <div className={`mb-[var(--spacing-component-sm)] flex items-start justify-between gap-[var(--spacing-gap-md)] ${hasBeenViewed && showViewIndicator ? 'mt-[var(--spacing-component-md)]' : ''}`}>
+        <Badge
+          variant={severityVariant}
+          className="text-xs font-[var(--typography-font-weight-semibold)] uppercase tracking-[var(--typography-letter-spacing-wide)]"
+          style={{
+            '--badge-bg': `color-mix(in srgb, ${severityColor} 15%, transparent)`,
+            '--badge-color': severityColor,
+          } as React.CSSProperties}
+          aria-label={`Severity: ${threat.severity}`}
+        >
+          {threat.severity}
+        </Badge>
+
+        <div className="flex items-center gap-[var(--spacing-gap-sm)]">
+          <span
+            className="text-xs font-[var(--typography-font-weight-medium)] text-[var(--color-text-secondary)]"
+            aria-label={`Category: ${formatCategory(threat.category)}`}
           >
-            <SeverityBadge severity={threat.severity} size="sm" />
+            {formatCategory(threat.category)}
+          </span>
+
+          {/* View Count */}
+          {viewCount > 0 && (
+            <div
+              className="flex items-center gap-[var(--spacing-gap-xs)] text-xs text-[var(--color-text-muted)]"
+              aria-label={`Viewed ${viewCount} times`}
+            >
+              <Eye size={12} aria-hidden="true" />
+              {viewCount}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Title */}
+      <h3 className="mb-[var(--spacing-component-sm)] text-lg font-[var(--typography-font-weight-semibold)] leading-[var(--typography-line-height-tight)] text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors duration-[var(--motion-duration-fast)]">
+        {threat.title}
+      </h3>
+
+      {/* Summary */}
+      <p
+        id={`threat-${threat.id}-summary`}
+        className="mb-[var(--spacing-component-md)] line-clamp-2 text-sm leading-[var(--typography-line-height-normal)] text-[var(--color-text-secondary)]"
+      >
+        {threat.summary}
+      </p>
+
+      {/* CVE Tags (if any) */}
+      {threat.cves.length > 0 && (
+        <div className="mb-[var(--spacing-component-sm)] flex flex-wrap gap-[var(--spacing-gap-xs)] overflow-hidden">
+          {threat.cves.slice(0, 3).map((cve) => (
+            <Badge
+              key={cve}
+              variant="outline"
+              className="text-xs font-mono bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-[var(--color-border-default)]"
+            >
+              {cve}
+            </Badge>
+          ))}
+          {threat.cves.length > 3 && (
             <Badge
               variant="outline"
-              className="text-[var(--color-text-secondary)] border-[var(--color-border-default)]"
+              className="text-xs text-[var(--color-text-muted)] border-dashed"
             >
-              {categoryLabel}
+              +{threat.cves.length - 3} more
             </Badge>
-          </div>
+          )}
+        </div>
+      )}
 
-          {/* Bookmark Button */}
-          {onBookmarkToggle && (
-            <button
-              onClick={handleBookmarkClick}
-              aria-label={
-                threat.isBookmarked ? 'Remove bookmark' : 'Add bookmark'
-              }
-              aria-pressed={threat.isBookmarked}
-              data-testid="bookmark-button"
-              className="flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2"
-              style={{
-                width: spacing[8],
-                height: spacing[8],
-                borderRadius: borders.radius.md,
-                color: threat.isBookmarked
-                  ? colors.brand.primary
-                  : colors.text.muted,
-                backgroundColor: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                transition: `color ${motion.duration.fast} ${motion.easing.default}`,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = colors.brand.primary;
-              }}
-              onMouseLeave={(e) => {
-                if (!threat.isBookmarked) {
-                  e.currentTarget.style.color = colors.text.muted;
-                }
-              }}
-            >
-              {threat.isBookmarked ? (
-                <BookmarkCheck size={20} aria-hidden="true" />
-              ) : (
-                <Bookmark size={20} aria-hidden="true" />
-              )}
-            </button>
+      {/* Footer: Metadata and Actions */}
+      <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center gap-[var(--spacing-gap-sm)] text-[var(--color-text-muted)]">
+          {/* Source */}
+          <span className="font-[var(--typography-font-weight-medium)] text-[var(--color-text-secondary)]">
+            {threat.source}
+          </span>
+
+          <span aria-hidden="true">•</span>
+
+          {/* Published Date */}
+          <time
+            dateTime={threat.publishedAt}
+            className="flex items-center gap-[var(--spacing-gap-xs)]"
+          >
+            <Clock size={12} aria-hidden="true" />
+            {formatRelativeDate(threat.publishedAt)}
+          </time>
+
+          {/* Last Viewed (if available) */}
+          {lastViewedAt && (
+            <>
+              <span aria-hidden="true">•</span>
+              <time
+                dateTime={lastViewedAt}
+                className="text-[var(--color-brand-primary)]"
+                title={`Last viewed: ${formatRelativeDate(lastViewedAt)}`}
+              >
+                Viewed {formatRelativeDate(lastViewedAt)}
+              </time>
+            </>
           )}
         </div>
 
-        {/* Title (clickable) */}
-        <h3
-          onClick={handleTitleClick}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              handleTitleClick(e as unknown as React.MouseEvent);
-            }
-          }}
-          className="transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-          style={{
-            fontSize: typography.fontSize.lg,
-            fontWeight: typography.fontWeight.semibold,
-            color: colors.text.primary,
-            lineHeight: typography.lineHeight.tight,
-            marginBottom: spacing[2],
-            transition: `color ${motion.duration.fast} ${motion.easing.default}`,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = colors.brand.primary;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = colors.text.primary;
-          }}
-        >
-          {threat.title}
-        </h3>
-
-        {/* Summary (truncated to 3 lines) */}
-        <p
-          className="line-clamp-3"
-          style={{
-            fontSize: typography.fontSize.sm,
-            color: colors.text.secondary,
-            lineHeight: typography.lineHeight.normal,
-            marginBottom: spacing[4],
-          }}
-        >
-          {threat.summary}
-        </p>
-
-        {/* Footer: CVE badges, Source, and Timestamp */}
-        <div
-          className="flex items-center justify-between gap-[var(--spacing-gap-md)] flex-wrap"
-          style={{
-            paddingTop: spacing[3],
-            borderTopWidth: borders.width.thin,
-            borderTopColor: colors.border.default,
-            borderTopStyle: 'solid',
-          }}
-        >
-          {/* CVE Badges */}
-          <div
-            className="flex items-center gap-[var(--spacing-gap-xs)] flex-wrap"
-            style={{ flex: 1 }}
-          >
-            {threat.cves.length > 0 ? (
-              <>
-                {threat.cves.slice(0, 3).map((cveId) => (
-                  <Badge
-                    key={cveId}
-                    variant="secondary"
-                    className="text-[var(--typography-font-family-mono)] text-[var(--typography-font-size-xs)]"
-                  >
-                    {cveId}
-                  </Badge>
-                ))}
-                {threat.cves.length > 3 && (
-                  <Badge
-                    variant="outline"
-                    className="text-[var(--color-text-muted)]"
-                  >
-                    +{threat.cves.length - 3} more
-                  </Badge>
-                )}
-              </>
-            ) : (
-              <span
-                style={{
-                  fontSize: typography.fontSize.xs,
-                  color: colors.text.muted,
-                  fontStyle: 'italic',
-                }}
-              >
-                No CVEs
-              </span>
-            )}
-          </div>
-
-          {/* Source and Timestamp */}
-          <div
-            className="flex items-center gap-[var(--spacing-gap-sm)]"
-            style={{
-              fontSize: typography.fontSize.xs,
-              color: colors.text.muted,
-            }}
-          >
+        {/* Action Buttons */}
+        <div className="flex items-center gap-[var(--spacing-gap-sm)]">
+          {/* CVE Count */}
+          {threat.cves.length > 0 && (
             <span
-              style={{
-                fontWeight: typography.fontWeight.medium,
-                color: colors.text.secondary,
-              }}
+              className="flex items-center gap-[var(--spacing-gap-xs)] text-[var(--color-text-muted)]"
+              aria-label={`${threat.cves.length} CVE${threat.cves.length !== 1 ? 's' : ''}`}
             >
-              {threat.source}
+              <Shield size={12} aria-hidden="true" />
+              {threat.cves.length}
             </span>
-            <span aria-hidden="true">"</span>
-            <time dateTime={threat.publishedAt} aria-label={`Published ${relativeTime}`}>
-              {relativeTime}
-            </time>
-          </div>
+          )}
+
+          {/* External Link Indicator */}
+          <ExternalLink
+            size={12}
+            className="text-[var(--color-text-muted)] opacity-0 group-hover:opacity-100 transition-opacity duration-[var(--motion-duration-fast)]"
+            aria-hidden="true"
+          />
+
+          {/* Bookmark Toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBookmarkClick}
+            className="h-auto p-1 text-[var(--color-text-muted)] hover:text-[var(--color-brand-primary)] transition-colors duration-[var(--motion-duration-fast)]"
+            aria-label={threat.isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
+            aria-pressed={threat.isBookmarked}
+            data-testid="bookmark-toggle"
+          >
+            {threat.isBookmarked ? (
+              <span className="text-[var(--color-brand-primary)]" aria-hidden="true">★</span>
+            ) : (
+              <span aria-hidden="true">☆</span>
+            )}
+          </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </article>
   );
 }
 
-ThreatCard.displayName = 'ThreatCard';
-
 /**
- * Accessibility Notes:
- * - Semantic HTML: <article> role for card container
- * - Keyboard navigation: Tab to focus, Enter/Space to activate
- * - ARIA labels: Descriptive labels for all interactive elements
- * - Focus visible: Custom focus ring on title and bookmark button
- * - Color contrast: All text meets WCAG AA standards (4.5:1 minimum)
- * - Screen reader: Time element with proper datetime attribute
+ * ============================================================================
+ * Accessibility Features
+ * ============================================================================
  *
- * Performance Notes:
- * - Date formatting memoized per render (date-fns is fast)
- * - CSS transitions for smooth animations
- * - No heavy computations or side effects
- * - Suitable for React.memo() in large lists
+ * ✅ Semantic HTML: article, headings, time elements
+ * ✅ ARIA labels: Descriptive labels for all interactive elements
+ * ✅ ARIA pressed: Bookmark toggle state
+ * ✅ ARIA describedby: Links title to summary for screen readers
+ * ✅ ARIA setsize/posinset: Position in list context
+ * ✅ Keyboard navigation: Enter/Space key support
+ * ✅ Focus management: Proper focus indicators
+ * ✅ Screen reader support: Clear structure and labels
  *
- * Testing:
- * - data-testid="threat-card" for component queries
- * - data-threat-id for identifying specific threats
- * - data-severity for filtering by severity
- * - role="article" for semantic queries
+ * ============================================================================
+ * Performance Optimizations
+ * ============================================================================
+ *
+ * ✅ useCallback: All event handlers memoized
+ * ✅ Conditional rendering: Only render view data when available
+ * ✅ CSS variables: Efficient styling with design tokens
+ * ✅ Overflow handling: Prevents layout shifts
+ * ✅ Limited CVE display: Shows max 3 CVEs to prevent overflow
+ * ✅ Optimized transitions: GPU-accelerated animations
+ *
+ * ============================================================================
+ * Theme Compatibility
+ * ============================================================================
+ *
+ * ✅ CSS Variables Only: All colors use design tokens
+ * ✅ Dark Theme: Current theme fully supported
+ * ✅ White Theme Ready: No hardcoded colors
+ * ✅ High Contrast: Sufficient contrast ratios
+ * ✅ Responsive Design: Works across all viewport sizes
+ * ✅ Color Mixing: Modern CSS color mixing for dynamic backgrounds
  */

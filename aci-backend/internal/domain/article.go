@@ -245,6 +245,32 @@ func (a *Article) HasVendor(vendor string) bool {
 	return false
 }
 
+// SortBy represents available sort options for articles
+type SortBy string
+
+const (
+	SortByLatestViewed SortBy = "latest_viewed"  // Most recently viewed by user
+	SortByNewest       SortBy = "newest"         // Most recently published
+	SortByOldest       SortBy = "oldest"         // Oldest published
+	SortBySeverityDesc SortBy = "severity_desc"  // Critical -> Low
+	SortBySeverityAsc  SortBy = "severity_asc"   // Low -> Critical
+	SortByTitleAsc     SortBy = "title_asc"      // A-Z
+	SortByTitleDesc    SortBy = "title_desc"     // Z-A
+	SortByCVECountDesc SortBy = "cve_count_desc" // Most CVEs first
+	SortBySourceAsc    SortBy = "source_asc"     // Source alphabetical
+)
+
+// IsValid validates the sort option
+func (s SortBy) IsValid() bool {
+	switch s {
+	case SortByLatestViewed, SortByNewest, SortByOldest, SortBySeverityDesc,
+		SortBySeverityAsc, SortByTitleAsc, SortByTitleDesc, SortByCVECountDesc, SortBySourceAsc:
+		return true
+	default:
+		return false
+	}
+}
+
 // ArticleFilter represents query parameters for filtering articles
 type ArticleFilter struct {
 	CategoryID  *uuid.UUID
@@ -258,8 +284,10 @@ type ArticleFilter struct {
 	DateFrom    *time.Time
 	DateTo      *time.Time
 	SearchQuery *string
+	SortBy      *SortBy
 	Page        int
 	PageSize    int
+	UserID      *uuid.UUID // For user-specific sorting (latest_viewed)
 }
 
 // NewArticleFilter returns a filter with default values
@@ -286,6 +314,15 @@ func (f *ArticleFilter) Validate() error {
 
 	if f.Severity != nil && !f.Severity.IsValid() {
 		return fmt.Errorf("invalid severity value")
+	}
+
+	if f.SortBy != nil && !f.SortBy.IsValid() {
+		return fmt.Errorf("invalid sort_by value")
+	}
+
+	// Validate that user-specific sorting requires UserID
+	if f.SortBy != nil && *f.SortBy == SortByLatestViewed && f.UserID == nil {
+		return fmt.Errorf("user_id is required for latest_viewed sorting")
 	}
 
 	if f.DateFrom != nil && f.DateTo != nil && f.DateFrom.After(*f.DateTo) {
