@@ -252,11 +252,21 @@ cd aci-frontend && npm run test:e2e -- --grep "Content Import"
 | 4.1.8 | Review `ImportContentSheet.tsx` | code-reviewer | [x] | PASS - Excellent code quality |
 | 4.1.9 | Fix all critical/high findings | go-dev, ts-dev | [x] | Zero open critical/high issues |
 
-**Fixes Applied:**
+**Fixes Applied (Round 1):**
 - `newsletter_block_handler.go`: Added constants for `MaxBulkBlocksPerRequest` and `DefaultCTALabel`, improved error messages
 - `content_handler.go`: Fixed URL validation with proper parsing, replaced custom string functions with stdlib
 - `metadata_extractor.go`: Added SSRF validation to resolved image URLs
 - `AddToNewsletterSheet.tsx`: Added type guard, memoized sorted issues, fixed effect comment
+
+**Security Fixes Applied (Round 2 - 2026-01-18):**
+- `content_handler.go`: Added marketing/admin role authorization to `ExtractURLMetadata` endpoint (prevents SSRF from low-privilege users)
+- `content_handler.go`: Added marketing/admin role authorization to `CreateManualContentItem` endpoint (prevents privilege escalation)
+- `content_handler.go`: Extracted 10 hardcoded values to documented constants:
+  - `MinPollingIntervalMinutes` / `MaxPollingIntervalMinutes` (60/1440)
+  - `DefaultTrustScore` (0.7)
+  - `ManualContentTrustScore` / `ManualContentRelevanceScore` (1.0)
+  - `MaxURLLength` (2048), `MaxTitleLength` (500), `MaxSummaryLength` (2000), `MaxAuthorLength` (200)
+- `newsletter_block_handler.go`: Added XSS sanitization using `bluemonday.StrictPolicy()` for Title and Teaser fields
 
 ---
 
@@ -294,3 +304,15 @@ cd aci-frontend && npm run test:e2e -- --grep "Content Import"
 - **Critical Issues Fixed**: 5 (hardcoded values, URL validation, string functions, SSRF on image URLs)
 - **High Issues Fixed**: 8 (error handling, type safety, memoization)
 - **Build Status**: All passing (Go, TypeScript)
+
+### Security Review Summary (2026-01-18 - Round 2)
+- **Re-review Triggered**: Complete code and security review of all committed changes
+- **Initial Findings**: 2 CRITICAL security, 3 HIGH security, 7 CRITICAL code quality
+- **Security Fixes Applied**:
+  - Authorization added to `ExtractURLMetadata` (CRITICAL - prevents SSRF from low-privilege users)
+  - Authorization added to `CreateManualContentItem` (CRITICAL - prevents privilege escalation)
+  - XSS sanitization added to newsletter blocks (HIGH - prevents stored XSS via compromised RSS)
+- **Code Quality Fixes Applied**:
+  - 10 hardcoded values extracted to documented constants
+- **Final Security Status**: ✅ SECURE (all critical/high issues resolved)
+- **Commits**: `9a5f90a` - fix(security): add authorization and XSS protection to content pipeline
