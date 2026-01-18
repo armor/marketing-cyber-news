@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/rs/zerolog/log"
 
 	"github.com/phillipboles/aci-backend/internal/api/dto"
@@ -18,6 +19,9 @@ import (
 	"github.com/phillipboles/aci-backend/internal/domain"
 	"github.com/phillipboles/aci-backend/internal/repository"
 )
+
+// blockSanitizer is used to strip HTML/JavaScript from content to prevent XSS
+var blockSanitizer = bluemonday.StrictPolicy()
 
 // Configuration constants for bulk operations
 const (
@@ -214,14 +218,23 @@ func (h *NewsletterBlockHandler) BulkAddBlocks(w http.ResponseWriter, r *http.Re
 			continue
 		}
 
+		// Sanitize content to prevent XSS attacks from compromised RSS feeds
+		// or malicious manual entries
+		sanitizedTitle := blockSanitizer.Sanitize(item.Title)
+		var sanitizedTeaser *string
+		if item.Summary != nil {
+			sanitized := blockSanitizer.Sanitize(*item.Summary)
+			sanitizedTeaser = &sanitized
+		}
+
 		block := &domain.NewsletterBlock{
 			ID:            uuid.New(),
 			IssueID:       issueID,
 			ContentItemID: &item.ID,
 			BlockType:     blockType,
 			Position:      0, // Will be set by BulkCreateWithLock
-			Title:         &item.Title,
-			Teaser:        item.Summary,
+			Title:         &sanitizedTitle,
+			Teaser:        sanitizedTeaser,
 			CTALabel:      blockStringPtr(DefaultCTALabel),
 			CTAURL:        &item.URL,
 			IsPromotional: false,

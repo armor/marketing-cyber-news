@@ -13,9 +13,32 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
+	"github.com/phillipboles/aci-backend/internal/api/middleware"
 	"github.com/phillipboles/aci-backend/internal/api/response"
 	"github.com/phillipboles/aci-backend/internal/domain"
 	"github.com/phillipboles/aci-backend/internal/service"
+)
+
+// Configuration constants for content handler validation
+const (
+	// MinPollingIntervalMinutes is the minimum allowed polling interval for content sources
+	MinPollingIntervalMinutes = 60
+	// MaxPollingIntervalMinutes is the maximum allowed polling interval for content sources
+	MaxPollingIntervalMinutes = 1440
+	// DefaultTrustScore is the default trust score for content sources
+	DefaultTrustScore = 0.7
+	// ManualContentTrustScore is the trust score assigned to manually created content
+	ManualContentTrustScore = 1.0
+	// ManualContentRelevanceScore is the relevance score assigned to manually created content
+	ManualContentRelevanceScore = 1.0
+	// MaxURLLength is the maximum allowed URL length
+	MaxURLLength = 2048
+	// MaxTitleLength is the maximum allowed title length
+	MaxTitleLength = 500
+	// MaxSummaryLength is the maximum allowed summary length
+	MaxSummaryLength = 2000
+	// MaxAuthorLength is the maximum allowed author name length
+	MaxAuthorLength = 200
 )
 
 // ContentServiceInterface defines the interface for content service operations
@@ -200,7 +223,7 @@ func (h *ContentHandler) CreateContentSource(w http.ResponseWriter, r *http.Requ
 	}
 
 	// Validate polling interval (min 60 minutes = 1 hour, max 1440 minutes = 24 hours)
-	if req.PollIntervalMinutes < 60 || req.PollIntervalMinutes > 1440 {
+	if req.PollIntervalMinutes < MinPollingIntervalMinutes || req.PollIntervalMinutes > MaxPollingIntervalMinutes {
 		response.BadRequest(w, "Polling interval must be between 60 (1 hour) and 1440 (24 hours) minutes")
 		return
 	}
@@ -208,7 +231,7 @@ func (h *ContentHandler) CreateContentSource(w http.ResponseWriter, r *http.Requ
 	// Set default trust score if not provided
 	trustScore := req.TrustScore
 	if trustScore == 0 {
-		trustScore = 0.7 // Default trust score
+		trustScore = DefaultTrustScore // Default trust score for content sources
 	}
 
 	source := &domain.ContentSource{
@@ -271,7 +294,7 @@ func (h *ContentHandler) UpdateContentSource(w http.ResponseWriter, r *http.Requ
 	}
 
 	if req.PollIntervalMinutes != nil {
-		if *req.PollIntervalMinutes < 60 || *req.PollIntervalMinutes > 1440 {
+		if *req.PollIntervalMinutes < MinPollingIntervalMinutes || *req.PollIntervalMinutes > MaxPollingIntervalMinutes {
 			response.BadRequest(w, "Polling interval must be between 60 (1 hour) and 1440 (24 hours) minutes")
 			return
 		}
@@ -858,6 +881,25 @@ func (h *ContentHandler) ExtractURLMetadata(w http.ResponseWriter, r *http.Reque
 	ctx := r.Context()
 	requestID := getRequestID(ctx)
 
+	// Authorization: Only marketing and admin users can extract URL metadata
+	// This prevents unauthenticated SSRF attacks via the metadata extraction endpoint
+	user, err := middleware.GetDomainUserFromContext(ctx)
+	if err != nil {
+		log.Error().Err(err).Str("request_id", requestID).Msg("Failed to get user from context")
+		response.Unauthorized(w, "Authentication required")
+		return
+	}
+
+	if user.Role != domain.RoleMarketing && user.Role != domain.RoleAdmin {
+		log.Warn().
+			Str("request_id", requestID).
+			Str("user_id", user.ID.String()).
+			Str("role", string(user.Role)).
+			Msg("Unauthorized attempt to extract URL metadata")
+		response.Forbidden(w, "User lacks permission to extract URL metadata")
+		return
+	}
+
 	// Check if metadata extractor is configured
 	if h.metadataExtractor == nil {
 		log.Error().Str("request_id", requestID).Msg("Metadata extractor not configured")
@@ -884,7 +926,7 @@ func (h *ContentHandler) ExtractURLMetadata(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Check URL length
-	if len(req.URL) > 2048 {
+	if len(req.URL) > MaxURLLength {
 		response.BadRequest(w, "URL exceeds maximum length of 2048 characters")
 		return
 	}
@@ -950,6 +992,25 @@ func (h *ContentHandler) CreateManualContentItem(w http.ResponseWriter, r *http.
 	ctx := r.Context()
 	requestID := getRequestID(ctx)
 
+	// Authorization: Only marketing and admin users can create manual content
+	// This prevents privilege escalation via content injection with high trust scores
+	user, err := middleware.GetDomainUserFromContext(ctx)
+	if err != nil {
+		log.Error().Err(err).Str("request_id", requestID).Msg("Failed to get user from context")
+		response.Unauthorized(w, "Authentication required")
+		return
+	}
+
+	if user.Role != domain.RoleMarketing && user.Role != domain.RoleAdmin {
+		log.Warn().
+			Str("request_id", requestID).
+			Str("user_id", user.ID.String()).
+			Str("role", string(user.Role)).
+			Msg("Unauthorized attempt to create manual content")
+		response.Forbidden(w, "User lacks permission to create manual content")
+		return
+	}
+
 	// Parse request body
 	var req CreateManualContentRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -968,7 +1029,7 @@ func (h *ContentHandler) CreateManualContentItem(w http.ResponseWriter, r *http.
 		return
 	}
 
-	if len(req.URL) > 2048 {
+	if len(req.URL) > MaxURLLength {
 		response.BadRequest(w, "URL exceeds maximum length of 2048 characters")
 		return
 	}
@@ -978,7 +1039,7 @@ func (h *ContentHandler) CreateManualContentItem(w http.ResponseWriter, r *http.
 		return
 	}
 
-	if len(req.Title) > 500 {
+	if len(req.Title) > MaxTitleLength {
 		response.BadRequest(w, "Title exceeds maximum length of 500 characters")
 		return
 	}
@@ -996,12 +1057,12 @@ func (h *ContentHandler) CreateManualContentItem(w http.ResponseWriter, r *http.
 	}
 
 	// Validate optional fields
-	if req.Summary != nil && len(*req.Summary) > 2000 {
+	if req.Summary != nil && len(*req.Summary) > MaxSummaryLength {
 		response.BadRequest(w, "Summary exceeds maximum length of 2000 characters")
 		return
 	}
 
-	if req.Author != nil && len(*req.Author) > 200 {
+	if req.Author != nil && len(*req.Author) > MaxAuthorLength {
 		response.BadRequest(w, "Author exceeds maximum length of 200 characters")
 		return
 	}
@@ -1054,8 +1115,8 @@ func (h *ContentHandler) CreateManualContentItem(w http.ResponseWriter, r *http.
 		Author:         req.Author,
 		PublishDate:    publishDate,
 		ImageURL:       req.ImageURL,
-		TrustScore:     1.0, // High trust for manually curated content
-		RelevanceScore: 1.0, // High relevance for manually curated content
+		TrustScore:     ManualContentTrustScore,     // High trust for manually curated content
+		RelevanceScore: ManualContentRelevanceScore, // High relevance for manually curated content
 		IsActive:       true,
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
