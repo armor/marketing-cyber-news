@@ -867,10 +867,10 @@ func TestExtractURLMetadata_Success(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	expectedMetadata := &service.ExtractedMetadata{
-		URL:   "https://example.com/article",
-		Title: "Example Article",
-		Description: stringPtr("This is an example article"),
-		ImageURL: stringPtr("https://example.com/image.jpg"),
+		URL:             "https://example.com/article",
+		Title:           "Example Article",
+		Description:     stringPtr("This is an example article"),
+		ImageURL:        stringPtr("https://example.com/image.jpg"),
 		ReadTimeMinutes: intPtr(5),
 	}
 
@@ -1060,12 +1060,12 @@ func TestCreateManualContentItem_Success(t *testing.T) {
 	userID := uuid.New()
 
 	reqBody := map[string]interface{}{
-		"url":           "https://example.com/article",
-		"title":         "Example Article",
-		"content_type":  "blog",
-		"topic_tags":    []string{"security", "news"},
-		"author":        stringPtr("John Doe"),
-		"publish_date":  stringPtr("2024-01-15"),
+		"url":          "https://example.com/article",
+		"title":        "Example Article",
+		"content_type": "blog",
+		"topic_tags":   []string{"security", "news"},
+		"author":       stringPtr("John Doe"),
+		"publish_date": stringPtr("2024-01-15"),
 	}
 
 	body, _ := json.Marshal(reqBody)
@@ -1102,7 +1102,7 @@ func TestCreateManualContentItem_MissingRequiredFields(t *testing.T) {
 		{
 			name: "missing title",
 			reqBody: map[string]interface{}{
-				"url":           "https://example.com/article",
+				"url":          "https://example.com/article",
 				"content_type": "blog",
 			},
 			fieldName: "title",
@@ -1145,9 +1145,9 @@ func TestCreateManualContentItem_InvalidURL(t *testing.T) {
 	userID := uuid.New()
 
 	reqBody := map[string]interface{}{
-		"url":           "not-a-valid-url",
-		"title":         "Example Article",
-		"content_type":  "blog",
+		"url":          "not-a-valid-url",
+		"title":        "Example Article",
+		"content_type": "blog",
 	}
 
 	body, _ := json.Marshal(reqBody)
@@ -1169,9 +1169,9 @@ func TestCreateManualContentItem_InvalidContentType(t *testing.T) {
 	userID := uuid.New()
 
 	reqBody := map[string]interface{}{
-		"url":           "https://example.com/article",
-		"title":         "Example Article",
-		"content_type":  "invalid_type",
+		"url":          "https://example.com/article",
+		"title":        "Example Article",
+		"content_type": "invalid_type",
 	}
 
 	body, _ := json.Marshal(reqBody)
@@ -1193,9 +1193,9 @@ func TestCreateManualContentItem_DuplicateURL(t *testing.T) {
 	userID := uuid.New()
 
 	reqBody := map[string]interface{}{
-		"url":           "https://example.com/article",
-		"title":         "Example Article",
-		"content_type":  "blog",
+		"url":          "https://example.com/article",
+		"title":        "Example Article",
+		"content_type": "blog",
 	}
 
 	body, _ := json.Marshal(reqBody)
@@ -1237,9 +1237,9 @@ func TestCreateManualContentItem_Unauthenticated(t *testing.T) {
 	handler := NewContentHandler(mockService)
 
 	reqBody := map[string]interface{}{
-		"url":           "https://example.com/article",
-		"title":         "Example Article",
-		"content_type":  "blog",
+		"url":          "https://example.com/article",
+		"title":        "Example Article",
+		"content_type": "blog",
 	}
 
 	body, _ := json.Marshal(reqBody)
@@ -1260,9 +1260,9 @@ func TestCreateManualContentItem_ServiceError(t *testing.T) {
 	userID := uuid.New()
 
 	reqBody := map[string]interface{}{
-		"url":           "https://example.com/article",
-		"title":         "Example Article",
-		"content_type":  "blog",
+		"url":          "https://example.com/article",
+		"title":        "Example Article",
+		"content_type": "blog",
 	}
 
 	body, _ := json.Marshal(reqBody)
@@ -1291,15 +1291,15 @@ func TestCreateManualContentItem_WithOptionalFields(t *testing.T) {
 	userID := uuid.New()
 
 	reqBody := map[string]interface{}{
-		"url":             "https://example.com/article",
-		"title":           "Example Article",
-		"content_type":    "blog",
-		"topic_tags":      []string{"security", "news"},
-		"framework_tags":  []string{"owasp", "nist"},
-		"summary":         stringPtr("An important security article"),
-		"author":          stringPtr("Jane Doe"),
-		"publish_date":    stringPtr("2024-01-15"),
-		"image_url":       stringPtr("https://example.com/image.jpg"),
+		"url":            "https://example.com/article",
+		"title":          "Example Article",
+		"content_type":   "blog",
+		"topic_tags":     []string{"security", "news"},
+		"framework_tags": []string{"owasp", "nist"},
+		"summary":        stringPtr("An important security article"),
+		"author":         stringPtr("Jane Doe"),
+		"publish_date":   stringPtr("2024-01-15"),
+		"image_url":      stringPtr("https://example.com/image.jpg"),
 	}
 
 	body, _ := json.Marshal(reqBody)

@@ -643,13 +643,13 @@ func (s *ApprovalService) GetNextPendingGate(ctx context.Context, issueID uuid.U
 
 // GetIssueApprovalStatus returns a summary of approval status for an issue
 type IssueApprovalStatus struct {
-	IssueID          uuid.UUID                    `json:"issue_id"`
-	TotalGates       int                          `json:"total_gates"`
-	ApprovedGates    int                          `json:"approved_gates"`
-	NextPendingGate  *domain.ApprovalGate         `json:"next_pending_gate,omitempty"`
-	IsFullyApproved  bool                         `json:"is_fully_approved"`
-	GateStatuses     map[domain.ApprovalGate]bool `json:"gate_statuses"`
-	Approvals        []*domain.IssueApproval      `json:"approvals"`
+	IssueID         uuid.UUID                    `json:"issue_id"`
+	TotalGates      int                          `json:"total_gates"`
+	ApprovedGates   int                          `json:"approved_gates"`
+	NextPendingGate *domain.ApprovalGate         `json:"next_pending_gate,omitempty"`
+	IsFullyApproved bool                         `json:"is_fully_approved"`
+	GateStatuses    map[domain.ApprovalGate]bool `json:"gate_statuses"`
+	Approvals       []*domain.IssueApproval      `json:"approvals"`
 }
 
 func (s *ApprovalService) GetIssueApprovalStatus(ctx context.Context, issueID uuid.UUID) (*IssueApprovalStatus, error) {
@@ -686,13 +686,13 @@ func (s *ApprovalService) GetIssueApprovalStatus(ctx context.Context, issueID uu
 	}
 
 	return &IssueApprovalStatus{
-		IssueID:          issueID,
-		TotalGates:       len(domain.GateOrder),
-		ApprovedGates:    len(approvals),
-		NextPendingGate:  nextPending,
-		IsFullyApproved:  len(approvals) == len(domain.GateOrder),
-		GateStatuses:     gateStatuses,
-		Approvals:        approvals,
+		IssueID:         issueID,
+		TotalGates:      len(domain.GateOrder),
+		ApprovedGates:   len(approvals),
+		NextPendingGate: nextPending,
+		IsFullyApproved: len(approvals) == len(domain.GateOrder),
+		GateStatuses:    gateStatuses,
+		Approvals:       approvals,
 	}, nil
 }
 

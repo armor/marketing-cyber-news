@@ -153,17 +153,17 @@ func TestVoiceAgentHandler_ListAgents_HappyPath(t *testing.T) {
 
 	agents := []*voiceDomain.VoiceAgent{
 		{
-			ID:    uuid.New(),
-			Name:  "Professional",
-			Icon:  "briefcase",
-			Color: "#000000",
+			ID:     uuid.New(),
+			Name:   "Professional",
+			Icon:   "briefcase",
+			Color:  "#000000",
 			Status: voiceDomain.VoiceAgentStatusActive,
 		},
 		{
-			ID:    uuid.New(),
-			Name:  "Casual",
-			Icon:  "smile",
-			Color: "#FF0000",
+			ID:     uuid.New(),
+			Name:   "Casual",
+			Icon:   "smile",
+			Color:  "#FF0000",
 			Status: voiceDomain.VoiceAgentStatusActive,
 		},
 	}

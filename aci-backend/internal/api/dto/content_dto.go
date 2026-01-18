@@ -69,21 +69,21 @@ type CreateManualContentRequest struct {
 
 // ContentItemResponse represents a content item in API responses
 type ContentItemResponse struct {
-	ID                 string   `json:"id"`
-	SourceID           *string  `json:"source_id,omitempty"`
-	Title              string   `json:"title"`
-	URL                string   `json:"url"`
-	Summary            *string  `json:"summary,omitempty"`
-	ContentType        string   `json:"content_type"`
-	TopicTags          []string `json:"topic_tags,omitempty"`
-	FrameworkTags      []string `json:"framework_tags,omitempty"`
-	Author             *string  `json:"author,omitempty"`
-	PublishDate        string   `json:"publish_date"`
-	ImageURL           *string  `json:"image_url,omitempty"`
-	TrustScore         float64  `json:"trust_score"`
-	RelevanceScore     float64  `json:"relevance_score"`
-	IsActive           bool     `json:"is_active"`
-	SourceType         string   `json:"source_type"`
-	CreatedAt          string   `json:"created_at"`
-	UpdatedAt          string   `json:"updated_at"`
+	ID             string   `json:"id"`
+	SourceID       *string  `json:"source_id,omitempty"`
+	Title          string   `json:"title"`
+	URL            string   `json:"url"`
+	Summary        *string  `json:"summary,omitempty"`
+	ContentType    string   `json:"content_type"`
+	TopicTags      []string `json:"topic_tags,omitempty"`
+	FrameworkTags  []string `json:"framework_tags,omitempty"`
+	Author         *string  `json:"author,omitempty"`
+	PublishDate    string   `json:"publish_date"`
+	ImageURL       *string  `json:"image_url,omitempty"`
+	TrustScore     float64  `json:"trust_score"`
+	RelevanceScore float64  `json:"relevance_score"`
+	IsActive       bool     `json:"is_active"`
+	SourceType     string   `json:"source_type"`
+	CreatedAt      string   `json:"created_at"`
+	UpdatedAt      string   `json:"updated_at"`
 }

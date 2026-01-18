@@ -11,16 +11,16 @@ import (
 type ApprovalStatus string
 
 const (
-	StatusPendingMarketing   ApprovalStatus = "pending_marketing"
-	StatusPendingBranding    ApprovalStatus = "pending_branding"
-	StatusPendingVoC         ApprovalStatus = "pending_voc"
-	StatusPendingSocL1       ApprovalStatus = "pending_soc_l1"
-	StatusPendingSocL3       ApprovalStatus = "pending_soc_l3"
-	StatusPendingCompliance  ApprovalStatus = "pending_compliance"
-	StatusPendingCISO        ApprovalStatus = "pending_ciso"
-	StatusApproved           ApprovalStatus = "approved"
-	StatusRejected           ApprovalStatus = "rejected"
-	StatusReleased           ApprovalStatus = "released"
+	StatusPendingMarketing  ApprovalStatus = "pending_marketing"
+	StatusPendingBranding   ApprovalStatus = "pending_branding"
+	StatusPendingVoC        ApprovalStatus = "pending_voc"
+	StatusPendingSocL1      ApprovalStatus = "pending_soc_l1"
+	StatusPendingSocL3      ApprovalStatus = "pending_soc_l3"
+	StatusPendingCompliance ApprovalStatus = "pending_compliance"
+	StatusPendingCISO       ApprovalStatus = "pending_ciso"
+	StatusApproved          ApprovalStatus = "approved"
+	StatusRejected          ApprovalStatus = "rejected"
+	StatusReleased          ApprovalStatus = "released"
 )
 
 // IsValid checks if the approval status is valid
@@ -89,13 +89,13 @@ func (s ApprovalStatus) String() string {
 type ApprovalGate string
 
 const (
-	GateMarketing   ApprovalGate = "marketing"
-	GateBranding    ApprovalGate = "branding"
-	GateVoC         ApprovalGate = "voc"
-	GateSocL1       ApprovalGate = "soc_l1"
-	GateSocL3       ApprovalGate = "soc_l3"
-	GateCompliance  ApprovalGate = "compliance"
-	GateCISO        ApprovalGate = "ciso"
+	GateMarketing  ApprovalGate = "marketing"
+	GateBranding   ApprovalGate = "branding"
+	GateVoC        ApprovalGate = "voc"
+	GateSocL1      ApprovalGate = "soc_l1"
+	GateSocL3      ApprovalGate = "soc_l3"
+	GateCompliance ApprovalGate = "compliance"
+	GateCISO       ApprovalGate = "ciso"
 )
 
 // GateOrder defines the sequential order of approval gates

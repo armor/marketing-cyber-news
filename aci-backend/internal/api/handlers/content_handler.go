@@ -1043,22 +1043,22 @@ func (h *ContentHandler) CreateManualContentItem(w http.ResponseWriter, r *http.
 	// Create content item
 	// For manual content, SourceID is the zero UUID (uuid.Nil) to indicate no automated source
 	item := &domain.ContentItem{
-		ID:            uuid.New(),
-		SourceID:      uuid.Nil, // Zero UUID indicates manual entry (no automated source)
-		Title:         req.Title,
-		URL:           req.URL,
-		Summary:       req.Summary,
-		ContentType:   contentType, // Already validated above
-		TopicTags:     req.TopicTags,
-		FrameworkTags: req.FrameworkTags,
-		Author:        req.Author,
-		PublishDate:   publishDate,
-		ImageURL:      req.ImageURL,
-		TrustScore:    1.0, // High trust for manually curated content
+		ID:             uuid.New(),
+		SourceID:       uuid.Nil, // Zero UUID indicates manual entry (no automated source)
+		Title:          req.Title,
+		URL:            req.URL,
+		Summary:        req.Summary,
+		ContentType:    contentType, // Already validated above
+		TopicTags:      req.TopicTags,
+		FrameworkTags:  req.FrameworkTags,
+		Author:         req.Author,
+		PublishDate:    publishDate,
+		ImageURL:       req.ImageURL,
+		TrustScore:     1.0, // High trust for manually curated content
 		RelevanceScore: 1.0, // High relevance for manually curated content
-		IsActive:      true,
-		CreatedAt:     time.Now(),
-		UpdatedAt:     time.Now(),
+		IsActive:       true,
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
 	}
 
 	if err := h.contentService.CreateContentItem(ctx, item); err != nil {

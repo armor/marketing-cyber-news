@@ -78,9 +78,9 @@ type NewsletterIssue struct {
 	RejectedAt      *time.Time `json:"rejected_at,omitempty"`
 
 	// Multi-Gate Approval (7-gate workflow)
-	CurrentApprovalStage *ApprovalGate `json:"current_approval_stage,omitempty"`
-	VoCNotes             *string       `json:"voc_notes,omitempty"`
-	ComplianceNotes      *string       `json:"compliance_notes,omitempty"`
+	CurrentApprovalStage *ApprovalGate   `json:"current_approval_stage,omitempty"`
+	VoCNotes             *string         `json:"voc_notes,omitempty"`
+	ComplianceNotes      *string         `json:"compliance_notes,omitempty"`
 	Approvals            []IssueApproval `json:"approvals,omitempty"` // Joined field
 
 	// Delivery

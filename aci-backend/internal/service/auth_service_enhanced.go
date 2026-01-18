@@ -25,14 +25,14 @@ import (
 // EnhancedAuthService extends AuthService with multi-mode registration support
 type EnhancedAuthService struct {
 	*AuthService
-	invitationRepo     repository.InvitationRepository
-	verificationRepo   repository.VerificationTokenRepository
-	approvalRepo       repository.ApprovalRequestRepository
-	loginAttemptRepo   repository.LoginAttemptRepository
-	settingsRepo       repository.SystemSettingsRepository
-	passwordResetRepo  repository.PasswordResetTokenRepository
-	authConfig         config.AuthConfig
-	httpClient         *http.Client
+	invitationRepo    repository.InvitationRepository
+	verificationRepo  repository.VerificationTokenRepository
+	approvalRepo      repository.ApprovalRequestRepository
+	loginAttemptRepo  repository.LoginAttemptRepository
+	settingsRepo      repository.SystemSettingsRepository
+	passwordResetRepo repository.PasswordResetTokenRepository
+	authConfig        config.AuthConfig
+	httpClient        *http.Client
 }
 
 // NewEnhancedAuthService creates a new enhanced authentication service

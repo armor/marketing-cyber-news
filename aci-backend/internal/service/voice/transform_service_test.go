@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/phillipboles/aci-backend/internal/domain/voice"
-
 )
 
 // ============================================================================
@@ -763,6 +762,6 @@ func TestPendingCache_Cleanup(t *testing.T) {
 	// Assert
 	_, expiredOk := cache.Get(expiredID)
 	_, validOk := cache.Get(validID)
-	assert.False(t, expiredOk)  // Expired should be gone
-	assert.True(t, validOk)     // Valid should remain
+	assert.False(t, expiredOk) // Expired should be gone
+	assert.True(t, validOk)    // Valid should remain
 }

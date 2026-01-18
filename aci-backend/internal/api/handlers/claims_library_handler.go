@@ -57,8 +57,8 @@ type ClaimRejectionRequest struct {
 
 // ClaimValidationRequest represents the request body for validating content
 type ClaimValidationRequest struct {
-	Content string      `json:"content"`
-	BlockID *uuid.UUID  `json:"block_id,omitempty"`
+	Content string     `json:"content"`
+	BlockID *uuid.UUID `json:"block_id,omitempty"`
 }
 
 // ClaimResponse represents a claim in the API response

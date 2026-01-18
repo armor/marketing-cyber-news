@@ -12,9 +12,9 @@ import (
 type ClaimType string
 
 const (
-	ClaimTypeClaim     ClaimType = "claim"
+	ClaimTypeClaim      ClaimType = "claim"
 	ClaimTypeDisclaimer ClaimType = "disclaimer"
-	ClaimTypeDoNotSay  ClaimType = "do_not_say"
+	ClaimTypeDoNotSay   ClaimType = "do_not_say"
 )
 
 // IsValid checks if the claim type is valid
@@ -229,15 +229,15 @@ func (a *IssueApproval) Validate() error {
 
 // ClaimValidationResult represents the result of validating content against do-not-say items
 type ClaimValidationResult struct {
-	IsValid    bool              `json:"is_valid"`
-	Violations []ClaimViolation  `json:"violations"`
+	IsValid    bool             `json:"is_valid"`
+	Violations []ClaimViolation `json:"violations"`
 }
 
 // ClaimViolation represents a single violation found during validation
 type ClaimViolation struct {
-	ClaimID       uuid.UUID `json:"claim_id"`
-	ClaimText     string    `json:"claim_text"`
-	MatchedPhrase string    `json:"matched_phrase"`
+	ClaimID       uuid.UUID  `json:"claim_id"`
+	ClaimText     string     `json:"claim_text"`
+	MatchedPhrase string     `json:"matched_phrase"`
 	BlockID       *uuid.UUID `json:"block_id,omitempty"`
 	Position      *struct {
 		Start int `json:"start"`

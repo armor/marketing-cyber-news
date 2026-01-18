@@ -18,10 +18,10 @@ import (
 
 // MetadataExtractor extracts metadata from URLs with SSRF protection
 type MetadataExtractor struct {
-	httpClient    *http.Client
-	sanitizer     *bluemonday.Policy
-	maxBodySize   int64
-	readWPM       int // words per minute for read time calculation
+	httpClient  *http.Client
+	sanitizer   *bluemonday.Policy
+	maxBodySize int64
+	readWPM     int // words per minute for read time calculation
 }
 
 // ExtractedMetadata contains metadata extracted from a URL
