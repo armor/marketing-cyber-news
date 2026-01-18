@@ -8,15 +8,22 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/phillipboles/aci-backend/internal/api/middleware"
-	"github.com/phillipboles/aci-backend/internal/domain"
 	voiceDomain "github.com/phillipboles/aci-backend/internal/domain/voice"
-	"github.com/phillipboles/aci-backend/internal/service/voice"
 )
+
+// addChiURLParams adds chi URL parameters to a request for testing handlers that use chi.URLParam()
+func addChiURLParams(req *http.Request, params map[string]string) *http.Request {
+	rctx := chi.NewRouteContext()
+	for key, value := range params {
+		rctx.URLParams.Add(key, value)
+	}
+	return req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+}
 
 // ============================================================================
 // Mock Services
@@ -97,6 +104,11 @@ func (m *MockStyleRuleService) GetRulesByAgentID(ctx context.Context, agentID uu
 	return args.Get(0).([]*voiceDomain.StyleRule), args.Error(1)
 }
 
+func (m *MockStyleRuleService) ReorderRules(ctx context.Context, agentID uuid.UUID, positions map[uuid.UUID]int) error {
+	args := m.Called(ctx, agentID, positions)
+	return args.Error(0)
+}
+
 type MockExampleService struct {
 	mock.Mock
 }
@@ -124,18 +136,17 @@ func (m *MockExampleService) GetExamplesByAgentID(ctx context.Context, agentID u
 	return args.Get(0).([]*voiceDomain.Example), args.Error(1)
 }
 
+func (m *MockExampleService) ReorderExamples(ctx context.Context, agentID uuid.UUID, positions map[uuid.UUID]int) error {
+	args := m.Called(ctx, agentID, positions)
+	return args.Error(0)
+}
+
 // ============================================================================
 // Helper Functions
 // ============================================================================
 
 func createContextWithUser(userID uuid.UUID) context.Context {
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, middleware.UserContextKey{}, &domain.DomainUser{
-		ID:    userID,
-		Email: "test@example.com",
-	})
-	ctx = context.WithValue(ctx, middleware.RequestIDContextKey{}, uuid.New().String())
-	return ctx
+	return createTestContextWithUserAdmin(userID)
 }
 
 // ============================================================================
@@ -182,10 +193,15 @@ func TestVoiceAgentHandler_ListAgents_HappyPath(t *testing.T) {
 	// Assert
 	assert.Equal(t, http.StatusOK, rec.Code)
 
-	var response map[string]interface{}
-	err := json.Unmarshal(rec.Body.Bytes(), &response)
+	// Parse through {data: {agents: [...]}} envelope
+	var envelope struct {
+		Data struct {
+			Agents []map[string]interface{} `json:"agents"`
+		} `json:"data"`
+	}
+	err := json.Unmarshal(rec.Body.Bytes(), &envelope)
 	assert.NoError(t, err)
-	assert.NotNil(t, response["agents"])
+	assert.Len(t, envelope.Data.Agents, 2)
 	mockAgentService.AssertExpectations(t)
 }
 
@@ -266,12 +282,13 @@ func TestVoiceAgentHandler_GetAgent_HappyPath(t *testing.T) {
 		},
 	}
 
-	mockAgentService.On("GetAgentByID", ctx, agentID).Return(agent, nil)
+	mockAgentService.On("GetAgentByID", mock.Anything, agentID).Return(agent, nil)
 
 	handler := NewVoiceAgentHandler(mockAgentService, mockRuleService, mockExampleService)
 
 	req := httptest.NewRequest(http.MethodGet, "/v1/voice-agents/"+agentID.String(), nil)
 	req = req.WithContext(ctx)
+	req = addChiURLParams(req, map[string]string{"id": agentID.String()})
 	rec := httptest.NewRecorder()
 
 	// Act
@@ -280,11 +297,14 @@ func TestVoiceAgentHandler_GetAgent_HappyPath(t *testing.T) {
 	// Assert
 	assert.Equal(t, http.StatusOK, rec.Code)
 
-	var response VoiceAgentDTO
-	err := json.Unmarshal(rec.Body.Bytes(), &response)
+	// Parse through {data: {...}} envelope
+	var envelope struct {
+		Data VoiceAgentDTO `json:"data"`
+	}
+	err := json.Unmarshal(rec.Body.Bytes(), &envelope)
 	assert.NoError(t, err)
-	assert.Equal(t, agentID.String(), response.ID)
-	assert.Equal(t, "Professional", response.Name)
+	assert.Equal(t, agentID.String(), envelope.Data.ID)
+	assert.Equal(t, "Professional", envelope.Data.Name)
 	mockAgentService.AssertExpectations(t)
 }
 
@@ -298,13 +318,14 @@ func TestVoiceAgentHandler_GetAgent_NotFound(t *testing.T) {
 	mockRuleService := new(MockStyleRuleService)
 	mockExampleService := new(MockExampleService)
 
-	mockAgentService.On("GetAgentByID", ctx, agentID).
+	mockAgentService.On("GetAgentByID", mock.Anything, agentID).
 		Return(nil, context.DeadlineExceeded)
 
 	handler := NewVoiceAgentHandler(mockAgentService, mockRuleService, mockExampleService)
 
 	req := httptest.NewRequest(http.MethodGet, "/v1/voice-agents/"+agentID.String(), nil)
 	req = req.WithContext(ctx)
+	req = addChiURLParams(req, map[string]string{"id": agentID.String()})
 	rec := httptest.NewRecorder()
 
 	// Act
@@ -328,6 +349,7 @@ func TestVoiceAgentHandler_GetAgent_InvalidID(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/v1/voice-agents/invalid-id", nil)
 	req = req.WithContext(ctx)
+	req = addChiURLParams(req, map[string]string{"id": "invalid-id"})
 	rec := httptest.NewRecorder()
 
 	// Act
@@ -346,9 +368,6 @@ func TestVoiceAgentHandler_CreateAgent_HappyPath(t *testing.T) {
 	// Arrange
 	userID := uuid.New()
 	ctx := createContextWithUser(userID)
-	ctx = context.WithValue(ctx, middleware.UserClaimsContextKey{}, &middleware.UserClaims{
-		UserID: userID,
-	})
 
 	mockAgentService := new(MockVoiceAgentService)
 	mockRuleService := new(MockStyleRuleService)
@@ -387,9 +406,6 @@ func TestVoiceAgentHandler_CreateAgent_MissingName(t *testing.T) {
 	// Arrange
 	userID := uuid.New()
 	ctx := createContextWithUser(userID)
-	ctx = context.WithValue(ctx, middleware.UserClaimsContextKey{}, &middleware.UserClaims{
-		UserID: userID,
-	})
 
 	mockAgentService := new(MockVoiceAgentService)
 	mockRuleService := new(MockStyleRuleService)
@@ -421,9 +437,6 @@ func TestVoiceAgentHandler_CreateAgent_MissingSystemPrompt(t *testing.T) {
 	// Arrange
 	userID := uuid.New()
 	ctx := createContextWithUser(userID)
-	ctx = context.WithValue(ctx, middleware.UserClaimsContextKey{}, &middleware.UserClaims{
-		UserID: userID,
-	})
 
 	mockAgentService := new(MockVoiceAgentService)
 	mockRuleService := new(MockStyleRuleService)
@@ -455,9 +468,6 @@ func TestVoiceAgentHandler_CreateAgent_InvalidJSON(t *testing.T) {
 	// Arrange
 	userID := uuid.New()
 	ctx := createContextWithUser(userID)
-	ctx = context.WithValue(ctx, middleware.UserClaimsContextKey{}, &middleware.UserClaims{
-		UserID: userID,
-	})
 
 	mockAgentService := new(MockVoiceAgentService)
 	mockRuleService := new(MockStyleRuleService)
@@ -487,9 +497,6 @@ func TestVoiceAgentHandler_UpdateAgent_HappyPath(t *testing.T) {
 	userID := uuid.New()
 	agentID := uuid.New()
 	ctx := createContextWithUser(userID)
-	ctx = context.WithValue(ctx, middleware.UserClaimsContextKey{}, &middleware.UserClaims{
-		UserID: userID,
-	})
 
 	mockAgentService := new(MockVoiceAgentService)
 	mockRuleService := new(MockStyleRuleService)
@@ -512,8 +519,8 @@ func TestVoiceAgentHandler_UpdateAgent_HappyPath(t *testing.T) {
 
 	body, _ := json.Marshal(updateReq)
 
-	mockAgentService.On("GetAgentByID", ctx, agentID).Return(existingAgent, nil)
-	mockAgentService.On("UpdateAgent", ctx, mock.MatchedBy(func(a *voiceDomain.VoiceAgent) bool {
+	mockAgentService.On("GetAgentByID", mock.Anything, agentID).Return(existingAgent, nil)
+	mockAgentService.On("UpdateAgent", mock.Anything, mock.MatchedBy(func(a *voiceDomain.VoiceAgent) bool {
 		return a.ID == agentID && a.Name == "New Name"
 	})).Return(nil)
 
@@ -521,6 +528,7 @@ func TestVoiceAgentHandler_UpdateAgent_HappyPath(t *testing.T) {
 
 	httpReq := httptest.NewRequest(http.MethodPut, "/v1/admin/voice-agents/"+agentID.String(), bytes.NewReader(body))
 	httpReq = httpReq.WithContext(ctx)
+	httpReq = addChiURLParams(httpReq, map[string]string{"id": agentID.String()})
 	httpReq.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 
@@ -537,9 +545,6 @@ func TestVoiceAgentHandler_UpdateAgent_NotFound(t *testing.T) {
 	userID := uuid.New()
 	agentID := uuid.New()
 	ctx := createContextWithUser(userID)
-	ctx = context.WithValue(ctx, middleware.UserClaimsContextKey{}, &middleware.UserClaims{
-		UserID: userID,
-	})
 
 	mockAgentService := new(MockVoiceAgentService)
 	mockRuleService := new(MockStyleRuleService)
@@ -552,13 +557,14 @@ func TestVoiceAgentHandler_UpdateAgent_NotFound(t *testing.T) {
 
 	body, _ := json.Marshal(updateReq)
 
-	mockAgentService.On("GetAgentByID", ctx, agentID).
+	mockAgentService.On("GetAgentByID", mock.Anything, agentID).
 		Return(nil, context.DeadlineExceeded)
 
 	handler := NewVoiceAgentHandler(mockAgentService, mockRuleService, mockExampleService)
 
 	httpReq := httptest.NewRequest(http.MethodPut, "/v1/admin/voice-agents/"+agentID.String(), bytes.NewReader(body))
 	httpReq = httpReq.WithContext(ctx)
+	httpReq = addChiURLParams(httpReq, map[string]string{"id": agentID.String()})
 	httpReq.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 
@@ -579,20 +585,18 @@ func TestVoiceAgentHandler_DeleteAgent_HappyPath(t *testing.T) {
 	userID := uuid.New()
 	agentID := uuid.New()
 	ctx := createContextWithUser(userID)
-	ctx = context.WithValue(ctx, middleware.UserClaimsContextKey{}, &middleware.UserClaims{
-		UserID: userID,
-	})
 
 	mockAgentService := new(MockVoiceAgentService)
 	mockRuleService := new(MockStyleRuleService)
 	mockExampleService := new(MockExampleService)
 
-	mockAgentService.On("DeleteAgent", ctx, agentID).Return(nil)
+	mockAgentService.On("DeleteAgent", mock.Anything, agentID).Return(nil)
 
 	handler := NewVoiceAgentHandler(mockAgentService, mockRuleService, mockExampleService)
 
 	httpReq := httptest.NewRequest(http.MethodDelete, "/v1/admin/voice-agents/"+agentID.String(), nil)
 	httpReq = httpReq.WithContext(ctx)
+	httpReq = addChiURLParams(httpReq, map[string]string{"id": agentID.String()})
 	rec := httptest.NewRecorder()
 
 	// Act
@@ -608,21 +612,19 @@ func TestVoiceAgentHandler_DeleteAgent_NotFound(t *testing.T) {
 	userID := uuid.New()
 	agentID := uuid.New()
 	ctx := createContextWithUser(userID)
-	ctx = context.WithValue(ctx, middleware.UserClaimsContextKey{}, &middleware.UserClaims{
-		UserID: userID,
-	})
 
 	mockAgentService := new(MockVoiceAgentService)
 	mockRuleService := new(MockStyleRuleService)
 	mockExampleService := new(MockExampleService)
 
-	mockAgentService.On("DeleteAgent", ctx, agentID).
+	mockAgentService.On("DeleteAgent", mock.Anything, agentID).
 		Return(context.DeadlineExceeded)
 
 	handler := NewVoiceAgentHandler(mockAgentService, mockRuleService, mockExampleService)
 
 	httpReq := httptest.NewRequest(http.MethodDelete, "/v1/admin/voice-agents/"+agentID.String(), nil)
 	httpReq = httpReq.WithContext(ctx)
+	httpReq = addChiURLParams(httpReq, map[string]string{"id": agentID.String()})
 	rec := httptest.NewRecorder()
 
 	// Act

@@ -7,6 +7,8 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
+
+	"github.com/phillipboles/aci-backend/internal/api/middleware"
 )
 
 // ParsePagination extracts pagination parameters from request
@@ -114,12 +116,13 @@ func parseIntQuery(r *http.Request, key string, defaultValue int) (int, error) {
 	return value, nil
 }
 
-// getUserIDFromContext extracts the user ID from context
+// getUserIDFromContext extracts the user ID from context using the middleware claims
 func getUserIDFromContext(ctx context.Context) uuid.UUID {
-	if userID, ok := ctx.Value("user_id").(uuid.UUID); ok {
-		return userID
+	claims, ok := middleware.GetUserFromContext(ctx)
+	if !ok || claims == nil {
+		return uuid.Nil
 	}
-	return uuid.Nil
+	return claims.UserID
 }
 
 // getTenantID extracts tenant ID from context

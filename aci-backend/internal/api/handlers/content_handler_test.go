@@ -194,9 +194,9 @@ func createTestContentItem() *domain.ContentItem {
 }
 
 func contextWithUser(userID uuid.UUID) context.Context {
-	ctx := context.Background()
-	// Use plain string key to match getUserIDFromContext in helpers.go
-	return context.WithValue(ctx, "user_id", userID)
+	// Use the shared helper which uses the correct middleware context key
+	// Default to marketing role for content operations
+	return createTestContextWithUser(userID, domain.RoleMarketing)
 }
 
 // ============================================================================
@@ -857,6 +857,7 @@ func TestExtractURLMetadata_Success(t *testing.T) {
 	handler := NewContentHandler(mockService)
 	mockExtractor := new(MockMetadataExtractor)
 	handler.SetMetadataExtractor(mockExtractor)
+	userID := uuid.New()
 
 	reqBody := map[string]string{
 		"url": "https://example.com/article",
@@ -864,6 +865,7 @@ func TestExtractURLMetadata_Success(t *testing.T) {
 
 	body, _ := json.Marshal(reqBody)
 	req := httptest.NewRequest(http.MethodPost, "/v1/content/metadata", bytes.NewBuffer(body))
+	req = req.WithContext(contextWithUser(userID))
 	w := httptest.NewRecorder()
 
 	expectedMetadata := &service.ExtractedMetadata{
@@ -894,6 +896,9 @@ func TestExtractURLMetadata_InvalidURL(t *testing.T) {
 	// Arrange
 	mockService := new(MockContentService)
 	handler := NewContentHandler(mockService)
+	mockExtractor := new(MockMetadataExtractor)
+	handler.SetMetadataExtractor(mockExtractor)
+	userID := uuid.New()
 
 	reqBody := map[string]string{
 		"url": "not-a-valid-url",
@@ -901,12 +906,13 @@ func TestExtractURLMetadata_InvalidURL(t *testing.T) {
 
 	body, _ := json.Marshal(reqBody)
 	req := httptest.NewRequest(http.MethodPost, "/v1/content/metadata", bytes.NewBuffer(body))
+	req = req.WithContext(contextWithUser(userID))
 	w := httptest.NewRecorder()
 
 	// Act
 	handler.ExtractURLMetadata(w, req)
 
-	// Assert
+	// Assert - validation happens before calling extractor
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
@@ -914,6 +920,9 @@ func TestExtractURLMetadata_EmptyURL(t *testing.T) {
 	// Arrange
 	mockService := new(MockContentService)
 	handler := NewContentHandler(mockService)
+	mockExtractor := new(MockMetadataExtractor)
+	handler.SetMetadataExtractor(mockExtractor)
+	userID := uuid.New()
 
 	reqBody := map[string]string{
 		"url": "",
@@ -921,12 +930,13 @@ func TestExtractURLMetadata_EmptyURL(t *testing.T) {
 
 	body, _ := json.Marshal(reqBody)
 	req := httptest.NewRequest(http.MethodPost, "/v1/content/metadata", bytes.NewBuffer(body))
+	req = req.WithContext(contextWithUser(userID))
 	w := httptest.NewRecorder()
 
 	// Act
 	handler.ExtractURLMetadata(w, req)
 
-	// Assert
+	// Assert - validation happens before calling extractor
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
@@ -934,14 +944,18 @@ func TestExtractURLMetadata_InvalidJSON(t *testing.T) {
 	// Arrange
 	mockService := new(MockContentService)
 	handler := NewContentHandler(mockService)
+	mockExtractor := new(MockMetadataExtractor)
+	handler.SetMetadataExtractor(mockExtractor)
+	userID := uuid.New()
 
 	req := httptest.NewRequest(http.MethodPost, "/v1/content/metadata", bytes.NewBufferString("{invalid json}"))
+	req = req.WithContext(contextWithUser(userID))
 	w := httptest.NewRecorder()
 
 	// Act
 	handler.ExtractURLMetadata(w, req)
 
-	// Assert
+	// Assert - JSON parsing happens before URL validation
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
@@ -951,6 +965,7 @@ func TestExtractURLMetadata_SSRFProtectionBlocksPrivateIP(t *testing.T) {
 	handler := NewContentHandler(mockService)
 	mockExtractor := new(MockMetadataExtractor)
 	handler.SetMetadataExtractor(mockExtractor)
+	userID := uuid.New()
 
 	reqBody := map[string]string{
 		"url": "http://192.168.1.1",
@@ -958,6 +973,7 @@ func TestExtractURLMetadata_SSRFProtectionBlocksPrivateIP(t *testing.T) {
 
 	body, _ := json.Marshal(reqBody)
 	req := httptest.NewRequest(http.MethodPost, "/v1/content/metadata", bytes.NewBuffer(body))
+	req = req.WithContext(contextWithUser(userID))
 	w := httptest.NewRecorder()
 
 	mockExtractor.On("ExtractMetadata", mock.Anything, "http://192.168.1.1").
@@ -977,6 +993,7 @@ func TestExtractURLMetadata_SSRFProtectionBlocksMetadataEndpoint(t *testing.T) {
 	handler := NewContentHandler(mockService)
 	mockExtractor := new(MockMetadataExtractor)
 	handler.SetMetadataExtractor(mockExtractor)
+	userID := uuid.New()
 
 	reqBody := map[string]string{
 		"url": "http://169.254.169.254/latest/meta-data/",
@@ -984,6 +1001,7 @@ func TestExtractURLMetadata_SSRFProtectionBlocksMetadataEndpoint(t *testing.T) {
 
 	body, _ := json.Marshal(reqBody)
 	req := httptest.NewRequest(http.MethodPost, "/v1/content/metadata", bytes.NewBuffer(body))
+	req = req.WithContext(contextWithUser(userID))
 	w := httptest.NewRecorder()
 
 	mockExtractor.On("ExtractMetadata", mock.Anything, "http://169.254.169.254/latest/meta-data/").
@@ -1003,6 +1021,7 @@ func TestExtractURLMetadata_TimeoutHandling(t *testing.T) {
 	handler := NewContentHandler(mockService)
 	mockExtractor := new(MockMetadataExtractor)
 	handler.SetMetadataExtractor(mockExtractor)
+	userID := uuid.New()
 
 	reqBody := map[string]string{
 		"url": "https://slow-example.com/article",
@@ -1010,6 +1029,7 @@ func TestExtractURLMetadata_TimeoutHandling(t *testing.T) {
 
 	body, _ := json.Marshal(reqBody)
 	req := httptest.NewRequest(http.MethodPost, "/v1/content/metadata", bytes.NewBuffer(body))
+	req = req.WithContext(contextWithUser(userID))
 	w := httptest.NewRecorder()
 
 	mockExtractor.On("ExtractMetadata", mock.Anything, "https://slow-example.com/article").
@@ -1018,8 +1038,8 @@ func TestExtractURLMetadata_TimeoutHandling(t *testing.T) {
 	// Act
 	handler.ExtractURLMetadata(w, req)
 
-	// Assert
-	assert.Equal(t, http.StatusRequestTimeout, w.Code)
+	// Assert - handler returns 400 for all extraction errors to avoid leaking internal details
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 	mockExtractor.AssertExpectations(t)
 }
 
@@ -1029,6 +1049,7 @@ func TestExtractURLMetadata_ServiceError(t *testing.T) {
 	handler := NewContentHandler(mockService)
 	mockExtractor := new(MockMetadataExtractor)
 	handler.SetMetadataExtractor(mockExtractor)
+	userID := uuid.New()
 
 	reqBody := map[string]string{
 		"url": "https://example.com/article",
@@ -1036,6 +1057,7 @@ func TestExtractURLMetadata_ServiceError(t *testing.T) {
 
 	body, _ := json.Marshal(reqBody)
 	req := httptest.NewRequest(http.MethodPost, "/v1/content/metadata", bytes.NewBuffer(body))
+	req = req.WithContext(contextWithUser(userID))
 	w := httptest.NewRecorder()
 
 	mockExtractor.On("ExtractMetadata", mock.Anything, "https://example.com/article").
@@ -1044,8 +1066,8 @@ func TestExtractURLMetadata_ServiceError(t *testing.T) {
 	// Act
 	handler.ExtractURLMetadata(w, req)
 
-	// Assert
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	// Assert - handler returns 400 for all extraction errors to avoid leaking internal details
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 	mockExtractor.AssertExpectations(t)
 }
 
@@ -1073,6 +1095,8 @@ func TestCreateManualContentItem_Success(t *testing.T) {
 	req = req.WithContext(contextWithUser(userID))
 	w := httptest.NewRecorder()
 
+	// Mock URL duplicate check - no existing item
+	mockService.On("GetContentItemByURL", mock.Anything, "https://example.com/article").Return(nil, errors.New("not found"))
 	mockService.On("CreateContentItem", mock.Anything, mock.MatchedBy(func(item *domain.ContentItem) bool {
 		return item.Title == "Example Article" && item.URL == "https://example.com/article"
 	})).Return(nil)
