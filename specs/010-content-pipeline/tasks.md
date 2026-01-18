@@ -282,15 +282,43 @@ cd aci-frontend && npm run test:e2e -- --grep "Content Import"
 
 ---
 
+## WAVE 5: Kubernetes Validation
+
+### Phase 5.1: K8s Deployment Verification
+
+| # | Task | Agent | Status | Exit Criteria |
+|---|------|-------|--------|---------------|
+| 5.1.1 | Verify backend pod deployment | devops-eng | [ ] | `kubectl get pods` shows aci-backend Running |
+| 5.1.2 | Test `/v1/newsletter/content/extract-metadata` endpoint in K8s | test-writer | [ ] | Returns 401 without auth, 200 with auth |
+| 5.1.3 | Test `/v1/newsletter-issues/{id}/blocks/bulk` endpoint in K8s | test-writer | [ ] | Returns 401 without auth, 201 with valid request |
+| 5.1.4 | Test `/v1/newsletter/content-items/manual` endpoint in K8s | test-writer | [ ] | Returns 401 without auth, 201 with valid request |
+| 5.1.5 | Verify frontend deployment | devops-eng | [ ] | Frontend accessible, components load |
+| 5.1.6 | Run E2E tests against K8s environment | test-writer | [ ] | All content-pipeline E2E tests pass |
+| 5.1.7 | Check pod logs for errors | devops-eng | [ ] | Zero errors related to content pipeline |
+
+**Verification Command**:
+```bash
+kubectl get pods -n armor-newsletter
+kubectl logs deployment/aci-backend -n armor-newsletter --tail=50
+curl -s http://129.153.33.152:8080/v1/newsletter/content/extract-metadata -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d '{"url":"https://example.com"}'
+```
+
+---
+
 ## Summary
 
 | Wave | Phases | Tasks | Status |
 |------|--------|-------|--------|
-| WAVE 1 | 3 | 31 | [x] |
+| WAVE 1 | 3 | 31 | 25/31 |
 | WAVE 2 | 5 | 37 | [x] |
 | WAVE 3 | 2 | 12 | [x] |
 | WAVE 4 | 2 | 14 | [x] |
-| **Total** | **12** | **94** | 94/94 |
+| WAVE 5 | 1 | 7 | 0/7 |
+| **Total** | **13** | **101** | 88/101 |
+
+### Remaining Tasks
+- **WAVE 1**: 6 tasks (unit/integration tests, JSON-LD extraction)
+- **WAVE 5**: 7 tasks (K8s validation)
 
 ### Test Summary
 - **Hook unit tests**: 75 passing (4 hooks: useAddBlocksToIssue, useFetchURLMetadata, useCreateContentItem, useDraftIssues)
