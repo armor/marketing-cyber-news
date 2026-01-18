@@ -133,7 +133,7 @@ type LLMClientConfig struct {
 func DefaultLLMClientConfig() *LLMClientConfig {
 	return &LLMClientConfig{
 		BaseURL:      "https://openrouter.ai/api/v1",
-		DefaultModel: "anthropic/claude-3-haiku-20240307",
+		DefaultModel: "anthropic/claude-3-haiku",
 		Timeout:      30 * time.Second,
 		MaxRetries:   3,
 		RetryDelay:   500 * time.Millisecond,

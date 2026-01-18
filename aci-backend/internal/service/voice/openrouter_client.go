@@ -36,7 +36,7 @@ func NewOpenRouterClient(config *LLMClientConfig) (*OpenRouterClient, error) {
 	}
 
 	if config.DefaultModel == "" {
-		config.DefaultModel = "anthropic/claude-3-haiku-20240307"
+		config.DefaultModel = "anthropic/claude-3-haiku"
 	}
 
 	if config.Timeout <= 0 {
