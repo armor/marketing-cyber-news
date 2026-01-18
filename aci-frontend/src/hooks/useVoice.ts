@@ -77,8 +77,9 @@ export function useTransformText() {
       queryClient.invalidateQueries({ queryKey: marketingKeys.voice.transformations() });
     },
     onError: (error) => {
-      // Check if rate limited
-      if (error.message.includes('rate limit') || error.message.includes('429')) {
+      // Check if rate limited (case-insensitive check)
+      const message = error.message.toLowerCase();
+      if (message.includes('rate limit') || message.includes('429')) {
         toast.error('Rate limit exceeded. Try again later (30 requests/hour limit).');
       } else {
         toast.error('Failed to transform text. Please try again.');
