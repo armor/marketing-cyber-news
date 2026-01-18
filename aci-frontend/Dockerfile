@@ -104,14 +104,16 @@ COPY <<'EOF' /docker-entrypoint.d/40-inject-env.sh
 set -e
 
 # Create runtime config with environment variables
+# BACKEND_URL should be the externally accessible backend URL (e.g., http://129.153.33.152:8080/v1)
+# If not set, defaults to /api/v1 for nginx proxy
 cat > /usr/share/nginx/html/config.js << JSEOF
 window.__RUNTIME_CONFIG__ = {
-  API_URL: "${VITE_API_URL:-/api}",
+  API_URL: "${BACKEND_URL:-/api/v1}",
   ENVIRONMENT: "${NODE_ENV:-production}"
 };
 JSEOF
 
-echo "Runtime config injected"
+echo "Runtime config injected with API_URL: ${BACKEND_URL:-/api/v1}"
 EOF
 
 RUN chmod +x /docker-entrypoint.d/40-inject-env.sh
@@ -143,7 +145,14 @@ LABEL org.opencontainers.image.title="ACI Frontend" \
 #    docker build -t aci-frontend:latest .
 #    kind load docker-image aci-frontend:latest --name <cluster-name>
 #
-# 4. Run locally:
-#    docker run -p 3000:80 -e VITE_API_URL=http://localhost:8080 aci-frontend:latest
+# 4. Run locally with nginx proxy (backend on same network):
+#    docker run -p 3000:80 aci-frontend:latest
+#
+# 5. Run with external backend URL (production):
+#    docker run -p 3000:80 -e BACKEND_URL=http://129.153.33.152:8080/v1 aci-frontend:latest
+#
+# Environment Variables (runtime):
+#   BACKEND_URL - External backend API URL (e.g., http://backend-ip:8080/v1)
+#                 If not set, uses /api/v1 and nginx proxies to aci-backend:80
 #
 ###############################################################################

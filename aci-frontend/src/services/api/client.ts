@@ -5,8 +5,42 @@
  * Tokens are stored in localStorage and sent via Authorization header.
  */
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://127.0.0.1:10081/v1';
+/**
+ * Runtime config interface (injected by Docker entrypoint)
+ */
+declare global {
+  interface Window {
+    __RUNTIME_CONFIG__?: {
+      API_URL?: string;
+      ENVIRONMENT?: string;
+    };
+  }
+}
+
+/**
+ * Get API base URL with priority:
+ * 1. Build-time VITE_API_URL (for local development)
+ * 2. Runtime config from Docker (for production)
+ * 3. Relative /api path (nginx proxy handles routing)
+ */
+function getApiBaseUrl(): string {
+  // Build-time env var (local development)
+  const buildTimeUrl = import.meta.env.VITE_API_URL;
+  if (buildTimeUrl && !buildTimeUrl.includes('aci-backend')) {
+    return buildTimeUrl;
+  }
+
+  // Runtime config (Docker production)
+  const runtimeUrl = window.__RUNTIME_CONFIG__?.API_URL;
+  if (runtimeUrl && runtimeUrl !== '/api') {
+    return runtimeUrl;
+  }
+
+  // Default: relative URL for nginx proxy
+  return '/api/v1';
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 /**
  * Token storage keys
@@ -91,7 +125,11 @@ class BaseApiClient {
       readonly params?: Record<string, string>;
     }
   ): Promise<T> {
-    const url = new URL(`${this.baseUrl}${path}`);
+    // Build URL - handle both absolute and relative base URLs
+    const fullPath = `${this.baseUrl}${path}`;
+    const url = fullPath.startsWith('http')
+      ? new URL(fullPath)
+      : new URL(fullPath, window.location.origin);
 
     // Add query parameters if provided
     if (options?.params) {

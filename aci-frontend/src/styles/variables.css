@@ -731,6 +731,14 @@
   --color-login-subtle-text: #71717a;
 
   /* ---------------------------------------------------------------
+     HEADER - Icon Button Styling
+     --------------------------------------------------------------- */
+  --header-icon-bg: rgba(255, 255, 255, 0.06);
+  --header-icon-bg-hover: rgba(255, 255, 255, 0.1);
+  --header-icon-border: rgba(255, 255, 255, 0.08);
+  --header-icon-border-hover: rgba(255, 255, 255, 0.15);
+
+  /* ---------------------------------------------------------------
      GRADIENTS - Badges
      --------------------------------------------------------------- */
   --gradient-badge-neutral: linear-gradient(180deg,
@@ -944,6 +952,12 @@
   /* Overlays */
   --color-overlay-default: rgba(0, 0, 0, 0.7);
   --color-overlay-heavy: rgba(0, 0, 0, 0.85);
+
+  /* Header - Icon Button Styling */
+  --header-icon-bg: rgba(255, 255, 255, 0.06);
+  --header-icon-bg-hover: rgba(255, 255, 255, 0.1);
+  --header-icon-border: rgba(255, 255, 255, 0.08);
+  --header-icon-border-hover: rgba(255, 255, 255, 0.15);
 
   /* Gradients - Page & Section (Armor-Dash Neutral Grays) */
   --gradient-page: linear-gradient(180deg, #0d0d0d 0%, #141414 30%, #1a1a1a 60%, #212121 100%);

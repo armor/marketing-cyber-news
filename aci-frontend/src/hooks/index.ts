@@ -78,6 +78,18 @@ export type {
 // Content mutations
 export { useCreateContentSource, useSyncContent } from './useContentMutations';
 
+// Content Pipeline Phase 2.1 hooks
+export { useAddBlocksToIssue } from './useAddBlocksToIssue';
+export { useFetchURLMetadata } from './useFetchURLMetadata';
+export type { URLMetadata } from './useFetchURLMetadata';
+export { useCreateContentItem } from './useCreateContentItem';
+export type {
+  CreateManualContentRequest,
+  ContentItem,
+} from './useCreateContentItem';
+export { useDraftIssues } from './useDraftIssues';
+export type { DraftIssue, UseDraftIssuesOptions } from './useDraftIssues';
+
 // Newsletter issue hooks
 export { useIssues } from './useIssues';
 export type { UseIssuesOptions, UseIssuesReturn } from './useIssues';

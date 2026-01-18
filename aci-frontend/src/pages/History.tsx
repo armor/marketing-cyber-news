@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 interface HistoryEntry {
   article: Article;
@@ -80,25 +81,21 @@ export function History({ onArticleClick }: HistoryProps): ReactElement {
   };
 
   return (
-    <div>
-      <div style={{ marginBottom: 'var(--spacing-8)' }}>
-        <h2
-          className="font-bold"
-          style={{
-            fontSize: 'var(--typography-font-size-2xl)',
-            color: 'var(--color-text-primary)',
-            marginBottom: 'var(--spacing-2)',
-          }}
-        >
-          Reading History
-        </h2>
-        <p style={{ color: 'var(--color-text-muted)' }}>
-          Articles you've read recently
-        </p>
-      </div>
+    <div className="flex flex-col h-full">
+      {/* Page Header with Breadcrumbs */}
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'History' },
+        ]}
+        title="Reading History"
+        description="Articles you've read recently"
+      />
 
-      {/* Loading State */}
-      {isLoading && (
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto" style={{ padding: 'var(--spacing-6)' }}>
+        {/* Loading State */}
+        {isLoading && (
         <div className="flex justify-center" style={{ padding: 'var(--spacing-12) 0' }}>
           <LoadingSpinner size="lg" label="Loading history..." />
         </div>
@@ -221,6 +218,7 @@ export function History({ onArticleClick }: HistoryProps): ReactElement {
           )}
         </>
       )}
+      </div>
     </div>
   );
 }

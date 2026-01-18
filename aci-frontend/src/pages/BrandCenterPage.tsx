@@ -5,6 +5,7 @@
  */
 
 import { BrandCenter } from '@/components/marketing/brand/BrandCenter';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 // ============================================================================
 // Component
@@ -16,20 +17,30 @@ export default function BrandCenterPage() {
   const brandVoiceId = 'default-brand-voice';
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'var(--gradient-page)',
-        padding: 'var(--spacing-layout-page)',
-      }}
-    >
+    <div className="flex flex-col h-full">
+      {/* Page Header with Breadcrumbs */}
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'Brand Center' },
+        ]}
+        title="Brand Center"
+        description="Manage your brand voice and content guidelines"
+      />
+
+      {/* Main Content */}
       <div
-        style={{
-          maxWidth: '1400px',
-          margin: '0 auto',
-        }}
+        className="flex-1 overflow-y-auto"
+        style={{ padding: 'var(--spacing-6)' }}
       >
-        <BrandCenter brandVoiceId={brandVoiceId} />
+        <div
+          style={{
+            maxWidth: '1400px',
+            margin: '0 auto',
+          }}
+        >
+          <BrandCenter brandVoiceId={brandVoiceId} />
+        </div>
       </div>
     </div>
   );

@@ -36,7 +36,7 @@ data:
 
   # CORS configuration
   ENABLE_CORS: "true"
-  CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://newsletter.local,http://127.0.0.1:3000"
+  CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173,http://newsletter.local"
 
   # Feature flags
   ENABLE_REQUEST_LOGGING: "true"
@@ -120,6 +120,8 @@ metadata:
     app.kubernetes.io/name: aci-frontend
     app.kubernetes.io/component: configuration
 data:
-  VITE_API_URL: "http://newsletter.local/api"
-  VITE_ENABLE_MSW: "false"
+  # BACKEND_URL is injected at runtime via window.__RUNTIME_CONFIG__
+  # For production OCI with separate LB IPs, use the backend's external IP
+  # For K8s internal: use "/api/v1" with nginx proxy
+  BACKEND_URL: "http://129.153.33.152:8080/v1"
   NODE_ENV: "production"

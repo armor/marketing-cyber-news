@@ -9,6 +9,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Calendar, Globe, AlertTriangle, Loader2 } from 'lucide-react';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { ApproveButton } from '@/components/approval/ApproveButton';
@@ -220,26 +221,23 @@ export function ArticleDetailPage(): React.ReactElement {
   const createdTime = formatDistanceToNow(new Date(article.createdAt), { addSuffix: true });
 
   return (
-    <div
-      className="min-h-screen"
-      style={{ backgroundColor: 'var(--color-bg-primary)' }}
-    >
-      {/* Header */}
-      <header
-        style={{
-          backgroundColor: 'var(--color-bg-elevated)',
-          borderBottom: '1px solid var(--color-border-default)',
-          padding: 'var(--spacing-4) var(--spacing-6)',
-        }}
-      >
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={handleBack} data-testid="back-button">
-            <ArrowLeft style={{ width: 'var(--spacing-4)', height: 'var(--spacing-4)' }} />
-            Back
-          </Button>
-
-          {/* Action Buttons */}
+    <div className="flex flex-col h-full">
+      {/* Page Header with Breadcrumbs */}
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'Approvals', href: '/approvals' },
+          { label: article.title },
+        ]}
+        title={article.title}
+        actions={
           <div className="flex items-center gap-3" data-testid="action-buttons">
+            {/* Back Button */}
+            <Button variant="ghost" size="sm" onClick={handleBack} data-testid="back-button">
+              <ArrowLeft style={{ width: 'var(--spacing-4)', height: 'var(--spacing-4)' }} />
+              Back
+            </Button>
+
             {/* Release Button - Show for fully approved articles */}
             {canReleaseArticle && (
               <ReleaseButton
@@ -271,11 +269,11 @@ export function ArticleDetailPage(): React.ReactElement {
               />
             )}
           </div>
-        </div>
-      </header>
+        }
+      />
 
       {/* Main Content */}
-      <main style={{ padding: 'var(--spacing-6)' }}>
+      <main className="flex-1 overflow-y-auto" style={{ padding: 'var(--spacing-6)' }}>
         <div className="max-w-5xl mx-auto">
           <Card>
             <CardHeader style={{ padding: 'var(--spacing-6)' }}>

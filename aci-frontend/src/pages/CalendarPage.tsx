@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { CalendarView } from '@/components/marketing/calendar/CalendarView';
 import { CalendarFilters } from '@/components/marketing/calendar/CalendarFilters';
 import type { IssueStatus } from '@/types/newsletter';
@@ -37,51 +38,16 @@ export function CalendarPage() {
     })) || [];
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        backgroundColor: 'var(--color-bg-primary)',
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          padding: 'var(--spacing-6)',
-          borderBottom: '1px solid var(--color-border-default)',
-          backgroundColor: 'var(--color-bg-elevated)',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 'var(--spacing-4)',
-          }}
-        >
-          <div>
-            <h1
-              style={{
-                fontSize: 'var(--typography-font-size-3xl)',
-                fontWeight: 'var(--typography-font-weight-bold)',
-                color: 'var(--color-text-primary)',
-                marginBottom: 'var(--spacing-1)',
-              }}
-            >
-              Content Calendar
-            </h1>
-            <p
-              style={{
-                fontSize: 'var(--typography-font-size-base)',
-                color: 'var(--color-text-secondary)',
-              }}
-            >
-              View and manage your scheduled newsletter content
-            </p>
-          </div>
-
+    <div className="flex flex-col h-full">
+      {/* Page Header with Breadcrumbs */}
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'Calendar' },
+        ]}
+        title="Content Calendar"
+        description="View and manage your scheduled newsletter content"
+        actions={
           <Button
             onClick={() => navigate('/newsletter/content')}
             style={{
@@ -93,8 +59,8 @@ export function CalendarPage() {
             <Plus size={20} />
             Create Newsletter
           </Button>
-        </div>
-
+        }
+      >
         {/* Filters */}
         <CalendarFilters
           selectedStatuses={selectedStatuses}
@@ -103,14 +69,13 @@ export function CalendarPage() {
           onConfigChange={setSelectedConfigId}
           configurations={configurations}
         />
-      </div>
+      </PageHeader>
 
       {/* Calendar */}
       <div
+        className="flex-1 overflow-auto"
         style={{
-          flex: 1,
           padding: 'var(--spacing-6)',
-          overflow: 'auto',
         }}
       >
         <CalendarView

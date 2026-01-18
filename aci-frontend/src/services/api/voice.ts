@@ -35,7 +35,7 @@ const TRANSFORMATIONS_PREFIX = '/transformations';
  */
 export async function listVoiceAgents(): Promise<VoiceAgent[]> {
   const response = await apiClient.get<VoiceAgentListResponse>(VOICE_AGENTS_PREFIX);
-  return response.data;
+  return response.data.agents;
 }
 
 /**

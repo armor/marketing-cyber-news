@@ -36,14 +36,16 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps): React.ReactElement {
   return (
     <div data-theme="dark" className="h-screen flex flex-col overflow-hidden bg-background">
-      {/* Header at top - full width, fixed height */}
+      {/* Header at top - full width, fixed height with proper top padding */}
       <header
-        className="w-full h-14 flex-shrink-0 flex items-center px-4"
+        className="w-full h-16 flex-shrink-0 flex items-center px-4"
         style={{
           background: 'var(--gradient-panel-header)',
           backdropFilter: 'blur(12px)',
           borderBottom: '1px solid var(--color-border-default)',
           zIndex: 50,
+          paddingTop: 'var(--spacing-3)', // 12px top padding for logo breathing room
+          paddingBottom: 'var(--spacing-2)', // 8px bottom padding for balance
         }}
       >
         <Header />

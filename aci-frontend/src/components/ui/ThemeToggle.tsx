@@ -20,19 +20,19 @@ export function ThemeToggle({ className = '' }: ThemeToggleProps): React.ReactEl
       onClick={toggleTheme}
       className={`relative inline-flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200 ${className}`}
       style={{
-        backgroundColor: 'rgba(255, 255, 255, 0.06)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        backgroundColor: 'var(--header-icon-bg)',
+        border: '1px solid var(--header-icon-border)',
       }}
       aria-label={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
       title={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
       type="button"
       onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+        e.currentTarget.style.backgroundColor = 'var(--header-icon-bg-hover)';
+        e.currentTarget.style.borderColor = 'var(--header-icon-border-hover)';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.06)';
-        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+        e.currentTarget.style.backgroundColor = 'var(--header-icon-bg)';
+        e.currentTarget.style.borderColor = 'var(--header-icon-border)';
       }}
     >
       {/* Sun icon - visible in light mode, hidden in dark mode */}

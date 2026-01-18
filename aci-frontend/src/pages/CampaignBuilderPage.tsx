@@ -16,11 +16,10 @@
 
 import { type ReactElement, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
 import { CampaignBuilder, type CampaignFormData } from '@/components/marketing/campaign/CampaignBuilder';
 import { useCampaignMutations } from '@/hooks/useCampaignMutations';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 // ============================================================================
 // Component
@@ -33,10 +32,6 @@ export function CampaignBuilderPage(): ReactElement {
   // ============================================================================
   // Event Handlers
   // ============================================================================
-
-  const handleBack = useCallback((): void => {
-    navigate('/campaigns');
-  }, [navigate]);
 
   const handleSubmit = useCallback(
     async (data: CampaignFormData): Promise<void> => {
@@ -82,102 +77,22 @@ export function CampaignBuilderPage(): ReactElement {
   // ============================================================================
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        backgroundColor: 'var(--color-background)',
-      }}
-    >
-      {/* Header */}
-      <header
-        style={{
-          backgroundColor: 'var(--color-surface)',
-          borderBottom: `var(--border-width-thin) solid var(--color-border-default)`,
-          padding: 'var(--spacing-6)',
-        }}
-      >
-        <div className="max-w-7xl mx-auto">
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--spacing-4)',
-            }}
-          >
-            <Button
-              onClick={handleBack}
-              variant="ghost"
-              size="sm"
-              aria-label="Back to campaigns"
-            >
-              <ArrowLeft
-                style={{
-                  width: 'var(--spacing-4)',
-                  height: 'var(--spacing-4)',
-                }}
-              />
-            </Button>
-            <div>
-              <h1
-                style={{
-                  fontSize: 'var(--typography-font-size-2xl)',
-                  fontWeight: 'var(--typography-font-weight-bold)',
-                  color: 'var(--color-text-primary)',
-                  marginBottom: 'var(--spacing-1)',
-                }}
-              >
-                Create Campaign
-              </h1>
-              <p
-                style={{
-                  fontSize: 'var(--typography-font-size-sm)',
-                  color: 'var(--color-text-secondary)',
-                }}
-              >
-                Set up a new marketing automation campaign
-              </p>
-            </div>
-          </div>
-
-          {/* Breadcrumb */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--spacing-2)',
-              marginTop: 'var(--spacing-4)',
-              fontSize: 'var(--typography-font-size-sm)',
-              color: 'var(--color-text-secondary)',
-            }}
-          >
-            <button
-              onClick={handleBack}
-              className="hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2"
-              style={{
-                color: 'var(--color-text-secondary)',
-              }}
-              aria-label="Go to Campaigns"
-            >
-              Campaigns
-            </button>
-            <span>&gt;</span>
-            <span
-              style={{
-                color: 'var(--color-text-primary)',
-                fontWeight: 'var(--typography-font-weight-medium)',
-              }}
-            >
-              New Campaign
-            </span>
-          </div>
-        </div>
-      </header>
+    <div className="flex flex-col h-full">
+      {/* Page Header */}
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'Campaigns', href: '/campaigns' },
+          { label: 'New Campaign' },
+        ]}
+        title="Create Campaign"
+        description="Set up a new marketing automation campaign"
+      />
 
       {/* Main Content */}
       <main
-        style={{
-          padding: 'var(--spacing-6)',
-        }}
+        className="flex-1 overflow-y-auto"
+        style={{ padding: 'var(--spacing-6)' }}
       >
         <div className="max-w-4xl mx-auto">
           <CampaignBuilder onSubmit={handleSubmit} onCancel={handleCancel} />

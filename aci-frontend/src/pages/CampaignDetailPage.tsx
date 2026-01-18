@@ -18,12 +18,13 @@
 
 import { type ReactElement, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, StopCircle, Settings, TrendingUp } from 'lucide-react';
+import { Play, Pause, StopCircle, Settings, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCampaign, useCampaignStats } from '@/hooks/useCampaign';
 import { useCampaignMutations } from '@/hooks/useCampaignMutations';
+import { PageHeader } from '@/components/layout/PageHeader';
 import type { CampaignStatus } from '@/types/marketing';
 
 // ============================================================================
@@ -327,123 +328,28 @@ export function CampaignDetailPage(): ReactElement {
   const campaignStats = stats || campaign.stats;
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        backgroundColor: 'var(--color-background)',
-      }}
-    >
-      {/* Header */}
-      <header
-        style={{
-          backgroundColor: 'var(--color-surface)',
-          borderBottom: `var(--border-width-thin) solid var(--color-border-default)`,
-          padding: 'var(--spacing-6)',
-        }}
-      >
-        <div className="max-w-7xl mx-auto">
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              justifyContent: 'space-between',
-              gap: 'var(--spacing-4)',
-              marginBottom: 'var(--spacing-4)',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 'var(--spacing-4)',
-              }}
-            >
-              <Button
-                onClick={handleBack}
-                variant="ghost"
-                size="sm"
-                aria-label="Back to campaigns"
-              >
-                <ArrowLeft
-                  style={{
-                    width: 'var(--spacing-4)',
-                    height: 'var(--spacing-4)',
-                  }}
-                />
-              </Button>
-              <div>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--spacing-3)',
-                    marginBottom: 'var(--spacing-2)',
-                  }}
-                >
-                  <h1
-                    style={{
-                      fontSize: 'var(--typography-font-size-2xl)',
-                      fontWeight: 'var(--typography-font-weight-bold)',
-                      color: 'var(--color-text-primary)',
-                    }}
-                  >
-                    {campaign.name}
-                  </h1>
-                  <StatusBadge status={campaign.status} />
-                </div>
-                {campaign.description && (
-                  <p
-                    style={{
-                      fontSize: 'var(--typography-font-size-sm)',
-                      color: 'var(--color-text-secondary)',
-                    }}
-                  >
-                    {campaign.description}
-                  </p>
-                )}
-              </div>
-            </div>
+    <div className="flex flex-col h-full">
+      {/* Page Header */}
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'Campaigns', href: '/campaigns' },
+          { label: campaign.name },
+        ]}
+        title={campaign.name}
+        description={campaign.description}
+        actions={
+          <div className="flex items-center gap-3">
+            <StatusBadge status={campaign.status} />
             {renderActionButton()}
           </div>
-
-          {/* Breadcrumb */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--spacing-2)',
-              fontSize: 'var(--typography-font-size-sm)',
-              color: 'var(--color-text-secondary)',
-            }}
-          >
-            <button
-              onClick={handleBack}
-              className="hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2"
-              style={{
-                color: 'var(--color-text-secondary)',
-              }}
-              aria-label="Go to Campaigns"
-            >
-              Campaigns
-            </button>
-            <span>&gt;</span>
-            <span
-              style={{
-                color: 'var(--color-text-primary)',
-                fontWeight: 'var(--typography-font-weight-medium)',
-              }}
-            >
-              {campaign.name}
-            </span>
-          </div>
-        </div>
-      </header>
+        }
+      />
 
       {/* Main Content */}
       <main
-        style={{
-          padding: 'var(--spacing-6)',
-        }}
+        className="flex-1 overflow-y-auto"
+        style={{ padding: 'var(--spacing-6)' }}
       >
         <div className="max-w-7xl mx-auto">
           {/* Stats Grid */}

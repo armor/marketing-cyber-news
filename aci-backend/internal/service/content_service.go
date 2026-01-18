@@ -573,6 +573,15 @@ func (s *ContentService) GetContentItemByID(ctx context.Context, id uuid.UUID) (
 	return s.contentItemRepo.GetByID(ctx, id)
 }
 
+// GetContentItemByURL retrieves a content item by URL (for duplicate detection)
+func (s *ContentService) GetContentItemByURL(ctx context.Context, url string) (*domain.ContentItem, error) {
+	if url == "" {
+		return nil, fmt.Errorf("URL is required")
+	}
+
+	return s.contentItemRepo.GetByURL(ctx, url)
+}
+
 // ListContentItems lists content items with filtering
 func (s *ContentService) ListContentItems(ctx context.Context, filter *domain.ContentItemFilter) ([]*domain.ContentItem, int, error) {
 	if filter == nil {

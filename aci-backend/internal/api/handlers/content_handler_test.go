@@ -140,6 +140,14 @@ func (m *MockContentService) GetContentForSegment(ctx context.Context, criteria 
 	return args.Get(0).(*service.ContentSelectionResult), args.Error(1)
 }
 
+func (m *MockContentService) GetContentItemByURL(ctx context.Context, url string) (*domain.ContentItem, error) {
+	args := m.Called(ctx, url)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*domain.ContentItem), args.Error(1)
+}
+
 // ============================================================================
 // Test Helpers
 // ============================================================================
@@ -821,4 +829,494 @@ func intPtr(i int) *int {
 
 func boolPtr(b bool) *bool {
 	return &b
+}
+
+// ============================================================================
+// Mock Metadata Extractor
+// ============================================================================
+
+type MockMetadataExtractor struct {
+	mock.Mock
+}
+
+func (m *MockMetadataExtractor) ExtractMetadata(ctx context.Context, url string) (*service.ExtractedMetadata, error) {
+	args := m.Called(ctx, url)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*service.ExtractedMetadata), args.Error(1)
+}
+
+// ============================================================================
+// ExtractURLMetadata Handler Tests
+// ============================================================================
+
+func TestExtractURLMetadata_Success(t *testing.T) {
+	// Arrange
+	mockService := new(MockContentService)
+	handler := NewContentHandler(mockService)
+	mockExtractor := new(MockMetadataExtractor)
+	handler.SetMetadataExtractor(mockExtractor)
+
+	reqBody := map[string]string{
+		"url": "https://example.com/article",
+	}
+
+	body, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/v1/content/metadata", bytes.NewBuffer(body))
+	w := httptest.NewRecorder()
+
+	expectedMetadata := &service.ExtractedMetadata{
+		URL:   "https://example.com/article",
+		Title: "Example Article",
+		Description: stringPtr("This is an example article"),
+		ImageURL: stringPtr("https://example.com/image.jpg"),
+		ReadTimeMinutes: intPtr(5),
+	}
+
+	mockExtractor.On("ExtractMetadata", mock.Anything, "https://example.com/article").
+		Return(expectedMetadata, nil)
+
+	// Act
+	handler.ExtractURLMetadata(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response map[string]interface{}
+	json.NewDecoder(w.Body).Decode(&response)
+	assert.NotNil(t, response["data"])
+
+	mockExtractor.AssertExpectations(t)
+}
+
+func TestExtractURLMetadata_InvalidURL(t *testing.T) {
+	// Arrange
+	mockService := new(MockContentService)
+	handler := NewContentHandler(mockService)
+
+	reqBody := map[string]string{
+		"url": "not-a-valid-url",
+	}
+
+	body, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/v1/content/metadata", bytes.NewBuffer(body))
+	w := httptest.NewRecorder()
+
+	// Act
+	handler.ExtractURLMetadata(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestExtractURLMetadata_EmptyURL(t *testing.T) {
+	// Arrange
+	mockService := new(MockContentService)
+	handler := NewContentHandler(mockService)
+
+	reqBody := map[string]string{
+		"url": "",
+	}
+
+	body, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/v1/content/metadata", bytes.NewBuffer(body))
+	w := httptest.NewRecorder()
+
+	// Act
+	handler.ExtractURLMetadata(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestExtractURLMetadata_InvalidJSON(t *testing.T) {
+	// Arrange
+	mockService := new(MockContentService)
+	handler := NewContentHandler(mockService)
+
+	req := httptest.NewRequest(http.MethodPost, "/v1/content/metadata", bytes.NewBufferString("{invalid json}"))
+	w := httptest.NewRecorder()
+
+	// Act
+	handler.ExtractURLMetadata(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestExtractURLMetadata_SSRFProtectionBlocksPrivateIP(t *testing.T) {
+	// Arrange
+	mockService := new(MockContentService)
+	handler := NewContentHandler(mockService)
+	mockExtractor := new(MockMetadataExtractor)
+	handler.SetMetadataExtractor(mockExtractor)
+
+	reqBody := map[string]string{
+		"url": "http://192.168.1.1",
+	}
+
+	body, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/v1/content/metadata", bytes.NewBuffer(body))
+	w := httptest.NewRecorder()
+
+	mockExtractor.On("ExtractMetadata", mock.Anything, "http://192.168.1.1").
+		Return(nil, errors.New("connection to private/blocked IP not allowed"))
+
+	// Act
+	handler.ExtractURLMetadata(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	mockExtractor.AssertExpectations(t)
+}
+
+func TestExtractURLMetadata_SSRFProtectionBlocksMetadataEndpoint(t *testing.T) {
+	// Arrange
+	mockService := new(MockContentService)
+	handler := NewContentHandler(mockService)
+	mockExtractor := new(MockMetadataExtractor)
+	handler.SetMetadataExtractor(mockExtractor)
+
+	reqBody := map[string]string{
+		"url": "http://169.254.169.254/latest/meta-data/",
+	}
+
+	body, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/v1/content/metadata", bytes.NewBuffer(body))
+	w := httptest.NewRecorder()
+
+	mockExtractor.On("ExtractMetadata", mock.Anything, "http://169.254.169.254/latest/meta-data/").
+		Return(nil, errors.New("blocked hostname"))
+
+	// Act
+	handler.ExtractURLMetadata(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	mockExtractor.AssertExpectations(t)
+}
+
+func TestExtractURLMetadata_TimeoutHandling(t *testing.T) {
+	// Arrange
+	mockService := new(MockContentService)
+	handler := NewContentHandler(mockService)
+	mockExtractor := new(MockMetadataExtractor)
+	handler.SetMetadataExtractor(mockExtractor)
+
+	reqBody := map[string]string{
+		"url": "https://slow-example.com/article",
+	}
+
+	body, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/v1/content/metadata", bytes.NewBuffer(body))
+	w := httptest.NewRecorder()
+
+	mockExtractor.On("ExtractMetadata", mock.Anything, "https://slow-example.com/article").
+		Return(nil, errors.New("context deadline exceeded"))
+
+	// Act
+	handler.ExtractURLMetadata(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusRequestTimeout, w.Code)
+	mockExtractor.AssertExpectations(t)
+}
+
+func TestExtractURLMetadata_ServiceError(t *testing.T) {
+	// Arrange
+	mockService := new(MockContentService)
+	handler := NewContentHandler(mockService)
+	mockExtractor := new(MockMetadataExtractor)
+	handler.SetMetadataExtractor(mockExtractor)
+
+	reqBody := map[string]string{
+		"url": "https://example.com/article",
+	}
+
+	body, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/v1/content/metadata", bytes.NewBuffer(body))
+	w := httptest.NewRecorder()
+
+	mockExtractor.On("ExtractMetadata", mock.Anything, "https://example.com/article").
+		Return(nil, errors.New("internal server error"))
+
+	// Act
+	handler.ExtractURLMetadata(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockExtractor.AssertExpectations(t)
+}
+
+// ============================================================================
+// CreateManualContentItem Handler Tests
+// ============================================================================
+
+func TestCreateManualContentItem_Success(t *testing.T) {
+	// Arrange
+	mockService := new(MockContentService)
+	handler := NewContentHandler(mockService)
+	userID := uuid.New()
+
+	reqBody := map[string]interface{}{
+		"url":           "https://example.com/article",
+		"title":         "Example Article",
+		"content_type":  "blog",
+		"topic_tags":    []string{"security", "news"},
+		"author":        stringPtr("John Doe"),
+		"publish_date":  stringPtr("2024-01-15"),
+	}
+
+	body, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/v1/content/items/manual", bytes.NewBuffer(body))
+	req = req.WithContext(contextWithUser(userID))
+	w := httptest.NewRecorder()
+
+	mockService.On("CreateContentItem", mock.Anything, mock.MatchedBy(func(item *domain.ContentItem) bool {
+		return item.Title == "Example Article" && item.URL == "https://example.com/article"
+	})).Return(nil)
+
+	// Act
+	handler.CreateManualContentItem(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusCreated, w.Code)
+	mockService.AssertExpectations(t)
+}
+
+func TestCreateManualContentItem_MissingRequiredFields(t *testing.T) {
+	testCases := []struct {
+		name      string
+		reqBody   map[string]interface{}
+		fieldName string
+	}{
+		{
+			name: "missing url",
+			reqBody: map[string]interface{}{
+				"title":        "Example Article",
+				"content_type": "blog",
+			},
+			fieldName: "url",
+		},
+		{
+			name: "missing title",
+			reqBody: map[string]interface{}{
+				"url":           "https://example.com/article",
+				"content_type": "blog",
+			},
+			fieldName: "title",
+		},
+		{
+			name: "missing content_type",
+			reqBody: map[string]interface{}{
+				"url":   "https://example.com/article",
+				"title": "Example Article",
+			},
+			fieldName: "content_type",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Arrange
+			mockService := new(MockContentService)
+			handler := NewContentHandler(mockService)
+			userID := uuid.New()
+
+			body, _ := json.Marshal(tc.reqBody)
+			req := httptest.NewRequest(http.MethodPost, "/v1/content/items/manual", bytes.NewBuffer(body))
+			req = req.WithContext(contextWithUser(userID))
+			w := httptest.NewRecorder()
+
+			// Act
+			handler.CreateManualContentItem(w, req)
+
+			// Assert
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+		})
+	}
+}
+
+func TestCreateManualContentItem_InvalidURL(t *testing.T) {
+	// Arrange
+	mockService := new(MockContentService)
+	handler := NewContentHandler(mockService)
+	userID := uuid.New()
+
+	reqBody := map[string]interface{}{
+		"url":           "not-a-valid-url",
+		"title":         "Example Article",
+		"content_type":  "blog",
+	}
+
+	body, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/v1/content/items/manual", bytes.NewBuffer(body))
+	req = req.WithContext(contextWithUser(userID))
+	w := httptest.NewRecorder()
+
+	// Act
+	handler.CreateManualContentItem(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestCreateManualContentItem_InvalidContentType(t *testing.T) {
+	// Arrange
+	mockService := new(MockContentService)
+	handler := NewContentHandler(mockService)
+	userID := uuid.New()
+
+	reqBody := map[string]interface{}{
+		"url":           "https://example.com/article",
+		"title":         "Example Article",
+		"content_type":  "invalid_type",
+	}
+
+	body, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/v1/content/items/manual", bytes.NewBuffer(body))
+	req = req.WithContext(contextWithUser(userID))
+	w := httptest.NewRecorder()
+
+	// Act
+	handler.CreateManualContentItem(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestCreateManualContentItem_DuplicateURL(t *testing.T) {
+	// Arrange
+	mockService := new(MockContentService)
+	handler := NewContentHandler(mockService)
+	userID := uuid.New()
+
+	reqBody := map[string]interface{}{
+		"url":           "https://example.com/article",
+		"title":         "Example Article",
+		"content_type":  "blog",
+	}
+
+	body, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/v1/content/items/manual", bytes.NewBuffer(body))
+	req = req.WithContext(contextWithUser(userID))
+	w := httptest.NewRecorder()
+
+	mockService.On("GetContentItemByURL", mock.Anything, "https://example.com/article").
+		Return(&domain.ContentItem{URL: "https://example.com/article"}, nil)
+
+	// Act
+	handler.CreateManualContentItem(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusConflict, w.Code)
+	mockService.AssertExpectations(t)
+}
+
+func TestCreateManualContentItem_InvalidJSON(t *testing.T) {
+	// Arrange
+	mockService := new(MockContentService)
+	handler := NewContentHandler(mockService)
+	userID := uuid.New()
+
+	req := httptest.NewRequest(http.MethodPost, "/v1/content/items/manual", bytes.NewBufferString("{invalid json}"))
+	req = req.WithContext(contextWithUser(userID))
+	w := httptest.NewRecorder()
+
+	// Act
+	handler.CreateManualContentItem(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestCreateManualContentItem_Unauthenticated(t *testing.T) {
+	// Arrange
+	mockService := new(MockContentService)
+	handler := NewContentHandler(mockService)
+
+	reqBody := map[string]interface{}{
+		"url":           "https://example.com/article",
+		"title":         "Example Article",
+		"content_type":  "blog",
+	}
+
+	body, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/v1/content/items/manual", bytes.NewBuffer(body))
+	w := httptest.NewRecorder()
+
+	// Act
+	handler.CreateManualContentItem(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+}
+
+func TestCreateManualContentItem_ServiceError(t *testing.T) {
+	// Arrange
+	mockService := new(MockContentService)
+	handler := NewContentHandler(mockService)
+	userID := uuid.New()
+
+	reqBody := map[string]interface{}{
+		"url":           "https://example.com/article",
+		"title":         "Example Article",
+		"content_type":  "blog",
+	}
+
+	body, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/v1/content/items/manual", bytes.NewBuffer(body))
+	req = req.WithContext(contextWithUser(userID))
+	w := httptest.NewRecorder()
+
+	mockService.On("GetContentItemByURL", mock.Anything, "https://example.com/article").
+		Return(nil, nil)
+	mockService.On("CreateContentItem", mock.Anything, mock.MatchedBy(func(item *domain.ContentItem) bool {
+		return item.Title == "Example Article"
+	})).Return(errors.New("database error"))
+
+	// Act
+	handler.CreateManualContentItem(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockService.AssertExpectations(t)
+}
+
+func TestCreateManualContentItem_WithOptionalFields(t *testing.T) {
+	// Arrange
+	mockService := new(MockContentService)
+	handler := NewContentHandler(mockService)
+	userID := uuid.New()
+
+	reqBody := map[string]interface{}{
+		"url":             "https://example.com/article",
+		"title":           "Example Article",
+		"content_type":    "blog",
+		"topic_tags":      []string{"security", "news"},
+		"framework_tags":  []string{"owasp", "nist"},
+		"summary":         stringPtr("An important security article"),
+		"author":          stringPtr("Jane Doe"),
+		"publish_date":    stringPtr("2024-01-15"),
+		"image_url":       stringPtr("https://example.com/image.jpg"),
+	}
+
+	body, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/v1/content/items/manual", bytes.NewBuffer(body))
+	req = req.WithContext(contextWithUser(userID))
+	w := httptest.NewRecorder()
+
+	mockService.On("GetContentItemByURL", mock.Anything, "https://example.com/article").
+		Return(nil, nil)
+	mockService.On("CreateContentItem", mock.Anything, mock.MatchedBy(func(item *domain.ContentItem) bool {
+		return item.Title == "Example Article" && len(item.TopicTags) == 2
+	})).Return(nil)
+
+	// Act
+	handler.CreateManualContentItem(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusCreated, w.Code)
+	mockService.AssertExpectations(t)
 }

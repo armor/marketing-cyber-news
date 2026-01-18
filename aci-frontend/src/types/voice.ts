@@ -84,7 +84,10 @@ export interface UpdateVoiceAgentRequest {
 }
 
 export interface VoiceAgentListResponse {
-  data: VoiceAgent[];
+  data: {
+    agents: VoiceAgent[];
+    total: number;
+  };
 }
 
 export interface VoiceAgentResponse {

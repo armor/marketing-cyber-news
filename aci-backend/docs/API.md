@@ -1168,6 +1168,405 @@ curl -X POST "http://localhost:8080/v1/alerts/550e8400-e29b-41d4-a716-4466554400
 
 ---
 
+### Article Approval Workflow Endpoints
+
+The article approval workflow implements a 5-gate sequential approval process. Articles must pass through each gate in order before they can be released for publication.
+
+#### Role-to-Gate Mapping
+
+| User Role | Can Approve Gate | Status After Approval |
+|-----------|------------------|----------------------|
+| marketing | marketing | pending_branding |
+| branding | branding | pending_soc_l1 |
+| soc_level_1 | soc_l1 | pending_soc_l3 |
+| soc_level_3 | soc_l3 | pending_ciso |
+| ciso | ciso | approved |
+| admin | Any gate | Advances to next |
+| super_admin | Any gate | Advances to next |
+
+#### Get Approval Queue
+
+**Endpoint**: `GET /approvals/queue`
+
+**Description**: Get articles pending approval at the gate corresponding to the authenticated user's role
+
+**Authentication**: Required (approval role required)
+
+**Query Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| page | integer | 1 | Page number (min: 1) |
+| page_size | integer | 20 | Items per page (1-100) |
+| sort_by | string | created_at | Sort field: created_at, severity, category |
+| sort_order | string | desc | Sort order: asc, desc |
+| category_id | uuid | - | Filter by category |
+| severity | string | - | Filter: critical, high, medium, low, informational |
+| date_from | datetime | - | Filter articles created after this date |
+| date_to | datetime | - | Filter articles created before this date |
+
+**Success Response** (200 OK):
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "Critical Zero-Day Vulnerability Discovered",
+      "slug": "critical-zero-day-vulnerability-discovered",
+      "summary": "A critical vulnerability has been found...",
+      "category": {
+        "id": "550e8400-e29b-41d4-a716-446655440001",
+        "name": "Vulnerabilities",
+        "slug": "vulnerabilities",
+        "color": "#DC2626"
+      },
+      "severity": "critical",
+      "approvalStatus": "pending_marketing",
+      "rejected": false,
+      "createdAt": "2025-01-15T10:00:00Z",
+      "approvalProgress": {
+        "completedGates": [],
+        "currentGate": "marketing",
+        "pendingGates": ["branding", "soc_l1", "soc_l3", "ciso"],
+        "totalGates": 5,
+        "completedCount": 0
+      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 20,
+    "totalItems": 45,
+    "totalPages": 3
+  },
+  "meta": {
+    "userRole": "marketing",
+    "targetGate": "marketing",
+    "queueCount": 45
+  }
+}
+```
+
+**Error Responses**:
+- `401 Unauthorized` - Invalid or missing token
+- `403 Forbidden` - Code: `INSUFFICIENT_ROLE` - User role does not have approval permissions
+
+**Example cURL**:
+```bash
+curl -X GET "http://localhost:8080/v1/approvals/queue?page=1&page_size=20&severity=critical" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+---
+
+#### Approve Article
+
+**Endpoint**: `POST /articles/{id}/approve`
+
+**Description**: Approve an article at the current gate, advancing it to the next gate
+
+**Authentication**: Required (appropriate approval role required)
+
+**Path Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | uuid | Article ID |
+
+**Request Body** (optional):
+```json
+{
+  "notes": "Reviewed and approved for publication"
+}
+```
+
+**Success Response** (200 OK):
+```json
+{
+  "success": true,
+  "message": "Article approved at marketing gate",
+  "article": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "approvalStatus": "pending_branding",
+    "rejected": false
+  }
+}
+```
+
+**Error Responses**:
+- `400 Bad Request`
+  - Code: `INVALID_GATE` - Article is not at your approval gate
+  - Code: `ALREADY_REJECTED` - Article has already been rejected
+- `401 Unauthorized` - Invalid or missing token
+- `403 Forbidden` - Insufficient role for this gate
+- `404 Not Found` - Article not found
+
+**Example cURL**:
+```bash
+curl -X POST "http://localhost:8080/v1/articles/550e8400-e29b-41d4-a716-446655440000/approve" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"notes": "Content verified and approved"}'
+```
+
+---
+
+#### Reject Article
+
+**Endpoint**: `POST /articles/{id}/reject`
+
+**Description**: Reject an article from the approval pipeline with a mandatory reason
+
+**Authentication**: Required (appropriate approval role required)
+
+**Path Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | uuid | Article ID |
+
+**Request Body** (required):
+```json
+{
+  "reason": "Content does not meet branding guidelines. Please revise the headline and summary."
+}
+```
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| reason | string | 10-2000 chars | Mandatory rejection reason |
+
+**Success Response** (200 OK):
+```json
+{
+  "success": true,
+  "message": "Article rejected",
+  "article": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "approvalStatus": "rejected",
+    "rejected": true
+  }
+}
+```
+
+**Error Responses**:
+- `400 Bad Request`
+  - Code: `MISSING_REASON` - Rejection reason is required
+  - Code: `ALREADY_REJECTED` - Article has already been rejected
+- `401 Unauthorized` - Invalid or missing token
+- `403 Forbidden` - Insufficient role for this gate
+- `404 Not Found` - Article not found
+
+**Example cURL**:
+```bash
+curl -X POST "http://localhost:8080/v1/articles/550e8400-e29b-41d4-a716-446655440000/reject" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"reason": "Content does not meet security review standards"}'
+```
+
+---
+
+#### Release Article
+
+**Endpoint**: `POST /articles/{id}/release`
+
+**Description**: Release a fully-approved article for public viewing
+
+**Authentication**: Required (admin, ciso, or super_admin role required)
+
+**Path Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | uuid | Article ID |
+
+**Success Response** (200 OK):
+```json
+{
+  "success": true,
+  "message": "Article released for publication",
+  "article": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "approvalStatus": "released",
+    "rejected": false
+  }
+}
+```
+
+**Error Responses**:
+- `400 Bad Request` - Code: `NOT_FULLY_APPROVED` - Article must pass all approval gates before release
+- `401 Unauthorized` - Invalid or missing token
+- `403 Forbidden` - Only admin, ciso, or super_admin can release articles
+- `404 Not Found` - Article not found
+
+**Example cURL**:
+```bash
+curl -X POST "http://localhost:8080/v1/articles/550e8400-e29b-41d4-a716-446655440000/release" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+---
+
+#### Reset Article
+
+**Endpoint**: `POST /articles/{id}/reset`
+
+**Description**: Reset a rejected article back to the initial pending_marketing state (admin only)
+
+**Authentication**: Required (admin or super_admin role required)
+
+**Path Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | uuid | Article ID |
+
+**Success Response** (200 OK):
+```json
+{
+  "success": true,
+  "message": "Article reset to pending_marketing",
+  "article": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "approvalStatus": "pending_marketing",
+    "rejected": false
+  }
+}
+```
+
+**Error Responses**:
+- `400 Bad Request` - Article is not in rejected state
+- `401 Unauthorized` - Invalid or missing token
+- `403 Forbidden` - Only admin can reset articles
+- `404 Not Found` - Article not found
+
+**Example cURL**:
+```bash
+curl -X POST "http://localhost:8080/v1/articles/550e8400-e29b-41d4-a716-446655440000/reset" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+---
+
+#### Get Approval History
+
+**Endpoint**: `GET /articles/{id}/approval-history`
+
+**Description**: Get the complete approval history for an article including all gate approvals and rejection details
+
+**Authentication**: Required
+
+**Path Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | uuid | Article ID |
+
+**Success Response** (200 OK):
+```json
+{
+  "success": true,
+  "data": {
+    "articleId": "550e8400-e29b-41d4-a716-446655440000",
+    "currentStatus": "pending_soc_l1",
+    "rejected": false,
+    "rejectionDetails": null,
+    "releaseDetails": null,
+    "approvals": [
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440010",
+        "articleId": "550e8400-e29b-41d4-a716-446655440000",
+        "gate": "marketing",
+        "approvedBy": "550e8400-e29b-41d4-a716-446655440020",
+        "approverName": "John Marketing",
+        "approverEmail": "john@example.com",
+        "approvedAt": "2025-01-15T11:00:00Z",
+        "notes": "Content verified"
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440011",
+        "articleId": "550e8400-e29b-41d4-a716-446655440000",
+        "gate": "branding",
+        "approvedBy": "550e8400-e29b-41d4-a716-446655440021",
+        "approverName": "Jane Branding",
+        "approverEmail": "jane@example.com",
+        "approvedAt": "2025-01-15T12:00:00Z",
+        "notes": null
+      }
+    ],
+    "progress": {
+      "completedGates": ["marketing", "branding"],
+      "currentGate": "soc_l1",
+      "pendingGates": ["soc_l3", "ciso"],
+      "totalGates": 5,
+      "completedCount": 2
+    }
+  }
+}
+```
+
+**Error Responses**:
+- `401 Unauthorized` - Invalid or missing token
+- `404 Not Found` - Article not found
+
+**Example cURL**:
+```bash
+curl -X GET "http://localhost:8080/v1/articles/550e8400-e29b-41d4-a716-446655440000/approval-history" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+---
+
+#### Update User Role
+
+**Endpoint**: `PUT /users/{id}/role`
+
+**Description**: Update a user's role (admin only)
+
+**Authentication**: Required (admin or super_admin role required)
+
+**Path Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | uuid | User ID |
+
+**Request Body** (required):
+```json
+{
+  "role": "soc_level_1"
+}
+```
+
+| Field | Type | Values | Description |
+|-------|------|--------|-------------|
+| role | string | user, marketing, branding, soc_level_1, soc_level_3, ciso, admin, super_admin | New role to assign |
+
+**Success Response** (200 OK):
+```json
+{
+  "success": true,
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440030",
+    "email": "analyst@example.com",
+    "name": "Security Analyst",
+    "role": "soc_level_1",
+    "updatedAt": "2025-01-15T14:00:00Z"
+  }
+}
+```
+
+**Error Responses**:
+- `400 Bad Request` - Invalid role value
+- `401 Unauthorized` - Invalid or missing token
+- `403 Forbidden` - Only admin can change roles
+- `404 Not Found` - User not found
+
+**Example cURL**:
+```bash
+curl -X PUT "http://localhost:8080/v1/users/550e8400-e29b-41d4-a716-446655440030/role" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"role": "soc_level_1"}'
+```
+
+---
+
 ### Admin Endpoints
 
 #### Get System Health

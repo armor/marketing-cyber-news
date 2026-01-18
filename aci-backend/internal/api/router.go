@@ -293,10 +293,14 @@ func (s *Server) setupRoutesWithWebSocket(wsHandler WebSocketHandler) {
 				r.Route("/content-items", func(r chi.Router) {
 					r.Get("/", s.handlers.Content.ListContentItems)
 					r.Post("/", s.handlers.Content.CreateContentItem)
+					r.Post("/manual", s.handlers.Content.CreateManualContentItem) // Manual content creation (Phase 1.3)
 					r.Get("/{id}", s.handlers.Content.GetContentItem)
 					r.Put("/{id}", s.handlers.Content.UpdateContentItem)
 					r.Delete("/{id}", s.handlers.Content.DeleteContentItem)
 				})
+
+				// URL Metadata Extraction (Content Pipeline Phase 1.2)
+				r.Post("/content/extract-metadata", s.handlers.Content.ExtractURLMetadata)
 
 				// Content Selection
 				r.Post("/content/select", s.handlers.Content.GetContentForSegment)

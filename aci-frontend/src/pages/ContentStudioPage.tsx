@@ -1,4 +1,5 @@
 import { ContentStudio } from '@/components/marketing/content/ContentStudio';
+import { PageHeader } from '@/components/layout/PageHeader';
 import type {
   ContentChannel,
   ContentType,
@@ -165,51 +166,34 @@ Learn more about how we're protecting organizations from emerging threats: [link
   };
 
   return (
-    <div
-      style={{
-        maxWidth: '56rem',
-        margin: '0 auto',
-        padding: 'var(--spacing-6)',
-      }}
-    >
-        {/* Page Header */}
+    <div className="flex flex-col h-full">
+      {/* Page Header with Breadcrumbs */}
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'Content Studio' },
+        ]}
+        title="Content Studio"
+        description="Generate on-brand content with AI for LinkedIn, Twitter, Email, and Blog"
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto" style={{ padding: 'var(--spacing-6)' }}>
         <div
-          className="flex flex-col"
           style={{
-            gap: 'var(--spacing-2)',
-            marginBottom: 'var(--spacing-6)',
+            maxWidth: '56rem',
+            margin: '0 auto',
           }}
         >
-          <h1
-            style={{
-              fontSize: 'var(--typography-font-size-3xl)',
-              fontFamily: 'var(--typography-font-family-heading)',
-              fontWeight: 'var(--typography-font-weight-bold)',
-              color: 'var(--color-text-primary)',
-              lineHeight: 'var(--typography-line-height-tight)',
-            }}
-          >
-            Content Studio
-          </h1>
-          <p
-            style={{
-              fontSize: 'var(--typography-font-size-lg)',
-              fontFamily: 'var(--typography-font-family-body)',
-              color: 'var(--color-text-secondary)',
-              lineHeight: 'var(--typography-line-height-normal)',
-            }}
-          >
-            Generate on-brand content with AI for LinkedIn, Twitter, Email, and Blog
-          </p>
+          {/* Content Studio Component */}
+          <ContentStudio
+            onGenerate={handleGenerate}
+            onRefine={handleRefine}
+            onSchedule={handleSchedule}
+            suggestedPrompts={suggestedPrompts}
+          />
         </div>
-
-      {/* Content Studio Component */}
-      <ContentStudio
-        onGenerate={handleGenerate}
-        onRefine={handleRefine}
-        onSchedule={handleSchedule}
-        suggestedPrompts={suggestedPrompts}
-      />
+      </div>
     </div>
   );
 }

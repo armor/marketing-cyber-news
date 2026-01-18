@@ -28,6 +28,7 @@ import { useThreatFilters } from '@/hooks/useThreatFilters';
 import { ThreatList } from '@/components/threat/ThreatList';
 import { Pagination } from '@/components/ui/Pagination';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
 // FilterPanel import - will be created separately
@@ -218,35 +219,23 @@ export function ThreatsPage(): ReactElement {
    * Main Content
    */
   return (
-    <div
-      className="mx-auto w-full max-w-7xl space-y-[var(--spacing-section-md)]"
-      data-testid="threats-page"
-    >
-      {/* ====================================================================
-          Page Header
-      ==================================================================== */}
-      <header className="flex items-center justify-between gap-[var(--spacing-gap-md)]">
-        <div>
-          <h1 className="text-3xl font-[var(--typography-font-weight-bold)] text-[var(--color-text-primary)]">
-            Threats
-          </h1>
-          {pagination && (
-            <p className="mt-[var(--spacing-1)] text-sm text-[var(--color-text-secondary)]">
-              {pagination.totalItems.toLocaleString()} threats found
-            </p>
-          )}
-        </div>
+    <div className="flex flex-col h-full" data-testid="threats-page">
+      {/* Page Header with Breadcrumbs */}
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'Threats' },
+        ]}
+        title="Threats"
+        description={pagination ? `${pagination.totalItems.toLocaleString()} threats found` : undefined}
+      />
 
-        {/* Optional: Add "New Threat" button for admin users */}
-        {/* <Button variant="default" size="md">
-          <Plus size={16} className="mr-[var(--spacing-1)]" />
-          New Threat
-        </Button> */}
-      </header>
-
-      {/* ====================================================================
-          Filter Panel
-      ==================================================================== */}
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto" style={{ padding: 'var(--spacing-6)' }}>
+        <div className="mx-auto w-full max-w-7xl space-y-[var(--spacing-section-md)]">
+          {/* ====================================================================
+              Filter Panel
+          ==================================================================== */}
       <aside
         className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] p-[var(--spacing-component-lg)] shadow-[var(--shadow-sm)]"
         aria-label="Threat filters"
@@ -289,20 +278,22 @@ export function ThreatsPage(): ReactElement {
         />
       </section>
 
-      {/* ====================================================================
-          Pagination
-      ==================================================================== */}
-      {pagination && pagination.totalPages > 1 && !isLoading && (
-        <footer className="flex justify-center pt-[var(--spacing-component-lg)]">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={pagination.totalPages}
-            onPageChange={handlePageChange}
-            disabled={isLoading}
-            siblingCount={1}
-          />
-        </footer>
-      )}
+          {/* ====================================================================
+              Pagination
+          ==================================================================== */}
+          {pagination && pagination.totalPages > 1 && !isLoading && (
+            <footer className="flex justify-center pt-[var(--spacing-component-lg)]">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={pagination.totalPages}
+                onPageChange={handlePageChange}
+                disabled={isLoading}
+                siblingCount={1}
+              />
+            </footer>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

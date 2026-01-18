@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import type { CampaignStatus, CampaignGoal, Campaign } from '@/types/marketing';
 
@@ -336,63 +337,31 @@ export function CampaignListPage(): ReactElement {
   // ============================================================================
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        backgroundColor: 'var(--color-background)',
-      }}
-    >
-      {/* Header */}
-      <header
-        style={{
-          backgroundColor: 'var(--color-surface)',
-          borderBottom: `var(--border-width-thin) solid var(--color-border-default)`,
-          padding: 'var(--spacing-6)',
-        }}
-      >
-        <div className="max-w-7xl mx-auto">
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <div>
-              <h1
-                style={{
-                  fontSize: 'var(--typography-font-size-2xl)',
-                  fontWeight: 'var(--typography-font-weight-bold)',
-                  color: 'var(--color-text-primary)',
-                  marginBottom: 'var(--spacing-2)',
-                }}
-              >
-                Campaigns
-              </h1>
-              <p
-                style={{
-                  fontSize: 'var(--typography-font-size-sm)',
-                  color: 'var(--color-text-secondary)',
-                }}
-              >
-                Manage your marketing automation campaigns
-              </p>
-            </div>
-            <Button onClick={handleCreateCampaign} size="default">
-              <Plus
-                style={{
-                  width: 'var(--spacing-4)',
-                  height: 'var(--spacing-4)',
-                }}
-              />
-              Create Campaign
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="flex flex-col h-full">
+      {/* Page Header with Breadcrumbs */}
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'Campaigns' },
+        ]}
+        title="Campaigns"
+        description="Manage your marketing automation campaigns"
+        actions={
+          <Button onClick={handleCreateCampaign} size="default">
+            <Plus
+              style={{
+                width: 'var(--spacing-4)',
+                height: 'var(--spacing-4)',
+              }}
+            />
+            Create Campaign
+          </Button>
+        }
+      />
 
       {/* Main Content */}
       <main
+        className="flex-1 overflow-y-auto"
         style={{
           padding: 'var(--spacing-6)',
         }}

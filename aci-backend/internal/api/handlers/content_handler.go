@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -34,6 +36,7 @@ type ContentServiceInterface interface {
 	BulkCreateContentItems(ctx context.Context, items []*domain.ContentItem) error
 	CreateContentItem(ctx context.Context, item *domain.ContentItem) error
 	GetContentItemByID(ctx context.Context, id uuid.UUID) (*domain.ContentItem, error)
+	GetContentItemByURL(ctx context.Context, url string) (*domain.ContentItem, error)
 	ListContentItems(ctx context.Context, filter *domain.ContentItemFilter) ([]*domain.ContentItem, int, error)
 	UpdateContentItem(ctx context.Context, item *domain.ContentItem) error
 	DeleteContentItem(ctx context.Context, id uuid.UUID) error
@@ -43,9 +46,16 @@ type ContentServiceInterface interface {
 	GetContentForSegment(ctx context.Context, criteria *service.ContentSelectionCriteria) (*service.ContentSelectionResult, error)
 }
 
+// MetadataExtractorInterface defines the interface for URL metadata extraction
+// This allows for easy mocking in tests
+type MetadataExtractorInterface interface {
+	ExtractMetadata(ctx context.Context, url string) (*service.ExtractedMetadata, error)
+}
+
 // ContentHandler handles content-related HTTP requests
 type ContentHandler struct {
-	contentService ContentServiceInterface
+	contentService    ContentServiceInterface
+	metadataExtractor MetadataExtractorInterface
 }
 
 // NewContentHandler creates a new content handler
@@ -57,6 +67,11 @@ func NewContentHandler(contentService ContentServiceInterface) *ContentHandler {
 	return &ContentHandler{
 		contentService: contentService,
 	}
+}
+
+// SetMetadataExtractor sets the metadata extractor (optional dependency injection)
+func (h *ContentHandler) SetMetadataExtractor(extractor MetadataExtractorInterface) {
+	h.metadataExtractor = extractor
 }
 
 // ============================================================================
@@ -828,67 +843,316 @@ func (h *ContentHandler) GetPollingStatus(w http.ResponseWriter, r *http.Request
 	response.JSON(w, http.StatusOK, map[string]interface{}{"data": resp})
 }
 
+// ============================================================================
+// URL Metadata Extraction (Content Pipeline Phase 1.2)
+// ============================================================================
+
+// ExtractURLMetadataRequest represents the request body for URL metadata extraction
+type ExtractURLMetadataRequest struct {
+	URL string `json:"url"`
+}
+
+// ExtractURLMetadata handles POST /v1/newsletter/content/extract-metadata
+// Extracts Open Graph, meta tags, and JSON-LD schema from a URL with SSRF protection
+func (h *ContentHandler) ExtractURLMetadata(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	requestID := getRequestID(ctx)
+
+	// Check if metadata extractor is configured
+	if h.metadataExtractor == nil {
+		log.Error().Str("request_id", requestID).Msg("Metadata extractor not configured")
+		response.ServiceUnavailable(w, "URL metadata extraction is not available")
+		return
+	}
+
+	// Parse request body
+	var req ExtractURLMetadataRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.BadRequest(w, "Invalid request body")
+		return
+	}
+
+	// Validate URL
+	if req.URL == "" {
+		response.BadRequest(w, "URL is required")
+		return
+	}
+
+	if !isValidURL(req.URL) {
+		response.BadRequest(w, "Invalid URL format - must start with http:// or https://")
+		return
+	}
+
+	// Check URL length
+	if len(req.URL) > 2048 {
+		response.BadRequest(w, "URL exceeds maximum length of 2048 characters")
+		return
+	}
+
+	// Extract metadata
+	metadata, err := h.metadataExtractor.ExtractMetadata(ctx, req.URL)
+	if err != nil {
+		// Log the detailed error internally but return a generic message to the client
+		// to avoid leaking internal details (network topology, library versions, etc.)
+		log.Warn().Err(err).Str("request_id", requestID).Str("url", req.URL).Msg("Failed to extract URL metadata")
+		response.BadRequest(w, "Failed to extract metadata from URL. Please verify the URL is accessible and try again.")
+		return
+	}
+
+	// Build response
+	resp := map[string]interface{}{
+		"url":   metadata.URL,
+		"title": metadata.Title,
+	}
+
+	if metadata.Description != nil {
+		resp["description"] = *metadata.Description
+	}
+	if metadata.ImageURL != nil {
+		resp["image_url"] = *metadata.ImageURL
+	}
+	if metadata.PublishDate != nil {
+		resp["publish_date"] = *metadata.PublishDate
+	}
+	if metadata.Author != nil {
+		resp["author"] = *metadata.Author
+	}
+	if metadata.ReadTimeMinutes != nil {
+		resp["read_time_minutes"] = *metadata.ReadTimeMinutes
+	}
+	if metadata.SiteName != nil {
+		resp["site_name"] = *metadata.SiteName
+	}
+
+	response.JSON(w, http.StatusOK, map[string]interface{}{"data": resp})
+}
+
+// ============================================================================
+// Manual Content Creation (Content Pipeline Phase 1.3)
+// ============================================================================
+
+// CreateManualContentRequest represents the request body for manual content creation
+type CreateManualContentRequest struct {
+	URL           string   `json:"url"`
+	Title         string   `json:"title"`
+	Summary       *string  `json:"summary,omitempty"`
+	ContentType   string   `json:"content_type"`
+	TopicTags     []string `json:"topic_tags,omitempty"`
+	FrameworkTags []string `json:"framework_tags,omitempty"`
+	PublishDate   *string  `json:"publish_date,omitempty"`
+	Author        *string  `json:"author,omitempty"`
+	ImageURL      *string  `json:"image_url,omitempty"`
+}
+
+// CreateManualContentItem handles POST /v1/newsletter/content-items/manual
+// Creates a content item with source_type="manual" for user-submitted URLs
+func (h *ContentHandler) CreateManualContentItem(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	requestID := getRequestID(ctx)
+
+	// Parse request body
+	var req CreateManualContentRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.BadRequest(w, "Invalid request body")
+		return
+	}
+
+	// Validate required fields
+	if req.URL == "" {
+		response.BadRequest(w, "URL is required")
+		return
+	}
+
+	if !isValidURL(req.URL) {
+		response.BadRequest(w, "Invalid URL format - must start with http:// or https://")
+		return
+	}
+
+	if len(req.URL) > 2048 {
+		response.BadRequest(w, "URL exceeds maximum length of 2048 characters")
+		return
+	}
+
+	if req.Title == "" {
+		response.BadRequest(w, "Title is required")
+		return
+	}
+
+	if len(req.Title) > 500 {
+		response.BadRequest(w, "Title exceeds maximum length of 500 characters")
+		return
+	}
+
+	if req.ContentType == "" {
+		response.BadRequest(w, "Content type is required")
+		return
+	}
+
+	// Validate content type using domain validation
+	contentType := domain.ContentType(req.ContentType)
+	if err := contentType.IsValid(); err != nil {
+		response.BadRequest(w, "Invalid content type - must be one of: blog, news, case_study, webinar, product_update, event")
+		return
+	}
+
+	// Validate optional fields
+	if req.Summary != nil && len(*req.Summary) > 2000 {
+		response.BadRequest(w, "Summary exceeds maximum length of 2000 characters")
+		return
+	}
+
+	if req.Author != nil && len(*req.Author) > 200 {
+		response.BadRequest(w, "Author exceeds maximum length of 200 characters")
+		return
+	}
+
+	if req.ImageURL != nil && !isValidURL(*req.ImageURL) {
+		response.BadRequest(w, "Invalid image URL format")
+		return
+	}
+
+	// Parse publish date if provided
+	var publishDate time.Time
+	if req.PublishDate != nil && *req.PublishDate != "" {
+		var err error
+		publishDate, err = time.Parse(time.RFC3339, *req.PublishDate)
+		if err != nil {
+			// Try alternative formats
+			publishDate, err = time.Parse("2006-01-02", *req.PublishDate)
+			if err != nil {
+				response.BadRequest(w, "Invalid publish date format - use RFC3339 or YYYY-MM-DD")
+				return
+			}
+		}
+	} else {
+		publishDate = time.Now()
+	}
+
+	// Check for duplicate URL
+	existingItem, err := h.contentService.GetContentItemByURL(ctx, req.URL)
+	if err == nil && existingItem != nil {
+		log.Warn().
+			Str("request_id", requestID).
+			Str("url", req.URL).
+			Str("existing_id", existingItem.ID.String()).
+			Msg("Duplicate URL detected for manual content creation")
+		response.Conflict(w, "Content item with this URL already exists")
+		return
+	}
+
+	// Create content item
+	// For manual content, SourceID is the zero UUID (uuid.Nil) to indicate no automated source
+	item := &domain.ContentItem{
+		ID:            uuid.New(),
+		SourceID:      uuid.Nil, // Zero UUID indicates manual entry (no automated source)
+		Title:         req.Title,
+		URL:           req.URL,
+		Summary:       req.Summary,
+		ContentType:   contentType, // Already validated above
+		TopicTags:     req.TopicTags,
+		FrameworkTags: req.FrameworkTags,
+		Author:        req.Author,
+		PublishDate:   publishDate,
+		ImageURL:      req.ImageURL,
+		TrustScore:    1.0, // High trust for manually curated content
+		RelevanceScore: 1.0, // High relevance for manually curated content
+		IsActive:      true,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
+	}
+
+	if err := h.contentService.CreateContentItem(ctx, item); err != nil {
+		log.Error().Err(err).Str("request_id", requestID).Msg("Failed to create manual content item")
+		response.InternalError(w, "Failed to create content item", requestID)
+		return
+	}
+
+	// Determine source type for response
+	sourceType := "automated"
+	if item.SourceID == uuid.Nil {
+		sourceType = "manual"
+	}
+
+	log.Info().
+		Str("request_id", requestID).
+		Str("item_id", item.ID.String()).
+		Str("title", item.Title).
+		Str("source_type", sourceType).
+		Msg("Manual content item created")
+
+	// Build response
+	resp := map[string]interface{}{
+		"id":              item.ID.String(),
+		"title":           item.Title,
+		"url":             item.URL,
+		"content_type":    item.ContentType,
+		"source_type":     sourceType,
+		"trust_score":     item.TrustScore,
+		"relevance_score": item.RelevanceScore,
+		"is_active":       item.IsActive,
+		"publish_date":    item.PublishDate.Format(time.RFC3339),
+		"created_at":      item.CreatedAt.Format(time.RFC3339),
+		"updated_at":      item.UpdatedAt.Format(time.RFC3339),
+	}
+
+	if item.Summary != nil {
+		resp["summary"] = *item.Summary
+	}
+	if item.Author != nil {
+		resp["author"] = *item.Author
+	}
+	if item.ImageURL != nil {
+		resp["image_url"] = *item.ImageURL
+	}
+	if len(item.TopicTags) > 0 {
+		resp["topic_tags"] = item.TopicTags
+	}
+	if len(item.FrameworkTags) > 0 {
+		resp["framework_tags"] = item.FrameworkTags
+	}
+
+	response.JSON(w, http.StatusCreated, map[string]interface{}{"data": resp})
+}
+
 // Helper functions
 
-// isValidURL validates a URL format
+// isValidURL validates a URL format using proper URL parsing
 func isValidURL(urlStr string) bool {
 	if urlStr == "" {
 		return false
 	}
 
-	if len(urlStr) < 10 {
+	// Parse the URL to validate structure
+	parsed, err := url.Parse(urlStr)
+	if err != nil {
 		return false
 	}
 
-	// Check for http:// or https://
-	if len(urlStr) >= 7 && urlStr[:7] == "http://" {
-		return true
+	// Require http or https scheme
+	if parsed.Scheme != "http" && parsed.Scheme != "https" {
+		return false
 	}
 
-	if len(urlStr) >= 8 && urlStr[:8] == "https://" {
-		return true
+	// Require a valid host
+	if parsed.Host == "" {
+		return false
 	}
 
-	return false
+	return true
 }
 
+// splitTags splits a comma-separated string into trimmed tags using standard library
 func splitTags(s string) []string {
 	if s == "" {
 		return nil
 	}
-	tags := make([]string, 0)
-	for _, tag := range stringSliceSplit(s, ",") {
-		trimmed := stringTrim(tag)
+	parts := strings.Split(s, ",")
+	tags := make([]string, 0, len(parts))
+	for _, tag := range parts {
+		trimmed := strings.TrimSpace(tag)
 		if trimmed != "" {
 			tags = append(tags, trimmed)
 		}
 	}
 	return tags
-}
-
-func stringSliceSplit(s string, sep string) []string {
-	result := make([]string, 0)
-	start := 0
-	for i := 0; i < len(s); i++ {
-		if string(s[i]) == sep {
-			result = append(result, s[start:i])
-			start = i + 1
-		}
-	}
-	if start < len(s) {
-		result = append(result, s[start:])
-	}
-	return result
-}
-
-func stringTrim(s string) string {
-	start := 0
-	end := len(s)
-	for start < end && (s[start] == ' ' || s[start] == '\t') {
-		start++
-	}
-	for end > start && (s[end-1] == ' ' || s[end-1] == '\t') {
-		end--
-	}
-	return s[start:end]
 }

@@ -7,7 +7,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import { Search, Calendar, Tag, FileText, X } from 'lucide-react';
+import { Search, Calendar, Tag, FileText, X, PlusCircle } from 'lucide-react';
 import { useContentItems } from '@/hooks/useContentItems';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { AddToNewsletterSheet } from './AddToNewsletterSheet';
 import type { ContentType, ContentItem } from '@/types/newsletter';
 
 // ============================================================================
@@ -140,6 +141,7 @@ export function ContentSelector({
   });
 
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [showAddSheet, setShowAddSheet] = useState(false);
 
   // Build query params for API
   const queryParams = useMemo(() => {
@@ -459,9 +461,25 @@ export function ContentSelector({
                 </span>
 
                 {selectedIds.length > 0 && (
-                  <Button variant="outline" size="sm" onClick={handleClearAll}>
-                    Clear Selection
-                  </Button>
+                  <>
+                    <Button variant="outline" size="sm" onClick={handleClearAll}>
+                      Clear Selection
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => setShowAddSheet(true)}
+                    >
+                      <PlusCircle
+                        style={{
+                          width: 'var(--spacing-4)',
+                          height: 'var(--spacing-4)',
+                          marginRight: 'var(--spacing-2)',
+                        }}
+                      />
+                      Add ({selectedIds.length}) to Newsletter
+                    </Button>
+                  </>
                 )}
 
                 {availableItems.length > 0 && (
@@ -560,6 +578,16 @@ export function ContentSelector({
           )}
         </>
       )}
+
+      {/* Add to Newsletter Sheet */}
+      <AddToNewsletterSheet
+        open={showAddSheet}
+        onOpenChange={setShowAddSheet}
+        selectedContentIds={selectedIds as string[]}
+        onSuccess={() => {
+          onSelectionChange([]);
+        }}
+      />
     </div>
   );
 }

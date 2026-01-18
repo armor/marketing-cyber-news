@@ -38,11 +38,13 @@ spec:
               containerPort: 80
               protocol: TCP
           env:
-            - name: VITE_API_URL
+            # BACKEND_URL is used by runtime config injection (not build-time)
+            # This sets window.__RUNTIME_CONFIG__.API_URL for the frontend
+            - name: BACKEND_URL
               valueFrom:
                 configMapKeyRef:
                   name: frontend-config
-                  key: VITE_API_URL
+                  key: BACKEND_URL
             - name: NODE_ENV
               valueFrom:
                 configMapKeyRef:

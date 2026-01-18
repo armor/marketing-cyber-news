@@ -2,11 +2,14 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
 
 	"github.com/phillipboles/aci-backend/internal/api/dto"
@@ -14,6 +17,18 @@ import (
 	"github.com/phillipboles/aci-backend/internal/api/response"
 	"github.com/phillipboles/aci-backend/internal/domain"
 	"github.com/phillipboles/aci-backend/internal/repository"
+)
+
+// Configuration constants for bulk operations
+const (
+	// MaxBulkBlocksPerRequest defines the maximum number of blocks that can be
+	// added in a single bulk operation. This limit prevents memory exhaustion
+	// and ensures reasonable request processing times.
+	MaxBulkBlocksPerRequest = 20
+
+	// DefaultCTALabel is the default call-to-action text used for newsletter
+	// blocks when no custom label is specified.
+	DefaultCTALabel = "Read More"
 )
 
 // NewsletterBlockHandler handles newsletter block HTTP requests
@@ -93,7 +108,7 @@ func (h *NewsletterBlockHandler) BulkAddBlocks(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	if len(req.ContentItemIDs) > 20 {
+	if len(req.ContentItemIDs) > MaxBulkBlocksPerRequest {
 		response.BadRequest(w, "Maximum 20 items allowed per request")
 		return
 	}
@@ -108,8 +123,13 @@ func (h *NewsletterBlockHandler) BulkAddBlocks(w http.ResponseWriter, r *http.Re
 	// Check if issue exists and is in draft status
 	issue, err := h.issueRepo.GetByID(ctx, issueID)
 	if err != nil {
+		// Distinguish between "not found" and actual database errors
+		if errors.Is(err, pgx.ErrNoRows) || strings.Contains(err.Error(), "not found") {
+			response.NotFound(w, "Newsletter issue not found")
+			return
+		}
 		log.Error().Err(err).Str("request_id", requestID).Str("issue_id", issueID.String()).Msg("Failed to get issue")
-		response.NotFound(w, "Newsletter issue not found")
+		response.InternalError(w, "Failed to retrieve newsletter issue", requestID)
 		return
 	}
 
@@ -159,7 +179,18 @@ func (h *NewsletterBlockHandler) BulkAddBlocks(w http.ResponseWriter, r *http.Re
 
 	// Verify all content items were found
 	if len(contentItems) != len(contentItemIDsToAdd) {
-		response.BadRequest(w, "One or more content items not found")
+		// Identify which content items are missing for better debugging
+		foundIDs := make(map[uuid.UUID]bool)
+		for _, item := range contentItems {
+			foundIDs[item.ID] = true
+		}
+		var missingIDs []string
+		for _, id := range contentItemIDsToAdd {
+			if !foundIDs[id] {
+				missingIDs = append(missingIDs, id.String())
+			}
+		}
+		response.BadRequest(w, "Content items not found: "+strings.Join(missingIDs, ", "))
 		return
 	}
 
@@ -175,6 +206,11 @@ func (h *NewsletterBlockHandler) BulkAddBlocks(w http.ResponseWriter, r *http.Re
 	for _, contentID := range contentItemIDsToAdd {
 		item := contentItemMap[contentID]
 		if item == nil {
+			// This should never happen given the validation above, but log if it does
+			log.Warn().
+				Str("request_id", requestID).
+				Str("content_id", contentID.String()).
+				Msg("Content item unexpectedly nil in map - possible data race")
 			continue
 		}
 
@@ -186,7 +222,7 @@ func (h *NewsletterBlockHandler) BulkAddBlocks(w http.ResponseWriter, r *http.Re
 			Position:      0, // Will be set by BulkCreateWithLock
 			Title:         &item.Title,
 			Teaser:        item.Summary,
-			CTALabel:      blockStringPtr("Read More"),
+			CTALabel:      blockStringPtr(DefaultCTALabel),
 			CTAURL:        &item.URL,
 			IsPromotional: false,
 			TopicTags:     item.TopicTags,

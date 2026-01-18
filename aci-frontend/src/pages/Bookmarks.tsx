@@ -12,6 +12,7 @@ import { ArticleCard } from '../components/ArticleCard';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 interface BookmarksProps {
   readonly onArticleClick?: (article: Article) => void;
@@ -44,24 +45,20 @@ export function Bookmarks({ onArticleClick }: BookmarksProps): React.ReactElemen
   }, [currentPage]);
 
   return (
-    <div>
-      <div style={{ marginBottom: 'var(--spacing-8)' }}>
-        <h2
-          className="font-bold"
-          style={{
-            fontSize: 'var(--typography-font-size-2xl)',
-            color: 'var(--color-text-primary)',
-            marginBottom: 'var(--spacing-2)',
-          }}
-        >
-          Your Bookmarks
-        </h2>
-        <p style={{ color: 'var(--color-text-muted)' }}>
-          Articles you have saved for later reading
-        </p>
-      </div>
+    <div className="flex flex-col h-full">
+      {/* Page Header with Breadcrumbs */}
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'Bookmarks' },
+        ]}
+        title="Your Bookmarks"
+        description="Articles you have saved for later reading"
+      />
 
-      {isLoading && (
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto" style={{ padding: 'var(--spacing-6)' }}>
+        {isLoading && (
         <div className="flex justify-center" style={{ padding: 'var(--spacing-12) 0' }}>
           <LoadingSpinner size="lg" label="Loading bookmarks..." />
         </div>
@@ -150,6 +147,7 @@ export function Bookmarks({ onArticleClick }: BookmarksProps): React.ReactElemen
           )}
         </>
       )}
+      </div>
     </div>
   );
 }

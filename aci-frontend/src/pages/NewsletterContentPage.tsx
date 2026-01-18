@@ -16,12 +16,15 @@
  */
 
 import { type ReactElement, useState } from 'react';
+import { Download } from 'lucide-react';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import {
   ContentSourceList,
   ContentSourceForm,
   ContentSelector,
+  ImportContentSheet,
 } from '@/components/newsletter/content';
 
 // ============================================================================
@@ -30,6 +33,7 @@ import {
 
 export function NewsletterContentPage(): ReactElement {
   const [showForm, setShowForm] = useState(false);
+  const [showImportSheet, setShowImportSheet] = useState(false);
   const [editingSourceId, setEditingSourceId] = useState<string | undefined>(undefined);
   const [selectedContentIds, setSelectedContentIds] = useState<readonly string[]>([]);
 
@@ -100,26 +104,44 @@ export function NewsletterContentPage(): ReactElement {
       <div
         style={{
           marginBottom: 'var(--spacing-6)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
         }}
       >
-        <h1
-          style={{
-            fontSize: 'var(--typography-font-size-3xl)',
-            fontWeight: 'var(--typography-font-weight-bold)',
-            color: 'var(--color-text-primary)',
-            marginBottom: 'var(--spacing-2)',
-          }}
+        <div>
+          <h1
+            style={{
+              fontSize: 'var(--typography-font-size-3xl)',
+              fontWeight: 'var(--typography-font-weight-bold)',
+              color: 'var(--color-text-primary)',
+              marginBottom: 'var(--spacing-2)',
+            }}
+          >
+            Content Management
+          </h1>
+          <p
+            style={{
+              fontSize: 'var(--typography-font-size-base)',
+              color: 'var(--color-text-secondary)',
+            }}
+          >
+            Manage content sources and browse available content for newsletters
+          </p>
+        </div>
+        <Button
+          variant="primary"
+          onClick={() => setShowImportSheet(true)}
         >
-          Content Management
-        </h1>
-        <p
-          style={{
-            fontSize: 'var(--typography-font-size-base)',
-            color: 'var(--color-text-secondary)',
-          }}
-        >
-          Manage content sources and browse available content for newsletters
-        </p>
+          <Download
+            style={{
+              width: 'var(--spacing-4)',
+              height: 'var(--spacing-4)',
+              marginRight: 'var(--spacing-2)',
+            }}
+          />
+          Import Content
+        </Button>
       </div>
 
       {/* Tab Navigation */}
@@ -140,6 +162,12 @@ export function NewsletterContentPage(): ReactElement {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Import Content Sheet */}
+      <ImportContentSheet
+        open={showImportSheet}
+        onOpenChange={setShowImportSheet}
+      />
     </div>
   );
 }
