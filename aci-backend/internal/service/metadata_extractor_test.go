@@ -341,8 +341,8 @@ func TestResolveURL_RelativeFileURL(t *testing.T) {
 func TestResolveURL_InvalidBase(t *testing.T) {
 	extractor := NewMetadataExtractor()
 	result := extractor.resolveURL("not a url", "relative.jpg")
-	// URL parse doesn't fail, it returns relative path
-	assert.NotEmpty(t, result)
+	// With SSRF validation, invalid base resolves to schemeless path which is rejected
+	assert.Empty(t, result)
 }
 
 func TestResolveURL_InvalidRelative(t *testing.T) {
