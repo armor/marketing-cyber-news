@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
@@ -87,18 +88,23 @@ func (h *TransformHandler) Transform(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Parse agent ID from URL path (route: /voice-agents/{id}/transform)
+	agentIDStr := chi.URLParam(r, "id")
+	if agentIDStr == "" {
+		response.BadRequest(w, "Agent ID is required in URL path")
+		return
+	}
+	agentID, err := uuid.Parse(agentIDStr)
+	if err != nil {
+		response.BadRequest(w, "Invalid agent_id format")
+		return
+	}
+
 	// Decode request body
 	var req TransformRequestDTO
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Error().Err(err).Str("request_id", requestID).Msg("Failed to decode request body")
 		response.BadRequest(w, "Invalid JSON in request body")
-		return
-	}
-
-	// Parse agent ID
-	agentID, err := uuid.Parse(req.AgentID)
-	if err != nil {
-		response.BadRequest(w, "Invalid agent_id format")
 		return
 	}
 
