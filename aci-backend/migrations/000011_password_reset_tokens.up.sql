@@ -22,9 +22,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_password_reset_tokens_active_user
     WHERE used_at IS NULL;
 
 -- Indexes for common queries
+-- Note: Cannot use expires_at > NOW() in partial index because NOW() is not IMMUTABLE
+-- Expiration filtering is done at query time
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token_hash
     ON password_reset_tokens(token_hash)
-    WHERE used_at IS NULL AND expires_at > NOW();
+    WHERE used_at IS NULL;
 
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id
     ON password_reset_tokens(user_id);

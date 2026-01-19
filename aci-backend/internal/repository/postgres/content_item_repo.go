@@ -35,6 +35,7 @@ func (r *contentItemRepository) Create(ctx context.Context, item *domain.Content
 		return fmt.Errorf("invalid content item: %w", err)
 	}
 
+	// Query matches database schema after migration 000013
 	query := `
 		INSERT INTO content_items (
 			id, source_id, article_id, title, url, summary, content,
@@ -92,6 +93,7 @@ func (r *contentItemRepository) GetByID(ctx context.Context, id uuid.UUID) (*dom
 		return nil, fmt.Errorf("content item ID cannot be nil")
 	}
 
+	// Query matches database schema after migration 000013
 	query := `
 		SELECT
 			id, source_id, article_id, title, url, summary, content,
@@ -161,6 +163,7 @@ func (r *contentItemRepository) GetByIDs(ctx context.Context, ids []uuid.UUID) (
 		return nil, nil
 	}
 
+	// Query matches database schema after migration 000013
 	query := `
 		SELECT
 			id, source_id, article_id, title, url, summary, content,
