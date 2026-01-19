@@ -29,7 +29,7 @@
 | 1.1.6 | Implement duplicate content detection | go-dev | [x] | Query existing blocks, identify duplicates, populate `skipped_ids` |
 | 1.1.7 | Implement position auto-assignment logic | go-dev | [x] | Uses BulkCreateWithLock for pessimistic position assignment |
 | 1.1.8 | Add authorization middleware | go-dev | [x] | Check user has permission to edit newsletter (marketing/admin roles) |
-| 1.1.9 | Write unit tests for handler | test-writer | [ ] | Test: valid request 201, invalid request 400, not found 404, unauthorized 401 |
+| 1.1.9 | Write unit tests for handler | test-writer | [x] | Test: valid request 201, invalid request 400, not found 404, unauthorized 401 |
 | 1.1.10 | Write integration tests with testcontainers | test-writer | [ ] | Database state verified, blocks created with correct positions |
 
 **Verification Command**:
@@ -51,12 +51,12 @@ cd aci-backend && go test ./internal/handler/... -run TestBulkAddBlocks -v
 | 1.2.6 | Implement SSRF protection - DNS resolution check | security-auditor | [x] | Resolve DNS, verify resolved IP not in blocklist |
 | 1.2.7 | Implement HTTP client with timeout | go-dev | [x] | 10-second timeout, 5MB response limit, User-Agent header |
 | 1.2.8 | Implement Open Graph tag extraction | go-dev | [x] | Parse og:title, og:description, og:image from HTML |
-| 1.2.9 | Implement JSON-LD schema extraction | go-dev | [ ] | Parse schema.org Article for headline, description, image, datePublished, author |
+| 1.2.9 | Implement JSON-LD schema extraction | go-dev | [x] | Parse schema.org Article for headline, description, image, datePublished, author |
 | 1.2.10 | Implement meta tag fallback | go-dev | [x] | Use <title>, <meta name="description">, <meta name="author"> |
 | 1.2.11 | Calculate read time from content | go-dev | [x] | Count words in body text, divide by 200, round up |
 | 1.2.12 | Implement XSS sanitization | security-auditor | [x] | Sanitize all extracted strings via bluemonday |
 | 1.2.13 | Implement handler | go-dev | [x] | Call extractor, handle errors, return response |
-| 1.2.14 | Write unit tests with mock HTML | test-writer | [ ] | Test: OG extraction, JSON-LD extraction, meta fallback, timeout, SSRF block |
+| 1.2.14 | Write unit tests with mock HTML | test-writer | [x] | Test: OG extraction, JSON-LD extraction, meta fallback, timeout, SSRF block |
 
 **Verification Command**:
 ```bash
@@ -75,7 +75,7 @@ cd aci-backend && go test ./internal/service/... -run TestMetadataExtractor -v
 | 1.3.3 | Implement duplicate URL check | go-dev | [x] | `SELECT id FROM content_items WHERE url = ?` - return 409 if exists |
 | 1.3.4 | Implement content item creation | go-dev | [x] | Set `source_type = 'manual'` via uuid.Nil SourceID, `trust_score = 1.0`, generate UUID |
 | 1.3.5 | Implement handler with validation | go-dev | [x] | Validate request, create item, return 201 with item |
-| 1.3.6 | Write unit tests | test-writer | [ ] | Test: valid creation 201, missing required 400, duplicate URL 409 |
+| 1.3.6 | Write unit tests | test-writer | [x] | Test: valid creation 201, missing required 400, duplicate URL 409 |
 | 1.3.7 | Write integration tests | test-writer | [ ] | Verify database row created with correct values |
 
 **Verification Command**:
@@ -345,15 +345,15 @@ curl -s http://129.153.33.152:8080/v1/newsletter/content/extract-metadata -X POS
 
 | Wave | Phases | Tasks | Status |
 |------|--------|-------|--------|
-| WAVE 1 | 3 | 31 | 25/31 |
+| WAVE 1 | 3 | 31 | 29/31 |
 | WAVE 2 | 5 | 37 | [x] |
 | WAVE 3 | 2 | 12 | [x] |
 | WAVE 4 | 2 | 14 | [x] |
 | WAVE 5 | 1 | 7 | 5/7 (2 in progress) |
-| **Total** | **13** | **101** | 93/101 |
+| **Total** | **13** | **101** | 97/101 |
 
 ### Remaining Tasks
-- **WAVE 1**: 6 tasks (unit/integration tests, JSON-LD extraction)
+- **WAVE 1**: 2 tasks (integration tests with testcontainers: 1.1.10, 1.3.7)
 - **WAVE 5**: 2 tasks (bulk blocks E2E, full E2E suite)
 
 ### Blockers
@@ -365,8 +365,12 @@ curl -s http://129.153.33.152:8080/v1/newsletter/content/extract-metadata -X POS
 ### Test Summary
 - **Hook unit tests**: 75 passing (4 hooks: useAddBlocksToIssue, useFetchURLMetadata, useCreateContentItem, useDraftIssues)
 - **Component unit tests**: 59 passing (AddToNewsletterSheet: 24, ImportContentSheet: 35)
-- **Total unit tests**: 134 passing
-- **E2E tests**: 29 tests created (add-to-newsletter.spec.ts: 10, content-import.spec.ts: 19)
+- **Backend handler tests**: 80+ passing (content_handler_test.go, newsletter_block_handler_test.go, voice_agent_handler_test.go)
+- **Backend service tests**: 80+ passing (metadata_extractor_test.go - JSON-LD, OG, SSRF)
+- **Total unit tests**: 294+ passing
+- **E2E tests**: 25 tests (add-to-newsletter.spec.ts: 10, content-import.spec.ts: 15)
+  - content-import.spec.ts: 11 passing, 4 skipped (mock-based tests incompatible with live backend)
+  - Key fixes (2026-01-19): ORDER BY tiebreaker for deterministic pagination, null safety for tags
 
 ### Quality Review Summary (2026-01-18)
 - **Code Reviews**: 5 files reviewed (3 backend, 2 frontend)
