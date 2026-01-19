@@ -495,6 +495,24 @@ func (h *ContentHandler) CreateContentItem(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	// Ensure array fields are not nil (database has NOT NULL constraint with default)
+	topicTags := req.TopicTags
+	if topicTags == nil {
+		topicTags = []string{}
+	}
+	frameworkTags := req.FrameworkTags
+	if frameworkTags == nil {
+		frameworkTags = []string{}
+	}
+	industryTags := req.IndustryTags
+	if industryTags == nil {
+		industryTags = []string{}
+	}
+	partnerTags := req.PartnerTags
+	if partnerTags == nil {
+		partnerTags = []string{}
+	}
+
 	item := &domain.ContentItem{
 		SourceID:       req.SourceID,
 		Title:          req.Title,
@@ -502,11 +520,11 @@ func (h *ContentHandler) CreateContentItem(w http.ResponseWriter, r *http.Reques
 		Summary:        req.Summary,
 		Content:        req.Content,
 		ContentType:    domain.ContentType(req.ContentType),
-		TopicTags:      req.TopicTags,
-		FrameworkTags:  req.FrameworkTags,
-		IndustryTags:   req.IndustryTags,
+		TopicTags:      topicTags,
+		FrameworkTags:  frameworkTags,
+		IndustryTags:   industryTags,
 		BuyerStage:     req.BuyerStage,
-		PartnerTags:    req.PartnerTags,
+		PartnerTags:    partnerTags,
 		Author:         req.Author,
 		PublishDate:    req.PublishDate,
 		WordCount:      req.WordCount,
@@ -1101,6 +1119,16 @@ func (h *ContentHandler) CreateManualContentItem(w http.ResponseWriter, r *http.
 		return
 	}
 
+	// Ensure array fields are not nil (database has NOT NULL constraint with default)
+	topicTags := req.TopicTags
+	if topicTags == nil {
+		topicTags = []string{}
+	}
+	frameworkTags := req.FrameworkTags
+	if frameworkTags == nil {
+		frameworkTags = []string{}
+	}
+
 	// Create content item
 	// For manual content, SourceID is the zero UUID (uuid.Nil) to indicate no automated source
 	item := &domain.ContentItem{
@@ -1110,8 +1138,10 @@ func (h *ContentHandler) CreateManualContentItem(w http.ResponseWriter, r *http.
 		URL:            req.URL,
 		Summary:        req.Summary,
 		ContentType:    contentType, // Already validated above
-		TopicTags:      req.TopicTags,
-		FrameworkTags:  req.FrameworkTags,
+		TopicTags:      topicTags,
+		FrameworkTags:  frameworkTags,
+		IndustryTags:   []string{}, // Ensure not nil
+		PartnerTags:    []string{}, // Ensure not nil
 		Author:         req.Author,
 		PublishDate:    publishDate,
 		ImageURL:       req.ImageURL,
