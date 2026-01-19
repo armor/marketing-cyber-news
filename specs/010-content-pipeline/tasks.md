@@ -290,21 +290,47 @@ cd aci-frontend && npm run test:e2e -- --grep "Content Import"
 |---|------|-------|--------|---------------|
 | 5.1.1 | Verify backend pod deployment | devops-eng | [x] | `kubectl get pods` shows aci-backend Running |
 | 5.1.2 | Test `/v1/newsletter/content/extract-metadata` endpoint in K8s | test-writer | [x] | Returns 401 without auth, 200 with auth |
-| 5.1.3 | Test `/v1/newsletter-issues/{id}/blocks/bulk` endpoint in K8s | test-writer | [!] | **BLOCKED**: Missing `rejected_by` column in DB schema |
-| 5.1.4 | Test `/v1/newsletter/content-items/manual` endpoint in K8s | test-writer | [!] | **BLOCKED**: Missing `article_id` column in DB schema |
+| 5.1.3 | Test `/v1/newsletter-issues/{id}/blocks/bulk` endpoint in K8s | test-writer | [~] | Endpoint accessible, awaiting E2E validation |
+| 5.1.4 | Test `/v1/newsletter/content-items` endpoint in K8s | test-writer | [x] | Create returns 201, Get returns 200, List with pagination works |
 | 5.1.5 | Verify frontend deployment | devops-eng | [x] | Frontend accessible at http://129.158.205.38 |
-| 5.1.6 | Run E2E tests against K8s environment | test-writer | [!] | **BLOCKED**: Database schema migration required |
-| 5.1.7 | Check pod logs for errors | devops-eng | [!] | Database schema errors found |
+| 5.1.6 | Run E2E tests against K8s environment | test-writer | [~] | Backend endpoints verified via curl, full E2E pending |
+| 5.1.7 | Check pod logs for errors | devops-eng | [x] | No schema errors, pods healthy |
 
-**Validation Results (2026-01-19)**:
+**Validation Results (2026-01-19 - Initial)**:
 - ✅ Backend pods deployed and healthy (image `5451f5b`)
 - ✅ Extract metadata endpoint works (200 OK with valid URL)
 - ✅ Authorization working (401 without token, 403 for non-marketing users)
 - ❌ Manual content creation fails: `article_id` column missing
 - ❌ Newsletter issues list fails: `rejected_by` column missing
-- ❌ Bulk add blocks untestable due to no accessible draft issues
 
-**Root Cause**: Production database schema out of sync with code. Requires migration to add missing columns.
+**Root Cause**: Production database schema out of sync with code.
+
+---
+
+**Validation Results (2026-01-19 - Final - After Migration & Fixes)**:
+
+**Migrations Applied**:
+- `000010_newsletter_approval_workflow.up.sql` - Added approval workflow columns
+- `000011_password_reset_tokens.up.sql` - Fixed IMMUTABLE function in partial index
+- `000012_newsletter_approval_audit_trail.up.sql` - Added audit trail
+- `000013_content_items_article_link.up.sql` - Added `article_id`, made `source_id` nullable
+
+**Code Fixes Applied**:
+- Removed `pq.Array()` calls in favor of native pgx array handling (driver compatibility)
+- Fixed nil UUID → NULL conversion for nullable foreign keys (`source_id`, `article_id`)
+
+**Final Verification**:
+| Endpoint | Method | Status | Result |
+|----------|--------|--------|--------|
+| `/v1/newsletter/content/extract-metadata` | POST | ✅ 200 | Extracts OG/meta tags correctly |
+| `/v1/newsletter/content-items` | POST | ✅ 201 | Creates content item with nullable source_id |
+| `/v1/newsletter/content-items/{id}` | GET | ✅ 200 | Retrieves item, persistence verified |
+| `/v1/newsletter/content-items` | GET | ✅ 200 | Lists items with pagination |
+| `/v1/newsletter/content/fresh` | GET | ✅ 200 | Returns fresh content items |
+
+**Commits**:
+- `efa3c0a` - fix(content): remove lib/pq dependency in favor of native pgx array handling
+- `7aaf9f8` - fix(content): handle nil UUIDs for nullable foreign keys
 
 **Verification Command**:
 ```bash
@@ -323,15 +349,18 @@ curl -s http://129.153.33.152:8080/v1/newsletter/content/extract-metadata -X POS
 | WAVE 2 | 5 | 37 | [x] |
 | WAVE 3 | 2 | 12 | [x] |
 | WAVE 4 | 2 | 14 | [x] |
-| WAVE 5 | 1 | 7 | 2/7 (4 blocked) |
-| **Total** | **13** | **101** | 90/101 |
+| WAVE 5 | 1 | 7 | 5/7 (2 in progress) |
+| **Total** | **13** | **101** | 93/101 |
 
 ### Remaining Tasks
 - **WAVE 1**: 6 tasks (unit/integration tests, JSON-LD extraction)
-- **WAVE 5**: 5 tasks (4 blocked on DB migration, 1 E2E validation)
+- **WAVE 5**: 2 tasks (bulk blocks E2E, full E2E suite)
 
 ### Blockers
-- **Database Schema Migration Required**: Production database missing columns (`article_id`, `rejected_by`) that the code expects. Run pending migrations to resolve.
+- ~~**Database Schema Migration Required**: Production database missing columns~~ **RESOLVED** (2026-01-19)
+  - Applied migrations 000010-000013 to K8s database
+  - Fixed driver compatibility issues (pq.Array → native pgx)
+  - Fixed nil UUID handling for nullable foreign keys
 
 ### Test Summary
 - **Hook unit tests**: 75 passing (4 hooks: useAddBlocksToIssue, useFetchURLMetadata, useCreateContentItem, useDraftIssues)
