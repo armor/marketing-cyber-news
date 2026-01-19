@@ -103,17 +103,15 @@ COPY <<'EOF' /docker-entrypoint.d/40-inject-env.sh
 #!/bin/sh
 set -e
 
-# Create runtime config with environment variables
+# Inject runtime config directly into index.html (before any module scripts)
 # BACKEND_URL should be the externally accessible backend URL (e.g., http://129.153.33.152:8080/v1)
 # If not set, defaults to /api/v1 for nginx proxy
-cat > /usr/share/nginx/html/config.js << JSEOF
-window.__RUNTIME_CONFIG__ = {
-  API_URL: "${BACKEND_URL:-/api/v1}",
-  ENVIRONMENT: "${NODE_ENV:-production}"
-};
-JSEOF
+RUNTIME_CONFIG="<script>window.__RUNTIME_CONFIG__ = { API_URL: \"${BACKEND_URL:-/api/v1}\", ENVIRONMENT: \"${NODE_ENV:-production}\" };</script>"
 
-echo "Runtime config injected with API_URL: ${BACKEND_URL:-/api/v1}"
+# Insert the config script right after <head>
+sed -i "s|<head>|<head>${RUNTIME_CONFIG}|" /usr/share/nginx/html/index.html
+
+echo "Runtime config injected into index.html with API_URL: ${BACKEND_URL:-/api/v1}"
 EOF
 
 RUN chmod +x /docker-entrypoint.d/40-inject-env.sh

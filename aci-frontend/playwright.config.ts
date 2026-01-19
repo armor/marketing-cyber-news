@@ -221,11 +221,13 @@ export default defineConfig({
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
   outputDir: 'tests/artifacts',
 
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'npm run dev:e2e -- --port 5173',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  /* Run your local dev server before starting the tests - disabled for K8s testing */
+  webServer: process.env.TEST_BASE_URL && !process.env.TEST_BASE_URL.includes('localhost')
+    ? undefined
+    : {
+        command: 'npm run dev:e2e -- --port 5173',
+        url: 'http://localhost:5173',
+        reuseExistingServer: !process.env.CI,
+        timeout: 120 * 1000,
+      },
 });
