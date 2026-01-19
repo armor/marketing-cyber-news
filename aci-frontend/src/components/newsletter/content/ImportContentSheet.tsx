@@ -5,7 +5,7 @@
  * Supports metadata extraction from URLs and manual form entry.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Loader2Icon, DownloadIcon, AlertCircleIcon, CheckCircleIcon } from 'lucide-react';
 import {
   Sheet,
@@ -104,13 +104,17 @@ export function ImportContentSheet({
     error: createError,
   } = useCreateContentItem();
 
-  // Reset form when sheet closes
-  useEffect(() => {
-    if (!open) {
-      setFormData(INITIAL_FORM_DATA);
-      setFetchedMetadata(null);
-    }
-  }, [open]);
+  // Wrap onOpenChange to reset form state when sheet closes
+  const handleOpenChange = useCallback(
+    (newOpen: boolean) => {
+      if (!newOpen) {
+        setFormData(INITIAL_FORM_DATA);
+        setFetchedMetadata(null);
+      }
+      onOpenChange(newOpen);
+    },
+    [onOpenChange]
+  );
 
   // Handle URL fetch
   const handleFetchMetadata = (): void => {
@@ -171,7 +175,7 @@ export function ImportContentSheet({
       {
         onSuccess: () => {
           onSuccess?.();
-          onOpenChange(false);
+          handleOpenChange(false);
         },
       }
     );
@@ -181,7 +185,7 @@ export function ImportContentSheet({
   const canSubmit = formData.url && formData.title && !isCreating;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent
         side="right"
         style={{
@@ -467,7 +471,7 @@ export function ImportContentSheet({
           >
             <Button
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
               disabled={isCreating}
               className="flex-1"
             >

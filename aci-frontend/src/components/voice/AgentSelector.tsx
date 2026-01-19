@@ -46,11 +46,6 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string; style?:
   'book-open': BookOpen,
 };
 
-/** Get a Lucide icon component by name */
-function getIconComponent(iconName: string): React.ComponentType<{ className?: string; style?: React.CSSProperties }> {
-  return ICON_MAP[iconName] ?? Sparkles;
-}
-
 export function AgentSelector({
   agents,
   selectedAgentId,
@@ -180,8 +175,6 @@ interface AgentIconProps {
 }
 
 function AgentIcon({ agent, size = 'md' }: AgentIconProps) {
-  const IconComponent = getIconComponent(agent.icon);
-
   const sizeStyles = {
     sm: { container: 'var(--spacing-6)', icon: 'size-3' },
     md: { container: 'var(--spacing-8)', icon: 'size-4' },
@@ -189,6 +182,9 @@ function AgentIcon({ agent, size = 'md' }: AgentIconProps) {
   };
 
   const styles = sizeStyles[size];
+
+  // Get the icon component from the static map
+  const Icon = ICON_MAP[agent.icon] ?? Sparkles;
 
   return (
     <div
@@ -200,7 +196,7 @@ function AgentIcon({ agent, size = 'md' }: AgentIconProps) {
         backgroundColor: `${agent.color}20`,
       }}
     >
-      <IconComponent className={styles.icon} style={{ color: agent.color }} />
+      {React.createElement(Icon, { className: styles.icon, style: { color: agent.color } })}
     </div>
   );
 }

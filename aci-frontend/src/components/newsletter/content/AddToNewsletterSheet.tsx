@@ -5,7 +5,7 @@
  * Allows selection of target issue and block type assignment.
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Loader2Icon, PlusCircleIcon, AlertCircleIcon } from 'lucide-react';
 import {
   Sheet,
@@ -122,13 +122,17 @@ export function AddToNewsletterSheet({
     [draftIssues]
   );
 
-  // Reset form when sheet closes
-  useEffect(() => {
-    if (!open) {
-      setSelectedIssueId('');
-      setSelectedBlockType('news');
-    }
-  }, [open]);
+  // Wrap onOpenChange to reset form state when sheet closes
+  const handleOpenChange = useCallback(
+    (newOpen: boolean) => {
+      if (!newOpen) {
+        setSelectedIssueId('');
+        setSelectedBlockType('news');
+      }
+      onOpenChange(newOpen);
+    },
+    [onOpenChange]
+  );
 
   // Handle form submission
   const handleSubmit = (): void => {
@@ -147,7 +151,7 @@ export function AddToNewsletterSheet({
       {
         onSuccess: () => {
           onSuccess?.();
-          onOpenChange(false);
+          handleOpenChange(false);
         },
       }
     );
@@ -156,7 +160,7 @@ export function AddToNewsletterSheet({
   const canSubmit = selectedIssueId && selectedContentIds.length > 0 && !isAdding;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent
         side="right"
         style={{
