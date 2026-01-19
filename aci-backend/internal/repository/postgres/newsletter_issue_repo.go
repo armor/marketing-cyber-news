@@ -41,18 +41,19 @@ func (r *newsletterIssueRepository) Create(ctx context.Context, issue *domain.Ne
 		return fmt.Errorf("failed to marshal generation_metadata: %w", err)
 	}
 
+	// Query matches actual database schema from migration 000008
 	query := `
 		INSERT INTO newsletter_issues (
 			id, configuration_id, segment_id, issue_number, issue_date,
 			subject_lines, selected_subject_line, preheader, intro_template,
-			status, approved_by, approved_at, rejection_reason, rejected_by, rejected_at,
+			status, approved_by, approved_at, rejection_reason,
 			scheduled_for, sent_at, esp_campaign_id,
 			total_recipients, total_delivered, total_opens, total_clicks,
-			total_bounces, total_unsubscribes, total_complaints,
-			version, ai_model_used, prompt_version_used, generation_metadata,
-			created_by, created_at, updated_at
+			total_bounces, total_unsubscribes,
+			generation_metadata,
+			created_at, updated_at
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)
 	`
 
 	_, err = r.db.Pool.Exec(ctx, query,
@@ -69,8 +70,6 @@ func (r *newsletterIssueRepository) Create(ctx context.Context, issue *domain.Ne
 		issue.ApprovedBy,
 		issue.ApprovedAt,
 		issue.RejectionReason,
-		issue.RejectedBy,
-		issue.RejectedAt,
 		issue.ScheduledFor,
 		issue.SentAt,
 		issue.ESPCampaignID,
@@ -80,12 +79,7 @@ func (r *newsletterIssueRepository) Create(ctx context.Context, issue *domain.Ne
 		issue.TotalClicks,
 		issue.TotalBounces,
 		issue.TotalUnsubscribes,
-		issue.TotalComplaints,
-		issue.Version,
-		issue.AIModelUsed,
-		issue.PromptVersionUsed,
 		generationMetadataJSON,
-		issue.CreatedBy,
 		issue.CreatedAt,
 		issue.UpdatedAt,
 	)
@@ -103,16 +97,17 @@ func (r *newsletterIssueRepository) GetByID(ctx context.Context, id uuid.UUID) (
 		return nil, fmt.Errorf("newsletter issue ID cannot be nil")
 	}
 
+	// Query matches actual database schema from migration 000008
 	query := `
 		SELECT
 			id, configuration_id, segment_id, issue_number, issue_date,
 			subject_lines, selected_subject_line, preheader, intro_template,
-			status, approved_by, approved_at, rejection_reason, rejected_by, rejected_at,
+			status, approved_by, approved_at, rejection_reason,
 			scheduled_for, sent_at, esp_campaign_id,
 			total_recipients, total_delivered, total_opens, total_clicks,
-			total_bounces, total_unsubscribes, total_complaints,
-			version, ai_model_used, prompt_version_used, generation_metadata,
-			created_by, created_at, updated_at
+			total_bounces, total_unsubscribes,
+			generation_metadata,
+			created_at, updated_at
 		FROM newsletter_issues
 		WHERE id = $1
 	`
@@ -135,8 +130,6 @@ func (r *newsletterIssueRepository) GetByID(ctx context.Context, id uuid.UUID) (
 		&issue.ApprovedBy,
 		&issue.ApprovedAt,
 		&issue.RejectionReason,
-		&issue.RejectedBy,
-		&issue.RejectedAt,
 		&issue.ScheduledFor,
 		&issue.SentAt,
 		&issue.ESPCampaignID,
@@ -146,12 +139,7 @@ func (r *newsletterIssueRepository) GetByID(ctx context.Context, id uuid.UUID) (
 		&issue.TotalClicks,
 		&issue.TotalBounces,
 		&issue.TotalUnsubscribes,
-		&issue.TotalComplaints,
-		&issue.Version,
-		&issue.AIModelUsed,
-		&issue.PromptVersionUsed,
 		&generationMetadataJSON,
-		&issue.CreatedBy,
 		&issue.CreatedAt,
 		&issue.UpdatedAt,
 	)

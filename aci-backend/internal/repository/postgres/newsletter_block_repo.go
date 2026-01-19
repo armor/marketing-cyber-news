@@ -497,19 +497,30 @@ func (r *newsletterBlockRepository) GetMaxPosition(ctx context.Context, issueID 
 }
 
 // GetMaxPositionForUpdate returns the maximum position with pessimistic locking (FOR UPDATE)
-// This must be called within a transaction to prevent race conditions during bulk block creation
+// This must be called within a transaction to prevent race conditions during bulk block creation.
+// Note: PostgreSQL doesn't allow FOR UPDATE with aggregate functions, so we lock the parent
+// newsletter_issues row instead to serialize concurrent block additions.
 func (r *newsletterBlockRepository) GetMaxPositionForUpdate(ctx context.Context, tx pgx.Tx, issueID uuid.UUID) (int, error) {
 	if issueID == uuid.Nil {
 		return 0, fmt.Errorf("issue ID cannot be nil")
 	}
 
-	// Lock all blocks for this issue to prevent concurrent position conflicts
-	query := `SELECT COALESCE(MAX(position), -1) FROM newsletter_blocks WHERE issue_id = $1 FOR UPDATE`
-
-	var maxPosition int
-	err := tx.QueryRow(ctx, query, issueID).Scan(&maxPosition)
+	// Lock the parent newsletter_issues row to serialize concurrent block additions.
+	// This prevents race conditions where two concurrent requests could get the same
+	// max position value and create blocks with conflicting positions.
+	lockQuery := `SELECT id FROM newsletter_issues WHERE id = $1 FOR UPDATE`
+	var lockedID uuid.UUID
+	err := tx.QueryRow(ctx, lockQuery, issueID).Scan(&lockedID)
 	if err != nil {
-		return 0, fmt.Errorf("failed to get max position with lock: %w", err)
+		return 0, fmt.Errorf("failed to lock newsletter issue: %w", err)
+	}
+
+	// Now safely get the max position without FOR UPDATE (the parent lock serializes access)
+	maxQuery := `SELECT COALESCE(MAX(position), -1) FROM newsletter_blocks WHERE issue_id = $1`
+	var maxPosition int
+	err = tx.QueryRow(ctx, maxQuery, issueID).Scan(&maxPosition)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get max position: %w", err)
 	}
 
 	return maxPosition, nil

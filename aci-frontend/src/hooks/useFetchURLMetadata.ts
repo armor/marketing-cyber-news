@@ -84,7 +84,7 @@ export function useFetchURLMetadata(): UseMutationResult<
   return useMutation({
     mutationFn: async ({ url }: FetchMetadataVariables) => {
       const response = await apiClient.post<ApiResponse>(
-        '/content/fetch-metadata',
+        '/newsletter/content/extract-metadata',
         { url }
       );
       return response.data;

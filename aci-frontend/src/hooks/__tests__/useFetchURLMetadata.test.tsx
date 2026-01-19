@@ -66,7 +66,7 @@ describe('useFetchURLMetadata Hook', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(apiClient.post).toHaveBeenCalledWith('/content/fetch-metadata', {
+      expect(apiClient.post).toHaveBeenCalledWith('/newsletter/content/extract-metadata', {
         url: 'https://example.com/article',
       });
     });
@@ -443,7 +443,7 @@ describe('useFetchURLMetadata Hook', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(apiClient.post).toHaveBeenCalledWith('/content/fetch-metadata', {
+      expect(apiClient.post).toHaveBeenCalledWith('/newsletter/content/extract-metadata', {
         url: urlWithSpecialChars,
       });
     });

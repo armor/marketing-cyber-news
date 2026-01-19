@@ -32,10 +32,10 @@ import { test, expect, Page } from '@playwright/test';
 const BASE_URL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:5173';
 const API_BASE = process.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
-// Test credentials
+// Test credentials - uses @armor.com domain to match K8s email constraint
 const TEST_USER = {
-  email: 'admin@test.com',
-  password: 'TestPass123',
+  email: process.env.TEST_ADMIN_EMAIL || 'admin@armor.com',
+  password: process.env.TEST_ADMIN_PASSWORD || 'TestPass123',
 };
 
 // ============================================================================
@@ -51,8 +51,8 @@ async function loginUser(page: Page): Promise<void> {
   await page.getByLabel(/password/i).fill(TEST_USER.password);
   await page.getByRole('button', { name: /sign in|login/i }).click();
 
-  // Wait for navigation to dashboard
-  await page.waitForURL(`${BASE_URL}/`, { timeout: 10000 });
+  // Wait for navigation to dashboard (app redirects to /dashboard after login)
+  await page.waitForURL(/\/(dashboard)?$/, { timeout: 10000 });
 }
 
 /**
@@ -132,7 +132,7 @@ test.describe('Content Import Flow - Deep E2E Tests', () => {
       const metadataResponse = await Promise.all([
         page.waitForResponse(
           (r) =>
-            r.url().includes('/content/fetch-metadata') &&
+            r.url().includes('/newsletter/content/extract-metadata') &&
             r.request().method() === 'POST'
         ),
         fetchButton.click(),
@@ -187,7 +187,7 @@ test.describe('Content Import Flow - Deep E2E Tests', () => {
       await Promise.all([
         page.waitForResponse(
           (r) =>
-            r.url().includes('/content/fetch-metadata') &&
+            r.url().includes('/newsletter/content/extract-metadata') &&
             r.request().method() === 'POST'
         ),
         fetchButton.click(),
@@ -265,7 +265,7 @@ test.describe('Content Import Flow - Deep E2E Tests', () => {
       // Intercept API call - should NOT have metadata fetch call first
       let metadataCallMade = false;
       page.on('request', (req) => {
-        if (req.url().includes('/content/fetch-metadata')) {
+        if (req.url().includes('/newsletter/content/extract-metadata')) {
           metadataCallMade = true;
         }
       });
@@ -440,7 +440,7 @@ test.describe('Content Import Flow - Deep E2E Tests', () => {
       await openImportSheet(page);
 
       // Intercept fetch request and return error
-      await page.route('**/content/fetch-metadata', (route) => {
+      await page.route('**/newsletter/content/extract-metadata', (route) => {
         route.abort('failed');
       });
 
@@ -467,7 +467,7 @@ test.describe('Content Import Flow - Deep E2E Tests', () => {
       const importButton = page.getByRole('button', { name: /^Import Content$/i });
 
       // Re-enable route for manual import
-      await page.unroute('**/content/fetch-metadata');
+      await page.unroute('**/newsletter/content/extract-metadata');
 
       const response = await Promise.all([
         page.waitForResponse(
@@ -519,7 +519,7 @@ test.describe('Content Import Flow - Deep E2E Tests', () => {
       await openImportSheet(page);
 
       // Intercept and delay metadata fetch beyond timeout
-      await page.route('**/content/fetch-metadata', async (route) => {
+      await page.route('**/newsletter/content/extract-metadata', async (route) => {
         // Delay longer than typical timeout
         await new Promise((resolve) => setTimeout(resolve, 15000));
         route.continue();
@@ -854,7 +854,7 @@ test.describe('Content Import Flow - Deep E2E Tests', () => {
       await Promise.all([
         page.waitForResponse(
           (r) =>
-            r.url().includes('/content/fetch-metadata') &&
+            r.url().includes('/newsletter/content/extract-metadata') &&
             r.request().method() === 'POST'
         ),
         fetchButton.click(),

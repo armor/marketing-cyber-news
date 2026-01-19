@@ -198,6 +198,9 @@ func runMigrations(ctx context.Context, testDB *TestDB) error {
 		"000003_alerts_schema.up.sql",
 		"000004_engagement_schema.up.sql",
 		"000005_audit_schema.up.sql",
+		"000006_threat_intelligence_schema.up.sql",
+		"000007_approval_workflow.up.sql",
+		"000008_newsletter_system.up.sql",
 	}
 
 	for _, migration := range migrations {
@@ -352,6 +355,11 @@ func SetupTestServer(t *testing.T, testDB *TestDB) *TestServer {
 	alertRepo := postgres.NewAlertRepository(testDB.DB)
 	alertMatchRepo := postgres.NewAlertMatchRepository(testDB.DB)
 
+	// Newsletter repositories
+	newsletterBlockRepo := postgres.NewNewsletterBlockRepository(testDB.DB)
+	newsletterIssueRepo := postgres.NewNewsletterIssueRepository(testDB.DB)
+	contentItemRepo := postgres.NewContentItemRepository(testDB.DB)
+
 	// Create repositories using sql.DB (for engagement service)
 	bookmarkRepo := postgres.NewBookmarkRepository(testDB.SqlDB)
 	articleReadRepo := postgres.NewArticleReadRepository(testDB.SqlDB)
@@ -384,16 +392,18 @@ func SetupTestServer(t *testing.T, testDB *TestDB) *TestServer {
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo, articleRepo)
 	userHandler := handlers.NewUserHandler(engagementService, userRepo)
 	webhookHandler := handlers.NewWebhookHandler(articleService, enrichmentService, webhookLogRepo, "test-webhook-secret")
+	newsletterBlockHandler := handlers.NewNewsletterBlockHandler(newsletterBlockRepo, newsletterIssueRepo, contentItemRepo)
 
 	// Create Handlers struct
 	h := &api.Handlers{
-		Auth:     authHandler,
-		Article:  articleHandler,
-		Alert:    alertHandler,
-		Webhook:  webhookHandler,
-		User:     userHandler,
-		Admin:    nil,
-		Category: categoryHandler,
+		Auth:            authHandler,
+		Article:         articleHandler,
+		Alert:           alertHandler,
+		Webhook:         webhookHandler,
+		User:            userHandler,
+		Admin:           nil,
+		Category:        categoryHandler,
+		NewsletterBlock: newsletterBlockHandler,
 	}
 
 	// Create API server with new signature
@@ -577,6 +587,13 @@ func CleanupDB(t *testing.T, testDB *TestDB) {
 
 	// Truncate tables in reverse order of dependencies
 	tables := []string{
+		"newsletter_blocks",
+		"newsletter_issues",
+		"newsletter_configurations",
+		"content_items",
+		"segments",
+		"content_sources",
+		"article_approvals",
 		"alert_matches",
 		"alerts",
 		"bookmarks",

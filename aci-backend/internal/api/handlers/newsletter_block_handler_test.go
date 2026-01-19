@@ -269,14 +269,7 @@ func createTestDraftIssue(id uuid.UUID) *domain.NewsletterIssue {
 }
 
 func contextWithUserAndRequestID(userID uuid.UUID, role domain.UserRole) context.Context {
-	ctx := context.Background()
-	user := &domain.User{
-		ID:   userID,
-		Role: role,
-	}
-	ctx = context.WithValue(ctx, "user", user)
-	ctx = context.WithValue(ctx, "request_id", uuid.New().String())
-	return ctx
+	return createTestContextWithUser(userID, role)
 }
 
 // ============================================================================
@@ -285,7 +278,7 @@ func contextWithUserAndRequestID(userID uuid.UUID, role domain.UserRole) context
 
 func TestBulkAddBlocks_Success(t *testing.T) {
 	// Arrange
-	handler, mockBlockRepo, mockIssueRepo, _ := setupBlockHandlerTest(t)
+	handler, mockBlockRepo, mockIssueRepo, mockContentItemRepo := setupBlockHandlerTest(t)
 	issueID := uuid.New()
 	userID := uuid.New()
 	contentID1 := uuid.New()
@@ -294,6 +287,12 @@ func TestBulkAddBlocks_Success(t *testing.T) {
 	req := dto.BulkAddBlocksRequest{
 		ContentItemIDs: []uuid.UUID{contentID1, contentID2},
 		BlockType:      "news",
+	}
+
+	// Create test content items
+	contentItems := []*domain.ContentItem{
+		{ID: contentID1, Title: "Article 1", URL: "https://example.com/1", Summary: stringPtr("Summary 1")},
+		{ID: contentID2, Title: "Article 2", URL: "https://example.com/2", Summary: stringPtr("Summary 2")},
 	}
 
 	body, _ := json.Marshal(req)
@@ -308,7 +307,8 @@ func TestBulkAddBlocks_Success(t *testing.T) {
 
 	mockIssueRepo.On("GetByID", mock.Anything, issueID).Return(createTestDraftIssue(issueID), nil)
 	mockBlockRepo.On("GetExistingContentItemIDs", mock.Anything, issueID, req.ContentItemIDs).Return([]uuid.UUID{}, nil)
-	mockBlockRepo.On("BulkCreate", mock.Anything, mock.MatchedBy(func(blocks []*domain.NewsletterBlock) bool {
+	mockContentItemRepo.On("GetByIDs", mock.Anything, req.ContentItemIDs).Return(contentItems, nil)
+	mockBlockRepo.On("BulkCreateWithLock", mock.Anything, issueID, mock.MatchedBy(func(blocks []*domain.NewsletterBlock) bool {
 		return len(blocks) == 2
 	})).Return(nil)
 
@@ -319,6 +319,7 @@ func TestBulkAddBlocks_Success(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, w.Code)
 	mockIssueRepo.AssertExpectations(t)
 	mockBlockRepo.AssertExpectations(t)
+	mockContentItemRepo.AssertExpectations(t)
 }
 
 func TestBulkAddBlocks_InvalidJSON(t *testing.T) {
@@ -451,7 +452,7 @@ func TestBulkAddBlocks_ForbiddenForNonMarketing(t *testing.T) {
 }
 
 func TestBulkAddBlocks_DuplicateContentDetection(t *testing.T) {
-	handler, mockBlockRepo, mockIssueRepo, _ := setupBlockHandlerTest(t)
+	handler, mockBlockRepo, mockIssueRepo, mockContentItemRepo := setupBlockHandlerTest(t)
 	issueID := uuid.New()
 	userID := uuid.New()
 	contentID1 := uuid.New()
@@ -461,6 +462,13 @@ func TestBulkAddBlocks_DuplicateContentDetection(t *testing.T) {
 	req := dto.BulkAddBlocksRequest{
 		ContentItemIDs: []uuid.UUID{contentID1, duplicateID, contentID2},
 		BlockType:      "news",
+	}
+
+	// Only non-duplicate content items will be fetched
+	contentItemsToAdd := []uuid.UUID{contentID1, contentID2}
+	contentItems := []*domain.ContentItem{
+		{ID: contentID1, Title: "Article 1", URL: "https://example.com/1", Summary: stringPtr("Summary 1")},
+		{ID: contentID2, Title: "Article 2", URL: "https://example.com/2", Summary: stringPtr("Summary 2")},
 	}
 
 	body, _ := json.Marshal(req)
@@ -476,7 +484,8 @@ func TestBulkAddBlocks_DuplicateContentDetection(t *testing.T) {
 	mockIssueRepo.On("GetByID", mock.Anything, issueID).Return(createTestDraftIssue(issueID), nil)
 	mockBlockRepo.On("GetExistingContentItemIDs", mock.Anything, issueID, req.ContentItemIDs).
 		Return([]uuid.UUID{duplicateID}, nil)
-	mockBlockRepo.On("BulkCreate", mock.Anything, mock.MatchedBy(func(blocks []*domain.NewsletterBlock) bool {
+	mockContentItemRepo.On("GetByIDs", mock.Anything, contentItemsToAdd).Return(contentItems, nil)
+	mockBlockRepo.On("BulkCreateWithLock", mock.Anything, issueID, mock.MatchedBy(func(blocks []*domain.NewsletterBlock) bool {
 		return len(blocks) == 2
 	})).Return(nil)
 
@@ -484,14 +493,19 @@ func TestBulkAddBlocks_DuplicateContentDetection(t *testing.T) {
 
 	assert.Equal(t, http.StatusCreated, w.Code)
 
-	var response dto.BulkAddBlocksResponse
-	json.NewDecoder(w.Body).Decode(&response)
+	// Response is wrapped in {"data": {...}}
+	var wrapper struct {
+		Data dto.BulkAddBlocksResponse `json:"data"`
+	}
+	json.NewDecoder(w.Body).Decode(&wrapper)
+	response := wrapper.Data
 	assert.Equal(t, 2, response.CreatedCount)
 	assert.Equal(t, 1, response.SkippedCount)
 	assert.Contains(t, response.SkippedIDs, duplicateID)
 
 	mockIssueRepo.AssertExpectations(t)
 	mockBlockRepo.AssertExpectations(t)
+	mockContentItemRepo.AssertExpectations(t)
 }
 
 func TestBulkAddBlocks_EmptyContentItemIDsReturns400(t *testing.T) {
@@ -578,7 +592,7 @@ func TestBulkAddBlocks_AllDuplicateReturns409(t *testing.T) {
 }
 
 func TestBulkAddBlocks_AdminCanAdd(t *testing.T) {
-	handler, mockBlockRepo, mockIssueRepo, _ := setupBlockHandlerTest(t)
+	handler, mockBlockRepo, mockIssueRepo, mockContentItemRepo := setupBlockHandlerTest(t)
 	issueID := uuid.New()
 	userID := uuid.New()
 	contentID := uuid.New()
@@ -586,6 +600,10 @@ func TestBulkAddBlocks_AdminCanAdd(t *testing.T) {
 	req := dto.BulkAddBlocksRequest{
 		ContentItemIDs: []uuid.UUID{contentID},
 		BlockType:      "news",
+	}
+
+	contentItems := []*domain.ContentItem{
+		{ID: contentID, Title: "Article 1", URL: "https://example.com/1", Summary: stringPtr("Summary 1")},
 	}
 
 	body, _ := json.Marshal(req)
@@ -600,7 +618,8 @@ func TestBulkAddBlocks_AdminCanAdd(t *testing.T) {
 
 	mockIssueRepo.On("GetByID", mock.Anything, issueID).Return(createTestDraftIssue(issueID), nil)
 	mockBlockRepo.On("GetExistingContentItemIDs", mock.Anything, issueID, req.ContentItemIDs).Return([]uuid.UUID{}, nil)
-	mockBlockRepo.On("BulkCreate", mock.Anything, mock.MatchedBy(func(blocks []*domain.NewsletterBlock) bool {
+	mockContentItemRepo.On("GetByIDs", mock.Anything, req.ContentItemIDs).Return(contentItems, nil)
+	mockBlockRepo.On("BulkCreateWithLock", mock.Anything, issueID, mock.MatchedBy(func(blocks []*domain.NewsletterBlock) bool {
 		return len(blocks) == 1
 	})).Return(nil)
 
@@ -609,6 +628,7 @@ func TestBulkAddBlocks_AdminCanAdd(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, w.Code)
 	mockIssueRepo.AssertExpectations(t)
 	mockBlockRepo.AssertExpectations(t)
+	mockContentItemRepo.AssertExpectations(t)
 }
 
 func TestBulkAddBlocks_MaximumItemsLimit(t *testing.T) {

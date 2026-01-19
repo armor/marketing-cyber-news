@@ -3,9 +3,12 @@ package service
 import (
 	"context"
 	"net"
+	"strings"
 	"testing"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // ============================================================================
@@ -370,4 +373,789 @@ func TestNewMetadataExtractor_RedirectLimitExceeded(t *testing.T) {
 	// that limits redirects to 5 and validates SSRF for each redirect
 	extractor := NewMetadataExtractor()
 	assert.NotNil(t, extractor.httpClient.CheckRedirect)
+}
+
+// ============================================================================
+// JSON-LD Extraction Tests
+// ============================================================================
+
+func TestExtractJSONLD_ArticleSchema(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Test Article Headline",
+  "description": "This is a test article description",
+  "datePublished": "2024-01-15T10:30:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "John Doe"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Test Publisher"
+  },
+  "image": "https://example.com/image.jpg"
+}
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://example.com/article")
+
+	require.NotNil(t, metadata)
+	assert.Equal(t, "Test Article Headline", metadata.Title)
+	require.NotNil(t, metadata.Description)
+	assert.Equal(t, "This is a test article description", *metadata.Description)
+	require.NotNil(t, metadata.PublishDate)
+	assert.Equal(t, "2024-01-15T10:30:00Z", *metadata.PublishDate)
+	require.NotNil(t, metadata.Author)
+	assert.Equal(t, "John Doe", *metadata.Author)
+	require.NotNil(t, metadata.SiteName)
+	assert.Equal(t, "Test Publisher", *metadata.SiteName)
+	require.NotNil(t, metadata.ImageURL)
+	assert.Equal(t, "https://example.com/image.jpg", *metadata.ImageURL)
+}
+
+func TestExtractJSONLD_NewsArticleSchema(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "NewsArticle",
+  "headline": "Breaking News Story",
+  "description": "Important news update",
+  "datePublished": "2024-01-16T08:00:00Z"
+}
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://news.example.com/story")
+
+	require.NotNil(t, metadata)
+	assert.Equal(t, "Breaking News Story", metadata.Title)
+}
+
+func TestExtractJSONLD_BlogPostingSchema(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "My Blog Post",
+  "description": "A blog post about testing"
+}
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://blog.example.com/post")
+
+	require.NotNil(t, metadata)
+	assert.Equal(t, "My Blog Post", metadata.Title)
+}
+
+func TestExtractJSONLD_GraphWithMultipleSchemas(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "Example Site"
+    },
+    {
+      "@type": "NewsArticle",
+      "headline": "Article in Graph",
+      "description": "Found inside @graph array",
+      "datePublished": "2024-02-01T12:00:00Z"
+    }
+  ]
+}
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://example.com/article")
+
+	require.NotNil(t, metadata)
+	assert.Equal(t, "Article in Graph", metadata.Title)
+	require.NotNil(t, metadata.Description)
+	assert.Equal(t, "Found inside @graph array", *metadata.Description)
+}
+
+func TestExtractJSONLD_MainEntityNested(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Web Page",
+  "mainEntity": {
+    "@type": "Article",
+    "headline": "Nested Article Title",
+    "description": "Article nested in mainEntity"
+  }
+}
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://example.com/page")
+
+	require.NotNil(t, metadata)
+	assert.Equal(t, "Nested Article Title", metadata.Title)
+}
+
+func TestExtractJSONLD_AuthorAsString(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Test Article",
+  "author": "Simple String Author"
+}
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://example.com/article")
+
+	require.NotNil(t, metadata)
+	require.NotNil(t, metadata.Author)
+	assert.Equal(t, "Simple String Author", *metadata.Author)
+}
+
+func TestExtractJSONLD_AuthorAsArray(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Test Article",
+  "author": [
+    {"@type": "Person", "name": "First Author"},
+    {"@type": "Person", "name": "Second Author"}
+  ]
+}
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://example.com/article")
+
+	require.NotNil(t, metadata)
+	require.NotNil(t, metadata.Author)
+	assert.Equal(t, "First Author", *metadata.Author) // Should extract first author
+}
+
+func TestExtractJSONLD_ImageAsObject(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Test Article",
+  "image": {
+    "@type": "ImageObject",
+    "url": "https://example.com/image-object.jpg"
+  }
+}
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://example.com/article")
+
+	require.NotNil(t, metadata)
+	require.NotNil(t, metadata.ImageURL)
+	assert.Equal(t, "https://example.com/image-object.jpg", *metadata.ImageURL)
+}
+
+func TestExtractJSONLD_ImageAsArray(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Test Article",
+  "image": [
+    "https://example.com/image1.jpg",
+    "https://example.com/image2.jpg"
+  ]
+}
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://example.com/article")
+
+	require.NotNil(t, metadata)
+	require.NotNil(t, metadata.ImageURL)
+	assert.Equal(t, "https://example.com/image1.jpg", *metadata.ImageURL) // Should extract first image
+}
+
+func TestExtractJSONLD_RelativeImageURL(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Test Article",
+  "image": "/images/article-image.jpg"
+}
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://example.com/articles/test")
+
+	require.NotNil(t, metadata)
+	require.NotNil(t, metadata.ImageURL)
+	assert.Equal(t, "https://example.com/images/article-image.jpg", *metadata.ImageURL)
+}
+
+func TestExtractJSONLD_TypeAsArray(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": ["Article", "NewsArticle"],
+  "headline": "Multi-type Article"
+}
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://example.com/article")
+
+	require.NotNil(t, metadata)
+	assert.Equal(t, "Multi-type Article", metadata.Title)
+}
+
+func TestExtractJSONLD_NoArticleType_ReturnsNil(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Test Org"
+}
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://example.com/about")
+
+	assert.Nil(t, metadata) // Organization is not an article type
+}
+
+func TestExtractJSONLD_InvalidJSON_ReturnsNil(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+{ invalid json content here }
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://example.com/article")
+
+	assert.Nil(t, metadata)
+}
+
+func TestExtractJSONLD_EmptyScript_ReturnsNil(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://example.com/article")
+
+	assert.Nil(t, metadata)
+}
+
+func TestExtractJSONLD_NoJSONLDScript_ReturnsNil(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<title>Page Without JSON-LD</title>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://example.com/page")
+
+	assert.Nil(t, metadata)
+}
+
+func TestExtractJSONLD_UsesNameWhenHeadlineMissing(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Page Name as Title",
+  "description": "A web page"
+}
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://example.com/page")
+
+	require.NotNil(t, metadata)
+	assert.Equal(t, "Page Name as Title", metadata.Title)
+}
+
+func TestExtractJSONLD_FallsBackToDateModified(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Test Article",
+  "dateModified": "2024-01-20T15:00:00Z"
+}
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://example.com/article")
+
+	require.NotNil(t, metadata)
+	require.NotNil(t, metadata.PublishDate)
+	assert.Equal(t, "2024-01-20T15:00:00Z", *metadata.PublishDate)
+}
+
+func TestExtractJSONLD_SanitizesHTMLInContent(t *testing.T) {
+	// Note: Using HTML tags that don't include </script> to avoid breaking the JSON-LD script block
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "<b>Bold</b> Title <img src='x' onerror='alert(1)'>",
+  "description": "<b>Bold</b> description with <a href='#'>link</a>"
+}
+</script>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	metadata := extractor.extractJSONLD(doc, "https://example.com/article")
+
+	require.NotNil(t, metadata)
+	assert.NotContains(t, metadata.Title, "<b>")
+	assert.NotContains(t, metadata.Title, "<img")
+	assert.Equal(t, "Bold Title", metadata.Title)
+	require.NotNil(t, metadata.Description)
+	assert.NotContains(t, *metadata.Description, "<b>")
+	assert.NotContains(t, *metadata.Description, "<a")
+}
+
+// ============================================================================
+// OpenGraph Meta Tag Tests with goquery
+// ============================================================================
+
+func TestGetMetaContent_OpenGraphTitle(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<meta property="og:title" content="OpenGraph Title">
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	title := extractor.getMetaContent(doc, "og:title")
+
+	assert.Equal(t, "OpenGraph Title", title)
+}
+
+func TestGetMetaContent_NotFound(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<title>Page Title</title>
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	title := extractor.getMetaContent(doc, "og:title")
+
+	assert.Empty(t, title)
+}
+
+func TestGetMetaContentByName_Description(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<meta name="description" content="Page description from meta tag">
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	desc := extractor.getMetaContentByName(doc, "description")
+
+	assert.Equal(t, "Page description from meta tag", desc)
+}
+
+func TestGetMetaContentByItemProp_DatePublished(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<meta itemprop="datePublished" content="2024-01-15">
+</head>
+<body></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	date := extractor.getMetaContentByItemProp(doc, "datePublished")
+
+	assert.Equal(t, "2024-01-15", date)
+}
+
+func TestGetMetaContentByItemProp_TextContent(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<body>
+<span itemprop="author">Author from text</span>
+</body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	author := extractor.getMetaContentByItemProp(doc, "author")
+
+	assert.Equal(t, "Author from text", author)
+}
+
+// ============================================================================
+// Read Time Calculation Tests with HTML
+// ============================================================================
+
+func TestCalculateReadTime_ArticleTag(t *testing.T) {
+	// Create 400 words (2 minutes at 200 WPM)
+	words := strings.Repeat("word ", 400)
+	html := `<!DOCTYPE html>
+<html>
+<head><title>Test</title></head>
+<body>
+<article>` + words + `</article>
+</body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	readTime := extractor.calculateReadTime(doc)
+
+	assert.Equal(t, 2, readTime)
+}
+
+func TestCalculateReadTime_MainTag(t *testing.T) {
+	words := strings.Repeat("word ", 600)
+	html := `<!DOCTYPE html>
+<html>
+<head><title>Test</title></head>
+<body>
+<header>Header</header>
+<main>` + words + `</main>
+<footer>Footer</footer>
+</body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	readTime := extractor.calculateReadTime(doc)
+
+	assert.Equal(t, 3, readTime)
+}
+
+func TestCalculateReadTime_MinimumOneMinute(t *testing.T) {
+	// Create 50 words (< 1 minute but should round up)
+	words := strings.Repeat("word ", 50)
+	html := `<!DOCTYPE html>
+<html>
+<body><article>` + words + `</article></body>
+</html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	readTime := extractor.calculateReadTime(doc)
+
+	assert.Equal(t, 1, readTime)
+}
+
+func TestCalculateReadTime_EmptyContent(t *testing.T) {
+	// Note: HTML structure may have minimal whitespace, which results in minimum 1 minute
+	// when word count > 0. This test verifies content-less pages return 1 (minimum)
+	html := `<!DOCTYPE html><html><body></body></html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	require.NoError(t, err)
+
+	extractor := NewMetadataExtractor()
+	readTime := extractor.calculateReadTime(doc)
+
+	// Empty bodies with no real content return 1 (minimum) due to whitespace artifacts
+	assert.LessOrEqual(t, readTime, 1)
+}
+
+// ============================================================================
+// JSON-LD Helper Method Tests
+// ============================================================================
+
+func TestGetJSONLDType_String(t *testing.T) {
+	extractor := NewMetadataExtractor()
+	result := extractor.getJSONLDType("Article")
+	assert.Equal(t, "Article", result)
+}
+
+func TestGetJSONLDType_Array(t *testing.T) {
+	extractor := NewMetadataExtractor()
+	input := []interface{}{"Article", "NewsArticle"}
+	result := extractor.getJSONLDType(input)
+	assert.Equal(t, "Article", result) // Returns first element
+}
+
+func TestGetJSONLDType_Nil(t *testing.T) {
+	extractor := NewMetadataExtractor()
+	result := extractor.getJSONLDType(nil)
+	assert.Empty(t, result)
+}
+
+func TestExtractJSONLDAuthor_String(t *testing.T) {
+	extractor := NewMetadataExtractor()
+	result := extractor.extractJSONLDAuthor("John Doe")
+	assert.Equal(t, "John Doe", result)
+}
+
+func TestExtractJSONLDAuthor_Object(t *testing.T) {
+	extractor := NewMetadataExtractor()
+	input := map[string]interface{}{
+		"@type": "Person",
+		"name":  "Jane Doe",
+	}
+	result := extractor.extractJSONLDAuthor(input)
+	assert.Equal(t, "Jane Doe", result)
+}
+
+func TestExtractJSONLDAuthor_ArrayOfObjects(t *testing.T) {
+	extractor := NewMetadataExtractor()
+	input := []interface{}{
+		map[string]interface{}{"@type": "Person", "name": "First Author"},
+		map[string]interface{}{"@type": "Person", "name": "Second Author"},
+	}
+	result := extractor.extractJSONLDAuthor(input)
+	assert.Equal(t, "First Author", result)
+}
+
+func TestExtractJSONLDAuthor_ArrayOfStrings(t *testing.T) {
+	extractor := NewMetadataExtractor()
+	input := []interface{}{"Author One", "Author Two"}
+	result := extractor.extractJSONLDAuthor(input)
+	assert.Equal(t, "Author One", result)
+}
+
+func TestExtractJSONLDAuthor_Nil(t *testing.T) {
+	extractor := NewMetadataExtractor()
+	result := extractor.extractJSONLDAuthor(nil)
+	assert.Empty(t, result)
+}
+
+func TestExtractJSONLDImage_String(t *testing.T) {
+	extractor := NewMetadataExtractor()
+	result := extractor.extractJSONLDImage("https://example.com/image.jpg", "https://example.com")
+	assert.Equal(t, "https://example.com/image.jpg", result)
+}
+
+func TestExtractJSONLDImage_Object(t *testing.T) {
+	extractor := NewMetadataExtractor()
+	input := map[string]interface{}{
+		"@type": "ImageObject",
+		"url":   "https://example.com/image.jpg",
+	}
+	result := extractor.extractJSONLDImage(input, "https://example.com")
+	assert.Equal(t, "https://example.com/image.jpg", result)
+}
+
+func TestExtractJSONLDImage_ArrayOfStrings(t *testing.T) {
+	extractor := NewMetadataExtractor()
+	input := []interface{}{
+		"https://example.com/first.jpg",
+		"https://example.com/second.jpg",
+	}
+	result := extractor.extractJSONLDImage(input, "https://example.com")
+	assert.Equal(t, "https://example.com/first.jpg", result)
+}
+
+func TestExtractJSONLDImage_ArrayOfObjects(t *testing.T) {
+	extractor := NewMetadataExtractor()
+	input := []interface{}{
+		map[string]interface{}{"@type": "ImageObject", "url": "https://example.com/obj-first.jpg"},
+		map[string]interface{}{"@type": "ImageObject", "url": "https://example.com/obj-second.jpg"},
+	}
+	result := extractor.extractJSONLDImage(input, "https://example.com")
+	assert.Equal(t, "https://example.com/obj-first.jpg", result)
+}
+
+func TestExtractJSONLDImage_Nil(t *testing.T) {
+	extractor := NewMetadataExtractor()
+	result := extractor.extractJSONLDImage(nil, "https://example.com")
+	assert.Empty(t, result)
+}
+
+func TestExtractJSONLDImage_RelativeURL(t *testing.T) {
+	extractor := NewMetadataExtractor()
+	result := extractor.extractJSONLDImage("/images/photo.jpg", "https://example.com/article")
+	assert.Equal(t, "https://example.com/images/photo.jpg", result)
 }

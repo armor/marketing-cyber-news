@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net"
@@ -34,6 +35,36 @@ type ExtractedMetadata struct {
 	Author          *string `json:"author,omitempty"`
 	ReadTimeMinutes *int    `json:"read_time_minutes,omitempty"`
 	SiteName        *string `json:"site_name,omitempty"`
+}
+
+// jsonLDSchema represents Schema.org JSON-LD structured data.
+// Supports Article, NewsArticle, BlogPosting, and WebPage types.
+type jsonLDSchema struct {
+	Context     interface{}    `json:"@context"`
+	Type        interface{}    `json:"@type"`
+	Headline    string         `json:"headline"`
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	Image       interface{}    `json:"image"`
+	DatePublished  string      `json:"datePublished"`
+	DateModified   string      `json:"dateModified"`
+	Author      interface{}    `json:"author"`
+	Publisher   *jsonLDEntity  `json:"publisher"`
+	MainEntity  *jsonLDSchema  `json:"mainEntity"`
+	Graph       []jsonLDSchema `json:"@graph"`
+}
+
+// jsonLDEntity represents an author or publisher entity in JSON-LD
+type jsonLDEntity struct {
+	Type string `json:"@type"`
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
+// jsonLDImage represents an image in JSON-LD (can be string, object, or array)
+type jsonLDImage struct {
+	Type string `json:"@type"`
+	URL  string `json:"url"`
 }
 
 // NewMetadataExtractor creates a new metadata extractor with SSRF-safe HTTP client
@@ -248,63 +279,80 @@ func (m *MetadataExtractor) ExtractMetadata(ctx context.Context, targetURL strin
 		return nil, fmt.Errorf("failed to parse HTML: %w", err)
 	}
 
-	// Extract metadata
-	metadata := &ExtractedMetadata{
-		URL: targetURL,
-	}
+	// Try JSON-LD extraction first (most structured and reliable)
+	metadata := m.extractJSONLD(doc, targetURL)
 
-	// Extract title (prefer og:title, then title tag)
-	if ogTitle := m.getMetaContent(doc, "og:title"); ogTitle != "" {
-		metadata.Title = m.sanitize(ogTitle)
-	} else {
-		metadata.Title = m.sanitize(doc.Find("title").First().Text())
-	}
-
-	// Extract description (prefer og:description, then meta description)
-	if desc := m.getMetaContent(doc, "og:description"); desc != "" {
-		sanitized := m.sanitize(desc)
-		metadata.Description = &sanitized
-	} else if desc := m.getMetaContentByName(doc, "description"); desc != "" {
-		sanitized := m.sanitize(desc)
-		metadata.Description = &sanitized
-	}
-
-	// Extract image (og:image)
-	if img := m.getMetaContent(doc, "og:image"); img != "" {
-		// Resolve relative URLs
-		if resolved := m.resolveURL(targetURL, img); resolved != "" {
-			metadata.ImageURL = &resolved
+	// Fall back to OG/meta tag extraction if JSON-LD didn't provide data
+	if metadata == nil {
+		metadata = &ExtractedMetadata{
+			URL: targetURL,
 		}
 	}
 
-	// Extract publish date (article:published_time, datePublished, or pubdate)
-	if pubDate := m.getMetaContent(doc, "article:published_time"); pubDate != "" {
-		metadata.PublishDate = &pubDate
-	} else if pubDate := m.getMetaContentByName(doc, "pubdate"); pubDate != "" {
-		metadata.PublishDate = &pubDate
-	} else if pubDate := m.getMetaContentByItemProp(doc, "datePublished"); pubDate != "" {
-		metadata.PublishDate = &pubDate
+	// Extract title (prefer JSON-LD, then og:title, then title tag)
+	if metadata.Title == "" {
+		if ogTitle := m.getMetaContent(doc, "og:title"); ogTitle != "" {
+			metadata.Title = m.sanitize(ogTitle)
+		} else {
+			metadata.Title = m.sanitize(doc.Find("title").First().Text())
+		}
 	}
 
-	// Extract author (article:author, author, or byline)
-	if author := m.getMetaContent(doc, "article:author"); author != "" {
-		sanitized := m.sanitize(author)
-		metadata.Author = &sanitized
-	} else if author := m.getMetaContentByName(doc, "author"); author != "" {
-		sanitized := m.sanitize(author)
-		metadata.Author = &sanitized
-	} else if author := m.getMetaContentByItemProp(doc, "author"); author != "" {
-		sanitized := m.sanitize(author)
-		metadata.Author = &sanitized
+	// Extract description (prefer JSON-LD, then og:description, then meta description)
+	if metadata.Description == nil {
+		if desc := m.getMetaContent(doc, "og:description"); desc != "" {
+			sanitized := m.sanitize(desc)
+			metadata.Description = &sanitized
+		} else if desc := m.getMetaContentByName(doc, "description"); desc != "" {
+			sanitized := m.sanitize(desc)
+			metadata.Description = &sanitized
+		}
 	}
 
-	// Extract site name (og:site_name)
-	if siteName := m.getMetaContent(doc, "og:site_name"); siteName != "" {
-		sanitized := m.sanitize(siteName)
-		metadata.SiteName = &sanitized
+	// Extract image (prefer JSON-LD, then og:image)
+	if metadata.ImageURL == nil {
+		if img := m.getMetaContent(doc, "og:image"); img != "" {
+			// Resolve relative URLs
+			if resolved := m.resolveURL(targetURL, img); resolved != "" {
+				metadata.ImageURL = &resolved
+			}
+		}
 	}
 
-	// Calculate read time from article content
+	// Extract publish date (prefer JSON-LD, then article:published_time, datePublished, or pubdate)
+	if metadata.PublishDate == nil {
+		if pubDate := m.getMetaContent(doc, "article:published_time"); pubDate != "" {
+			metadata.PublishDate = &pubDate
+		} else if pubDate := m.getMetaContentByName(doc, "pubdate"); pubDate != "" {
+			metadata.PublishDate = &pubDate
+		} else if pubDate := m.getMetaContentByItemProp(doc, "datePublished"); pubDate != "" {
+			metadata.PublishDate = &pubDate
+		}
+	}
+
+	// Extract author (prefer JSON-LD, then article:author, author, or byline)
+	if metadata.Author == nil {
+		if author := m.getMetaContent(doc, "article:author"); author != "" {
+			sanitized := m.sanitize(author)
+			metadata.Author = &sanitized
+		} else if author := m.getMetaContentByName(doc, "author"); author != "" {
+			sanitized := m.sanitize(author)
+			metadata.Author = &sanitized
+		} else if author := m.getMetaContentByItemProp(doc, "author"); author != "" {
+			sanitized := m.sanitize(author)
+			metadata.Author = &sanitized
+		}
+	}
+
+	// Extract site name (prefer JSON-LD, then og:site_name)
+	if metadata.SiteName == nil {
+		if siteName := m.getMetaContent(doc, "og:site_name"); siteName != "" {
+			sanitized := m.sanitize(siteName)
+			metadata.SiteName = &sanitized
+		}
+	}
+
+	// Calculate read time from article content (always calculated from DOM)
 	if readTime := m.calculateReadTime(doc); readTime > 0 {
 		metadata.ReadTimeMinutes = &readTime
 	}
@@ -423,4 +471,226 @@ func (m *MetadataExtractor) calculateReadTime(doc *goquery.Document) int {
 	}
 
 	return readTime
+}
+
+// extractJSONLD extracts metadata from JSON-LD script tags
+// It parses Schema.org structured data which is commonly used by news sites
+func (m *MetadataExtractor) extractJSONLD(doc *goquery.Document, targetURL string) *ExtractedMetadata {
+	var metadata *ExtractedMetadata
+
+	doc.Find("script[type='application/ld+json']").Each(func(_ int, s *goquery.Selection) {
+		if metadata != nil {
+			return // Already found valid data
+		}
+
+		jsonText := strings.TrimSpace(s.Text())
+		if jsonText == "" {
+			return
+		}
+
+		var schema jsonLDSchema
+		if err := json.Unmarshal([]byte(jsonText), &schema); err != nil {
+			log.Debug().Err(err).Msg("Failed to parse JSON-LD, trying to parse @graph")
+			// Some sites may have invalid JSON, continue to next script
+			return
+		}
+
+		// Handle @graph array (common pattern where multiple schemas are in a graph)
+		if len(schema.Graph) > 0 {
+			for _, item := range schema.Graph {
+				if extracted := m.extractFromJSONLDItem(&item, targetURL); extracted != nil {
+					metadata = extracted
+					return
+				}
+			}
+		}
+
+		// Handle mainEntity (nested article within WebPage)
+		if schema.MainEntity != nil {
+			if extracted := m.extractFromJSONLDItem(schema.MainEntity, targetURL); extracted != nil {
+				metadata = extracted
+				return
+			}
+		}
+
+		// Try direct extraction from root
+		if extracted := m.extractFromJSONLDItem(&schema, targetURL); extracted != nil {
+			metadata = extracted
+		}
+	})
+
+	return metadata
+}
+
+// extractFromJSONLDItem extracts metadata from a single JSON-LD schema item
+func (m *MetadataExtractor) extractFromJSONLDItem(schema *jsonLDSchema, targetURL string) *ExtractedMetadata {
+	// Check if this is an article type
+	schemaType := m.getJSONLDType(schema.Type)
+	articleTypes := []string{"Article", "NewsArticle", "BlogPosting", "WebPage", "TechArticle", "ReportageNewsArticle"}
+
+	isArticle := false
+	for _, t := range articleTypes {
+		if strings.EqualFold(schemaType, t) {
+			isArticle = true
+			break
+		}
+	}
+
+	if !isArticle {
+		return nil
+	}
+
+	metadata := &ExtractedMetadata{
+		URL: targetURL,
+	}
+
+	// Extract title (prefer headline, fall back to name)
+	if schema.Headline != "" {
+		metadata.Title = m.sanitize(schema.Headline)
+	} else if schema.Name != "" {
+		metadata.Title = m.sanitize(schema.Name)
+	}
+
+	// If no title found, this isn't useful
+	if metadata.Title == "" {
+		return nil
+	}
+
+	// Extract description
+	if schema.Description != "" {
+		desc := m.sanitize(schema.Description)
+		metadata.Description = &desc
+	}
+
+	// Extract publish date (prefer datePublished, fall back to dateModified)
+	if schema.DatePublished != "" {
+		metadata.PublishDate = &schema.DatePublished
+	} else if schema.DateModified != "" {
+		metadata.PublishDate = &schema.DateModified
+	}
+
+	// Extract author
+	if author := m.extractJSONLDAuthor(schema.Author); author != "" {
+		sanitizedAuthor := m.sanitize(author)
+		metadata.Author = &sanitizedAuthor
+	}
+
+	// Extract publisher/site name
+	if schema.Publisher != nil && schema.Publisher.Name != "" {
+		siteName := m.sanitize(schema.Publisher.Name)
+		metadata.SiteName = &siteName
+	}
+
+	// Extract image
+	if imageURL := m.extractJSONLDImage(schema.Image, targetURL); imageURL != "" {
+		metadata.ImageURL = &imageURL
+	}
+
+	return metadata
+}
+
+// getJSONLDType extracts the @type value which can be string or array
+func (m *MetadataExtractor) getJSONLDType(typeVal interface{}) string {
+	if typeVal == nil {
+		return ""
+	}
+
+	// Can be a simple string
+	if str, ok := typeVal.(string); ok {
+		return str
+	}
+
+	// Can be an array of types
+	if arr, ok := typeVal.([]interface{}); ok && len(arr) > 0 {
+		if str, ok := arr[0].(string); ok {
+			return str
+		}
+	}
+
+	return ""
+}
+
+// extractJSONLDAuthor extracts author name from various JSON-LD author formats
+func (m *MetadataExtractor) extractJSONLDAuthor(author interface{}) string {
+	if author == nil {
+		return ""
+	}
+
+	// Can be a simple string
+	if str, ok := author.(string); ok {
+		return str
+	}
+
+	// Can be an object with a name field
+	if obj, ok := author.(map[string]interface{}); ok {
+		if name, exists := obj["name"]; exists {
+			if str, ok := name.(string); ok {
+				return str
+			}
+		}
+	}
+
+	// Can be an array of authors
+	if arr, ok := author.([]interface{}); ok && len(arr) > 0 {
+		// Get first author
+		if obj, ok := arr[0].(map[string]interface{}); ok {
+			if name, exists := obj["name"]; exists {
+				if str, ok := name.(string); ok {
+					return str
+				}
+			}
+		}
+		// Or first item could be a string
+		if str, ok := arr[0].(string); ok {
+			return str
+		}
+	}
+
+	return ""
+}
+
+// extractJSONLDImage extracts image URL from various JSON-LD image formats
+func (m *MetadataExtractor) extractJSONLDImage(image interface{}, baseURL string) string {
+	if image == nil {
+		return ""
+	}
+
+	var imageURL string
+
+	// Can be a simple string URL
+	if str, ok := image.(string); ok {
+		imageURL = str
+	}
+
+	// Can be an object with url field
+	if obj, ok := image.(map[string]interface{}); ok {
+		if url, exists := obj["url"]; exists {
+			if str, ok := url.(string); ok {
+				imageURL = str
+			}
+		}
+	}
+
+	// Can be an array
+	if arr, ok := image.([]interface{}); ok && len(arr) > 0 {
+		// First item could be string
+		if str, ok := arr[0].(string); ok {
+			imageURL = str
+		}
+		// Or first item could be an object
+		if obj, ok := arr[0].(map[string]interface{}); ok {
+			if url, exists := obj["url"]; exists {
+				if str, ok := url.(string); ok {
+					imageURL = str
+				}
+			}
+		}
+	}
+
+	// Resolve and validate the URL
+	if imageURL != "" {
+		return m.resolveURL(baseURL, imageURL)
+	}
+
+	return ""
 }

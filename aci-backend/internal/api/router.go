@@ -326,11 +326,14 @@ func (s *Server) setupRoutesWithWebSocket(wsHandler WebSocketHandler) {
 
 			// Newsletter Issue routes
 			r.Route("/newsletter-issues", func(r chi.Router) {
+				// Newsletter block management (Content Pipeline) - always register if handler exists
+				if s.handlers.NewsletterBlock != nil {
+					r.Post("/{id}/blocks/bulk", s.handlers.NewsletterBlock.BulkAddBlocks)
+				}
+
 				// Handle case where Issue handler is not initialized
 				if s.handlers.Issue == nil {
-					r.HandleFunc("/*", func(w http.ResponseWriter, req *http.Request) {
-						response.ServiceUnavailable(w, "Newsletter issue service is not available")
-					})
+					// Only set up fallback for routes not handled by NewsletterBlock
 					return
 				}
 
@@ -351,11 +354,6 @@ func (s *Server) setupRoutesWithWebSocket(wsHandler WebSocketHandler) {
 				r.Post("/{id}/validate", s.handlers.Issue.ValidateBrandVoice)
 				r.Post("/{id}/select-subject-line", s.handlers.Issue.SelectSubjectLine)
 				r.Post("/{id}/regenerate-subject-lines", s.handlers.Issue.RegenerateSubjectLines)
-
-				// Newsletter block management (Content Pipeline)
-				if s.handlers.NewsletterBlock != nil {
-					r.Post("/{id}/blocks/bulk", s.handlers.NewsletterBlock.BulkAddBlocks)
-				}
 			})
 
 			// Segment routes

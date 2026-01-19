@@ -29,9 +29,10 @@ import { test, expect, Page } from '@playwright/test';
 const BASE_URL = 'http://localhost:5173';
 const API_BASE = 'http://localhost:8080/v1';
 
+// Test credentials - uses @armor.com domain to match K8s email constraint
 const TEST_USER = {
-  email: 'admin@test.com',
-  password: 'TestPass123',
+  email: process.env.TEST_ADMIN_EMAIL || 'admin@armor.com',
+  password: process.env.TEST_ADMIN_PASSWORD || 'TestPass123',
 };
 
 // ============================================================================
