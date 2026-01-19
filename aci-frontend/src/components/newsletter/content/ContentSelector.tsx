@@ -730,7 +730,7 @@ function ContentItemCard({
         </div>
 
         {/* Tags */}
-        {(item.topic_tags.length > 0 || item.framework_tags.length > 0) && (
+        {((item.topic_tags || []).length > 0 || (item.framework_tags || []).length > 0) && (
           <div
             style={{
               display: 'flex',
@@ -738,7 +738,7 @@ function ContentItemCard({
               gap: 'var(--spacing-2)',
             }}
           >
-            {item.topic_tags.slice(0, 3).map((tag) => (
+            {(item.topic_tags || []).slice(0, 3).map((tag) => (
               <Badge key={tag} variant="secondary">
                 <Tag
                   style={{
@@ -750,7 +750,7 @@ function ContentItemCard({
                 {tag}
               </Badge>
             ))}
-            {item.framework_tags.slice(0, 2).map((tag) => (
+            {(item.framework_tags || []).slice(0, 2).map((tag) => (
               <Badge key={tag} variant="info">
                 <FileText
                   style={{
