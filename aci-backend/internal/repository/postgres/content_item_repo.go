@@ -428,7 +428,7 @@ func (r *contentItemRepository) List(ctx context.Context, filter *domain.Content
 			is_active, indexed_at, created_at, updated_at
 		FROM content_items
 		` + whereClause + `
-		ORDER BY publish_date DESC, relevance_score DESC
+		ORDER BY publish_date DESC, relevance_score DESC, created_at DESC, id
 		LIMIT $` + fmt.Sprintf("%d", argPos) + ` OFFSET $` + fmt.Sprintf("%d", argPos+1)
 
 	args = append(args, filter.Limit, filter.Offset)
