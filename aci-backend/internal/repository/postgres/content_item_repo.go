@@ -48,10 +48,20 @@ func (r *contentItemRepository) Create(ctx context.Context, item *domain.Content
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28)
 	`
 
+	// Convert nil UUIDs to NULL for nullable foreign keys
+	var sourceID interface{} = item.SourceID
+	if item.SourceID == uuid.Nil {
+		sourceID = nil
+	}
+	var articleID interface{}
+	if item.ArticleID != nil && *item.ArticleID != uuid.Nil {
+		articleID = *item.ArticleID
+	}
+
 	_, err := r.db.Pool.Exec(ctx, query,
 		item.ID,
-		item.SourceID,
-		item.ArticleID,
+		sourceID,
+		articleID,
 		item.Title,
 		item.URL,
 		item.Summary,
