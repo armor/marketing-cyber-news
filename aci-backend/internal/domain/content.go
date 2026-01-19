@@ -211,9 +211,8 @@ func (ci *ContentItem) Validate() error {
 		return fmt.Errorf("invalid content type: %w", err)
 	}
 
-	if ci.SourceID == uuid.Nil {
-		return fmt.Errorf("source_id is required")
-	}
+	// Note: SourceID can be uuid.Nil for manual content items (user-submitted URLs)
+	// Manual content has no automated source, so uuid.Nil indicates "manual" source type
 
 	if ci.TrustScore < 0.0 || ci.TrustScore > 1.0 {
 		return fmt.Errorf("trust_score must be between 0.0 and 1.0, got %f", ci.TrustScore)
