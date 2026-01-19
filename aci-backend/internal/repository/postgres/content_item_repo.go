@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/lib/pq"
 	"github.com/phillipboles/aci-backend/internal/domain"
 	"github.com/phillipboles/aci-backend/internal/repository"
 )
@@ -58,11 +57,11 @@ func (r *contentItemRepository) Create(ctx context.Context, item *domain.Content
 		item.Summary,
 		item.Content,
 		item.ContentType,
-		pq.Array(item.TopicTags),
-		pq.Array(item.FrameworkTags),
-		pq.Array(item.IndustryTags),
+		item.TopicTags,
+		item.FrameworkTags,
+		item.IndustryTags,
 		item.BuyerStage,
-		pq.Array(item.PartnerTags),
+		item.PartnerTags,
 		item.Author,
 		item.PublishDate,
 		item.WordCount,
@@ -332,19 +331,19 @@ func (r *contentItemRepository) List(ctx context.Context, filter *domain.Content
 
 	if len(filter.TopicTags) > 0 {
 		whereClauses = append(whereClauses, fmt.Sprintf("topic_tags && $%d", argPos))
-		args = append(args, pq.Array(filter.TopicTags))
+		args = append(args, filter.TopicTags)
 		argPos++
 	}
 
 	if len(filter.FrameworkTags) > 0 {
 		whereClauses = append(whereClauses, fmt.Sprintf("framework_tags && $%d", argPos))
-		args = append(args, pq.Array(filter.FrameworkTags))
+		args = append(args, filter.FrameworkTags)
 		argPos++
 	}
 
 	if len(filter.IndustryTags) > 0 {
 		whereClauses = append(whereClauses, fmt.Sprintf("industry_tags && $%d", argPos))
-		args = append(args, pq.Array(filter.IndustryTags))
+		args = append(args, filter.IndustryTags)
 		argPos++
 	}
 
@@ -533,11 +532,11 @@ func (r *contentItemRepository) Update(ctx context.Context, item *domain.Content
 		item.Summary,
 		item.Content,
 		item.ContentType,
-		pq.Array(item.TopicTags),
-		pq.Array(item.FrameworkTags),
-		pq.Array(item.IndustryTags),
+		item.TopicTags,
+		item.FrameworkTags,
+		item.IndustryTags,
 		item.BuyerStage,
-		pq.Array(item.PartnerTags),
+		item.PartnerTags,
 		item.Author,
 		item.PublishDate,
 		item.WordCount,
@@ -626,11 +625,11 @@ func (r *contentItemRepository) BulkCreate(ctx context.Context, items []*domain.
 			item.Summary,
 			item.Content,
 			item.ContentType,
-			pq.Array(item.TopicTags),
-			pq.Array(item.FrameworkTags),
-			pq.Array(item.IndustryTags),
+			item.TopicTags,
+			item.FrameworkTags,
+			item.IndustryTags,
 			item.BuyerStage,
-			pq.Array(item.PartnerTags),
+			item.PartnerTags,
 			item.Author,
 			item.PublishDate,
 			item.WordCount,
@@ -714,7 +713,7 @@ func (r *contentItemRepository) GetFreshContent(ctx context.Context, daysThresho
 
 	if len(topicTags) > 0 {
 		whereClauses = append(whereClauses, fmt.Sprintf("topic_tags && $%d", argPos))
-		args = append(args, pq.Array(topicTags))
+		args = append(args, topicTags)
 		argPos++
 	}
 
